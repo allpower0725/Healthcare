@@ -1,0 +1,18 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "forms",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "8765", "--bind", "127.0.0.1", "--directory", "預防保健表單電子檔/web"],
+      "port": 8765
+    },
+    {
+      "name": "forms-2",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "8767", "--bind", "127.0.0.1", "--directory", "預防保健表單電子檔/web"],
+      "port": 8767,
+      "autoPort": false
+    }
+  ]
+}

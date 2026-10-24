@@ -1,0 +1,408 @@
+/* ---------- 列表：篩選 ---------- */
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 32px;
+  margin-bottom: 14px;
+  padding: 16px 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.filterGroup {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+.groupLabel {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.filters .idInput {
+  width: 12rem;
+  min-height: 2.25rem;
+  padding: 0.25rem 0.75rem;
+}
+.checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 2.25rem;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 0.875rem;
+  cursor: pointer;
+  user-select: none;
+}
+.check:hover {
+  border-color: var(--primary-line);
+}
+.check:has(input:checked) {
+  border-color: var(--primary-line);
+  background: var(--primary-soft);
+  color: var(--primary-strong);
+  font-weight: 600;
+}
+.check:focus-within {
+  outline: 3px solid var(--primary-ring);
+  outline-offset: 1px;
+}
+.check input {
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+  accent-color: var(--primary);
+}
+.filterActions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+/* ---------- 列表：表格 ---------- */
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin-bottom: 10px;
+}
+.count {
+  color: var(--muted);
+  font-size: 0.9375rem;
+}
+
+/* 欄位內容特別長時，表格在卡片內左右捲動，不撐破版面 */
+.tableCard {
+  overflow-x: auto;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.table th {
+  padding: 0 8px 10px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  white-space: nowrap;
+}
+.table td {
+  padding: 12px 8px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+.table tr:last-child td {
+  border-bottom: 0;
+}
+.table th:first-child,
+.table td:first-child {
+  padding-left: 0;
+}
+.table th:last-child,
+.table td:last-child {
+  padding-right: 0;
+}
+.table tbody tr:hover td {
+  background: var(--bg);
+}
+
+/* 欄位標題就是排序按鈕 */
+.sortBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 2rem;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+.sortBtn span {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+.sortBtn:hover {
+  border-color: var(--primary-line);
+  background: var(--primary-soft);
+  color: var(--primary-strong);
+}
+.sortBtn:focus-visible {
+  outline: 3px solid var(--primary-ring);
+  outline-offset: 2px;
+}
+.sortActive {
+  border-color: var(--primary-line);
+  background: var(--primary-soft);
+  color: var(--primary-strong);
+}
+.sortActive span {
+  opacity: 1;
+}
+
+.mono {
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  letter-spacing: 0.04em;
+}
+.nowrap {
+  white-space: nowrap;
+}
+.name {
+  font-weight: 600;
+}
+.date {
+  font-size: 0.9375rem;
+  font-variant-numeric: tabular-nums;
+}
+.formCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+.formDot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.rowActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+/* 還不能列印：顯示停用的按鈕，滑過時說明原因 */
+.rowActions :global(.btn):disabled {
+  cursor: not-allowed;
+}
+.empty {
+  margin: 0;
+  color: var(--muted);
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+/* 窄螢幕：每筆改為卡片，欄位名稱放在值前面；排序按鈕排成一列放在最上面 */
+@media (max-width: 1000px) {
+  .table,
+  .table thead,
+  .table tbody,
+  .table th,
+  .table td {
+    display: block;
+  }
+  .table thead {
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  .table thead tr {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    padding: 0;
+    border: 0;
+  }
+  .table thead tr::before {
+    content: "排序";
+    margin-right: 2px;
+    color: var(--muted);
+    font-size: 0.8125rem;
+  }
+  .table th,
+  .table th:first-child {
+    padding: 0;
+    border: 0;
+  }
+  .table th:last-child {
+    display: none;
+  }
+  .table tr {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .table tr:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+  .table td,
+  .table td:first-child,
+  .table td:last-child {
+    padding: 0;
+    border: 0;
+  }
+  .table tbody tr:hover td {
+    background: none;
+  }
+  .table td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 2px;
+    color: var(--muted);
+    font-size: 0.8125rem;
+    font-weight: 400;
+    letter-spacing: 0;
+    font-family: var(--font);
+  }
+  .table .actionsCell {
+    grid-column: 1 / -1;
+  }
+  .rowActions {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+}
+
+/* ---------- 單筆頁 ---------- */
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+.headArt {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+}
+.headArt svg {
+  width: 54px;
+  height: 54px;
+}
+.head h1 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  margin: 0;
+  font-size: 1.375rem;
+}
+.headMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 0.9375rem;
+}
+.headMeta b {
+  color: var(--text);
+}
+
+.statusNotice {
+  margin-bottom: 16px;
+}
+
+.formArea {
+  display: grid;
+  gap: 20px;
+}
+
+.publicPart {
+  padding: 4px 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.publicPart > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 0 10px;
+  font-size: 1.125rem;
+  font-weight: 700;
+  list-style: none;
+  cursor: pointer;
+}
+.publicPart > summary::-webkit-details-marker {
+  display: none;
+}
+.publicPart > summary:focus-visible {
+  outline: 3px solid var(--primary-ring);
+  outline-offset: 4px;
+  border-radius: 8px;
+}
+.publicPart > summary:hover .toggle {
+  border-color: var(--primary);
+  color: var(--primary-strong);
+}
+.publicPart[open] .whenClosed,
+.publicPart:not([open]) .whenOpen {
+  display: none;
+}
+.publicPart :global(.card) {
+  box-shadow: none;
+}
+
+.staffFields {
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.dups {
+  margin-bottom: 16px;
+}
+.dups p {
+  margin: 0;
+}
+.dupLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.history {
+  margin-top: 24px;
+}
+.history h2 {
+  margin: 0 0 10px;
+  font-size: 1rem;
+}
+.history ol {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding-left: 1.2em;
+  color: var(--muted);
+  font-size: 0.875rem;
+}

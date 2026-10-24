@@ -1,9 +1,13 @@
 import { sql } from 'drizzle-orm';
 import {
   type AnyPgColumn,
+  bigint,
   boolean,
   check,
+  date,
   index,
+  integer,
+  jsonb,
   pgTable,
   text,
   timestamp,
@@ -98,6 +102,91 @@ export const formSettings = pgTable(
   ],
 );
 
+export const SUBMISSION_STATUSES = ['submitted', 'returned', 'completed', 'voided'] as const;
+export type SubmissionStatus = (typeof SUBMISSION_STATUSES)[number];
+
+export const SUBMISSION_ACTIONS = [
+  'submitted',
+  'returned',
+  'resubmitted',
+  'completed',
+  'reopened',
+  'voided',
+  'restored',
+] as const;
+export type SubmissionAction = (typeof SUBMISSION_ACTIONS)[number];
+
+/** 表單欄位值：文字／單選為字串，複選為字串陣列 */
+export type FormValues = Record<string, string | string[]>;
+
+/**
+ * 民眾送出的表單；每次送出都是新的一筆。
+ * submitted 民眾已送出／returned 民眾修改中／completed 院所已送出（鎖定）／voided 已作廢
+ */
+export const submissions = pgTable(
+  'submissions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    formId: text('form_id', { enum: FORM_IDS }).notNull(),
+    status: text('status', { enum: SUBMISSION_STATUSES }).notNull(),
+    /** 列表查詢用，送出時由民眾資料帶入（身分證號一律大寫） */
+    idNo: text('id_no').notNull(),
+    name: text('name').notNull(),
+    birthDate: date('birth_date'),
+    /** 民眾填寫內容（含送出當下的基本資料與簽名圖） */
+    publicData: jsonb('public_data').$type<FormValues>().notNull(),
+    /** 院所填寫內容 */
+    staffData: jsonb('staff_data').$type<FormValues>().notNull().default({}),
+    /** 民眾裝置憑證（只存 SHA-256）；持有憑證的裝置才能查看、退回修改 */
+    deviceTokenHash: text('device_token_hash'),
+    deviceExpiresAt: timestamptz('device_expires_at'),
+    publicSubmittedAt: timestamptz('public_submitted_at').notNull(),
+    staffUpdatedBy: uuid('staff_updated_by').references(() => users.id, { onDelete: 'set null' }),
+    staffUpdatedAt: timestamptz('staff_updated_at'),
+    completedBy: uuid('completed_by').references(() => users.id, { onDelete: 'set null' }),
+    completedAt: timestamptz('completed_at'),
+    /** 每次修改加 1；兩人同時編輯時，後存的會被擋下 */
+    version: integer('version').notNull().default(1),
+    createdAt: timestamptz('created_at').notNull().defaultNow(),
+    updatedAt: timestamptz('updated_at')
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (t) => [
+    check('submissions_form_id_check', sql`${t.formId} in ('hpv', 'pap', 'oral', 'hp', 'fit', 'adult')`),
+    check('submissions_status_check', sql`${t.status} in ('submitted', 'returned', 'completed', 'voided')`),
+    index('submissions_id_no_idx').on(t.idNo),
+    index('submissions_form_status_idx').on(t.formId, t.status),
+    index('submissions_created_idx').on(t.createdAt.desc()),
+    index('submissions_submitted_at_idx').on(t.publicSubmittedAt.desc()),
+    index('submissions_completed_at_idx').on(t.completedAt),
+    index('submissions_device_idx').on(t.deviceTokenHash),
+  ],
+);
+
+/** 送出、退回修改、確認送出、取消送出、作廢、復原的紀錄；民眾操作時 actor_id 為 NULL */
+export const submissionEvents = pgTable(
+  'submission_events',
+  {
+    id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
+    submissionId: uuid('submission_id')
+      .notNull()
+      .references(() => submissions.id, { onDelete: 'cascade' }),
+    action: text('action', { enum: SUBMISSION_ACTIONS }).notNull(),
+    actorId: uuid('actor_id').references(() => users.id, { onDelete: 'set null' }),
+    createdAt: timestamptz('created_at').notNull().defaultNow(),
+  },
+  (t) => [
+    check(
+      'submission_events_action_check',
+      sql`${t.action} in ('submitted', 'returned', 'resubmitted', 'completed', 'reopened', 'voided', 'restored')`,
+    ),
+    index('submission_events_submission_idx').on(t.submissionId),
+  ],
+);
+
 export type User = typeof users.$inferSelect;
 export type Session = typeof sessions.$inferSelect;
 export type FormSetting = typeof formSettings.$inferSelect;
+export type Submission = typeof submissions.$inferSelect;

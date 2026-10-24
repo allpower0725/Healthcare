@@ -7,7 +7,6 @@ import { FORMS, isFormId } from '@/lib/forms/catalog';
 import { formUrl, renderFormQrSvg } from '@/lib/forms/qr';
 import { describePeriod, getFormSetting } from '@/lib/forms/settings';
 import adminStyles from '../../../admin.module.css';
-import formStyles from '../../forms.module.css';
 import styles from './poster.module.css';
 import { PrintButton } from './print-button';
 
@@ -36,7 +35,7 @@ async function Poster({ params }: { params: Params }) {
   return (
     <>
       <div className={styles.toolbar}>
-        <Link className={formStyles.back} style={{ margin: 0 }} href={`/admin/forms/${formId}`}>
+        <Link className="btn btn--ghost btn--sm" href={`/admin/forms/${formId}`}>
           ← 回表單設定
         </Link>
         <PrintButton />

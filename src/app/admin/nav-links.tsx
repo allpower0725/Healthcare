@@ -7,15 +7,16 @@ import styles from './admin.module.css';
 type Item = { href: string; label: string; icon: keyof typeof ICONS; count?: number };
 
 const ICONS = {
-  home: (
+  docs: (
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path
-        d="M4 10.5 12 4l8 6.5V19a1.5 1.5 0 0 1-1.5 1.5H15v-6h-6v6H5.5A1.5 1.5 0 0 1 4 19z"
+        d="M7 3.5h7l4.5 4.5v11A1.5 1.5 0 0 1 17 20.5H7A1.5 1.5 0 0 1 5.5 19V5A1.5 1.5 0 0 1 7 3.5z"
         fill="none"
         stroke="currentColor"
         strokeWidth="1.8"
         strokeLinejoin="round"
       />
+      <path d="M13.5 3.5V8.5h5M8.5 12.5h7M8.5 16h5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
     </svg>
   ),
   forms: (
@@ -47,7 +48,7 @@ export function NavLinks({ items }: { items: Item[] }) {
   return (
     <nav className={styles.nav} aria-label="主選單">
       {items.map((item) => {
-        const active = item.href === '/admin' ? pathname === '/admin' : pathname.startsWith(item.href);
+        const active = pathname.startsWith(item.href);
         return (
           <Link
             key={item.href}

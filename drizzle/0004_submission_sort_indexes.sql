@@ -1,0 +1,2 @@
+CREATE INDEX "submissions_submitted_at_idx" ON "submissions" USING btree ("public_submitted_at" DESC NULLS LAST);--> statement-breakpoint
+CREATE INDEX "submissions_completed_at_idx" ON "submissions" USING btree ("completed_at");

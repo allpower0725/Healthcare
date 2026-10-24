@@ -1,0 +1,208 @@
+/* =========================================================
+   依健康署原表單格式的 A4 紙本（列印／另存 PDF）
+   螢幕上以 A4 尺寸預覽；選取的選項以外框圈選（不依賴「背景圖形」列印設定）
+   ========================================================= */
+
+.ps {
+  color: #000;
+  font-family: "Times New Roman", "PMingLiU", "新細明體", "MingLiU", "LiSong Pro", "Songti TC", serif;
+  font-size: 10pt;
+  line-height: 1.36;
+}
+.ps * { box-sizing: border-box; }
+.ps p { margin: 0; }
+
+.ps-page {
+  width: 210mm;
+  min-height: 297mm;
+  margin: 0 auto 16px;
+  padding: 8mm 10mm 7mm;
+  background: #fff;
+  box-shadow: var(--shadow);
+}
+
+.ps-title {
+  margin: 0 0 3mm;
+  text-align: center;
+  font-family: "DFKai-SB", "BiauKai", "標楷體", "Kaiti TC", "STKaiti", serif;
+  font-size: 16pt;
+  font-weight: 700;
+  letter-spacing: .03em;
+}
+.ps-cols { display: grid; grid-template-columns: 1fr 1fr; column-gap: 7mm; }
+.ps-h {
+  margin: 1.4mm 0 .4mm;
+  font-family: "DFKai-SB", "BiauKai", "標楷體", "Kaiti TC", "STKaiti", serif;
+  font-size: 11pt;
+  font-weight: 700;
+}
+.ps-req { font-weight: 700; }
+.ps-ind { padding-left: 1.5em; }
+.ps-ind2 { padding-left: 3em; }
+.ps-ind3 { padding-left: 4.5em; }
+.ps-types { padding-left: 7.9em; }
+.ps-q { padding-left: 1.5em; text-indent: -1.5em; }
+.ps-note { text-align: right; font-size: 8.5pt; line-height: 1.2; }
+
+/* 填寫底線 */
+.ps-fill {
+  display: inline-block;
+  min-width: 2.4em;
+  padding: 0 1mm;
+  border-bottom: .6pt solid #000;
+  text-align: center;
+  line-height: 1.25;
+  text-indent: 0;
+  vertical-align: baseline;
+  font-weight: 700;
+}
+.ps-fill:empty::before { content: "\00a0"; }
+
+/* 選項：被選取時以外框圈起 */
+.ps-opt { white-space: nowrap; padding: 0 .4mm; border-radius: 99px; }
+.ps-opt.on { outline: 1pt solid #000; outline-offset: .2mm; font-weight: 700; }
+.ps-num99 {
+  display: inline-block;
+  width: 1.35em;
+  height: 1.35em;
+  border: .6pt solid #000;
+  border-radius: 50%;
+  font-size: 7pt;
+  line-height: 1.3em;
+  text-align: center;
+  text-indent: 0;
+  vertical-align: .1em;
+}
+
+/* 勾選方框 */
+.ps-cb {
+  position: relative;
+  display: inline-block;
+  width: 2.9mm;
+  height: 2.9mm;
+  margin: 0 .5mm 0 1.4mm;
+  border: .6pt solid #000;
+  vertical-align: -.35mm;
+}
+.ps-cb.on::after {
+  content: "";
+  position: absolute;
+  left: .75mm;
+  top: -.5mm;
+  width: 1mm;
+  height: 2.4mm;
+  border: solid #000;
+  border-width: 0 .8pt .8pt 0;
+  transform: rotate(45deg);
+}
+
+/* 方格（身分證號、鄉鎮代碼、時程代碼） */
+.ps-cells { display: inline-flex; gap: 1mm; vertical-align: middle; text-indent: 0; }
+.ps-cells > i {
+  display: inline-block;
+  width: 5mm;
+  height: 5.4mm;
+  border: .6pt solid #000;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 5.2mm;
+  text-align: center;
+}
+.ps-cells--line > i { width: 3.6mm; border-width: 0 0 .6pt; }
+
+/* 地址「縣／市」上下排列的單位字 */
+.ps-stack {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 .4mm;
+  font-size: 8.5pt;
+  line-height: 1.15;
+  vertical-align: -.2em;
+  text-indent: 0;
+}
+.ps-stack .ps-opt.on { outline-width: .8pt; }
+
+.ps-box { margin: 1.6mm 0; padding: 1.2mm 2mm; border: .6pt solid #000; font-size: 8.5pt; line-height: 1.45; }
+
+/* 簽名 */
+.ps-sign {
+  position: relative;
+  display: inline-block;
+  width: 38mm;
+  height: 9mm;
+  border-bottom: .6pt solid #000;
+  vertical-align: bottom;
+  text-indent: 0;
+}
+.ps-sign--full { display: block; width: 100%; }
+.ps-sign img {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: .4mm;
+  margin: 0 auto;
+  max-width: 100%;
+  max-height: 8.4mm;
+}
+
+/* 表格式紙本 */
+.ps-table { width: 100%; border-collapse: collapse; }
+.ps-table th, .ps-table td { padding: 1mm 1.5mm; border: .6pt solid #000; vertical-align: top; text-align: left; font-weight: 400; }
+.ps-table .c { text-align: center; vertical-align: middle; }
+
+/* ---------- 成人預防保健：兩頁表格式紙本，紅框內為服務對象填寫的欄位 ---------- */
+.ps--adult { font-size: 9.5pt; line-height: 1.33; }
+.ps--adult .ps-title { margin: 0 0 1.2mm; }
+.ps--adult .ps-cb { margin: 0 .4mm 0 1mm; }
+.pa-annex { margin: 0 0 .5mm 4mm; font-size: 10pt; }
+.pa-dates { display: flex; gap: 20mm; font-weight: 700; }
+.pa-bold { font-weight: 700; }
+.pa-center { text-align: center; }
+.pa-consent { margin-top: .6mm; padding: .8mm 1.5mm; border: .6pt solid #000; border-bottom: 0; }
+.pa-consent p { padding-left: 1.3em; text-indent: -1.3em; }
+.pa-consent p.pa-center { padding-left: 0; text-indent: 0; }
+.pa-big { font-weight: 700; font-size: 11pt; }
+.pa-consent .ps-sign { width: 28mm; height: 7.5mm; }
+.pa-consent .ps-sign img { max-height: 7mm; }
+.pa-hint { padding: .3mm 1mm; border: .6pt solid #000; border-bottom: 0; font-size: 8.5pt; }
+.pa-t { table-layout: fixed; }
+.pa-t > tbody > tr > th { width: 20mm; padding: 1mm; font-weight: 700; text-align: center; vertical-align: middle; }
+.pa-t > tbody > tr > td { padding: .8mm 1.5mm; }
+.pa-red { position: relative; z-index: 1; outline: 1.8pt solid #e00; outline-offset: -.9pt; }
+.pa-red + .pa-t { margin-top: -.6pt; }
+.pa-t > tbody > tr > td.pa-np { padding: 0; }
+.pa-in { width: 100%; border-collapse: collapse; border-style: hidden; table-layout: fixed; }
+.pa-in td { padding: .7mm 1.2mm; border: .6pt solid #000; vertical-align: middle; }
+.pa-in .c { text-align: center; }
+.pa-in .ps-cells { gap: .4mm; }
+.pa-in .ps-cells > i { width: 4.6mm; height: 5mm; line-height: 4.8mm; border-style: dashed; }
+.pa-in .ps-cb { margin-left: 0; }
+.pa-addr p { line-height: 1.6; }
+.pa-ind { padding-left: 1em; }
+.pa-ind2 { padding-left: 2em; }
+.pa-vert { display: block; margin: 0 auto; writing-mode: vertical-rl; text-orientation: upright; letter-spacing: 3mm; }
+.pa-foot { margin-top: 1.5mm; padding-left: 4mm; font-size: 8pt; line-height: 1.45; }
+.pa-sup { font-size: 6.5pt; vertical-align: super; line-height: 0; }
+.pa-signrow { margin-top: -.6pt; }
+.pa-signrow td { width: 50%; height: 24mm; padding: 1mm 2mm; vertical-align: top; text-align: center; }
+.pa-signrow .ps-sign { display: block; width: 60mm; height: 14mm; margin: 1.5mm auto 0; border-bottom: 0; }
+.pa-signrow .ps-sign img { max-height: 13mm; }
+.pa-dual { margin-top: 4mm; padding: 0 6mm; line-height: 1.8; }
+
+.ps-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  margin-bottom: 18px;
+}
+.ps-toolbar p { margin: 0; color: var(--muted); font-size: .875rem; }
+.ps-frame { overflow-x: auto; padding-bottom: 8px; }
+
+@media print {
+  .ps-toolbar { display: none; }
+  .ps-frame { overflow: visible; padding: 0; }
+  .ps-page { margin: 0; box-shadow: none; min-height: 0; height: 297mm; overflow: hidden; }
+  .ps-page + .ps-page { break-before: page; }
+}

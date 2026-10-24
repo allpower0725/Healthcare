@@ -1,11 +1,16 @@
+import '@/components/forms/forms.css';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { artSvg } from '@/lib/forms/art';
 import { FORM_IDS, FORMS, type FormId, isFormId } from '@/lib/forms/catalog';
-import { formStatus, getFormSetting } from '@/lib/forms/settings';
+import { getFormDef } from '@/lib/forms/defs';
+import { describePeriod, formStatus, getFormSetting } from '@/lib/forms/settings';
+import { readDeviceToken } from '@/lib/submissions/device';
+import { findDeviceSubmissions } from '@/lib/submissions/service';
 import { formatDateTime } from '@/lib/time';
-import styles from './public.module.css';
+import { ClosedCard, PublicChrome } from './chrome';
+import { FormApp } from './form-app';
 
 type Props = PageProps<'/f/[formId]'>;
 
@@ -22,85 +27,91 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default function PublicFormPage({ params }: Props) {
   return (
-    <div className={styles.page}>
-      <header className={styles.appbar}>
-        <div className={styles.appbarInner}>
-          <img src="/brand/logo.svg" alt="烏日澄清醫院" width={160} height={30} />
-        </div>
-      </header>
-
-      <main className={styles.main}>
-        <Suspense fallback={<div className={styles.skeleton} style={{ marginTop: 24 }} aria-label="載入中" />}>
-          <FormIntro params={params} />
-        </Suspense>
-      </main>
-
-      <footer className={styles.foot}>烏日澄清醫院｜預防保健服務</footer>
-    </div>
+    <Suspense
+      fallback={
+        <PublicChrome>
+          <section className="card" aria-busy="true">
+            <p className="field__hint" style={{ margin: 0 }}>
+              載入中…
+            </p>
+          </section>
+        </PublicChrome>
+      }
+    >
+      <FormEntry params={params} />
+    </Suspense>
   );
 }
 
-async function FormIntro({ params }: { params: Props['params'] }) {
+function Intro({ formId }: { formId: FormId }) {
+  const form = FORMS[formId];
+  return (
+    <section className="intro">
+      <span
+        className="intro__art"
+        aria-hidden="true"
+        dangerouslySetInnerHTML={{ __html: artSvg(formId, 'width="240" height="240"') }}
+      />
+      <p className="intro__eyebrow">預防保健服務</p>
+      <h1 className="intro__title">{form.name}</h1>
+      <p className="intro__sub">{form.officialTitle}</p>
+      <ul className="intro__meta">
+        <li>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="2" />
+            <path d="M12 7v5l3 2" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+          約 {form.minutes} 分鐘
+        </li>
+        <li>未標示「選填」皆為必填</li>
+        <li>共 {form.steps} 個步驟</li>
+      </ul>
+    </section>
+  );
+}
+
+async function FormEntry({ params }: { params: Props['params'] }) {
   const { formId } = await params;
   if (!isFormId(formId)) notFound();
-  const form = FORMS[formId];
 
-  return (
-    <>
-      <section className={styles.intro}>
-        <span
-          className={styles.art}
-          aria-hidden="true"
-          dangerouslySetInnerHTML={{ __html: artSvg(formId, 'width="168" height="168"') }}
-        />
-        <p className={styles.eyebrow}>預防保健服務</p>
-        <h1 className={styles.title}>{form.name}</h1>
-        <p className={styles.sub}>{form.officialTitle}</p>
-      </section>
-
-      <Suspense fallback={<div className={styles.skeleton} aria-label="載入中" />}>
-        <FormAvailability formId={formId} />
-      </Suspense>
-    </>
-  );
-}
-
-async function FormAvailability({ formId }: { formId: FormId }) {
   const setting = await getFormSetting(formId);
   const status = formStatus(setting);
-
-  if (status === 'open') {
-    // 第 5 項會在這裡換成民眾填寫的表單
-    return (
-      <section className={styles.card}>
-        <div className={`${styles.icon} ${styles.iconOpen}`} aria-hidden="true">
-          <svg viewBox="0 0 24 24">
-            <path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" />
-          </svg>
-        </div>
-        <h2>開放填寫中</h2>
-        <p>電子表單建置中，請洽櫃台醫護人員協助填寫。</p>
-      </section>
-    );
-  }
-
-  const message =
+  const closedMessage =
     status === 'scheduled'
       ? `將於 ${formatDateTime(setting.opensAt)} 開放填寫。`
       : status === 'ended'
         ? `已於 ${formatDateTime(setting.closesAt)} 截止填寫。`
         : '此表單目前未開放填寫。';
+  const period = describePeriod(setting);
+
+  if (getFormDef(formId)) {
+    // 表單關閉後，12 小時內送出過的裝置仍可回來查看、退回修改
+    const token = await readDeviceToken();
+    const sentFromDevice = token ? (await findDeviceSubmissions(formId, token)).length > 0 : false;
+    if (status === 'open' || sentFromDevice) {
+      return (
+        <FormApp
+          formId={formId}
+          acceptingNew={status === 'open'}
+          closedMessage={closedMessage}
+          closedPeriod={period}
+          intro={<Intro formId={formId} />}
+        />
+      );
+    }
+  }
 
   return (
-    <section className={styles.card}>
-      <div className={`${styles.icon} ${styles.iconClosed}`} aria-hidden="true">
-        <svg viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" strokeWidth="2" />
-          <path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-        </svg>
-      </div>
-      <h2>目前未開放填寫</h2>
-      <p>{message}如需協助，請洽櫃台醫護人員。</p>
-    </section>
+    <PublicChrome>
+      <Intro formId={formId} />
+      {status === 'open' ? (
+        <section className="card closed">
+          <h2>電子表單建置中</h2>
+          <p>請洽櫃台醫護人員協助填寫。</p>
+        </section>
+      ) : (
+        <ClosedCard message={closedMessage} period={period} />
+      )}
+    </PublicChrome>
   );
 }

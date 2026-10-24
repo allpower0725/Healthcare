@@ -274,6 +274,26 @@ a {
   background: #eef2f1;
   color: var(--muted);
 }
+.badge--sub-submitted {
+  background: var(--staff-soft);
+  color: var(--staff-strong);
+}
+.badge--sub-returned {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.badge--sub-completed {
+  background: #e1f3e8;
+  color: #1d6b43;
+}
+.badge--sub-voided {
+  background: #eef2f1;
+  color: var(--muted);
+}
+.badge--dup {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
 .badge--count {
   min-width: 1.5rem;
   justify-content: center;

@@ -4,7 +4,7 @@ import { formSettings, type UserRole, type UserStatus, users } from '@/db/schema
 import { FORM_IDS } from '@/lib/forms/catalog';
 
 export async function resetDb() {
-  await db.execute(sql`truncate table sessions, users, form_settings cascade`);
+  await db.execute(sql`truncate table submission_events, submissions, sessions, users, form_settings cascade`);
   // 與 migration 相同：6 張表單各一筆，預設關閉
   await db.insert(formSettings).values(FORM_IDS.map((formId) => ({ formId })));
 }

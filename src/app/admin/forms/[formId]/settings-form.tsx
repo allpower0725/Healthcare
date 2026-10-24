@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useState } from 'react';
+import { startTransition, useActionState, useState } from 'react';
 import styles from '../forms.module.css';
 import { saveFormSetting } from './actions';
 
@@ -20,7 +20,15 @@ export function SettingsForm({ formId, ...initial }: Props) {
   const [closesAt, setClosesAt] = useState(initial.closesAt);
 
   return (
-    <form action={action} className={styles.settings}>
+    <form
+      className={styles.settings}
+      // 不用 action 屬性：React 在 action 完成後會自動重設表單，開關會跳回頁面載入時的狀態
+      onSubmit={(event) => {
+        event.preventDefault();
+        const data = new FormData(event.currentTarget);
+        startTransition(() => action(data));
+      }}
+    >
       <label className={styles.switch}>
         <input type="checkbox" name="isOpen" checked={isOpen} onChange={(e) => setIsOpen(e.target.checked)} />
         開放填寫
@@ -78,22 +86,22 @@ function TimeField(props: {
       <label className="label" htmlFor={props.id}>
         {props.label}（台灣時間）
       </label>
-      <div className={styles.fieldRow}>
-        <input
-          className="input"
-          id={props.id}
-          name={props.id}
-          type="datetime-local"
-          value={props.value}
-          onChange={(e) => props.onChange(e.target.value)}
-        />
+      <input
+        className="input"
+        id={props.id}
+        name={props.id}
+        type="datetime-local"
+        value={props.value}
+        onChange={(e) => props.onChange(e.target.value)}
+      />
+      <div className={styles.fieldFoot}>
+        <p className={styles.fieldHint}>{props.hint}</p>
         {props.value && (
           <button type="button" className="btn btn--ghost btn--sm" onClick={() => props.onChange('')}>
             清除
           </button>
         )}
       </div>
-      <p className={styles.fieldHint}>{props.hint}</p>
     </div>
   );
 }

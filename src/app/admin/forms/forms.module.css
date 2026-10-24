@@ -1,8 +1,23 @@
+/* ---------- 首頁提醒 ---------- */
+
+.reminders {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.reminder {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+
 /* ---------- 表單卡片列表 ---------- */
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
   gap: 18px;
 }
 
@@ -58,17 +73,9 @@
 
 /* ---------- 單一表單 ---------- */
 
+/* 返回按鈕（搭配 btn btn--ghost btn--sm） */
 .back {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
   margin-bottom: 14px;
-  color: var(--muted);
-  font-size: 0.9375rem;
-  text-decoration: none;
-}
-.back:hover {
-  color: var(--primary-strong);
 }
 
 .head {
@@ -222,9 +229,17 @@
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 14px;
 }
-.fieldRow {
+/* 說明文字與「清除」按鈕放在輸入框下一行 */
+.fieldFoot {
   display: flex;
-  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 8px;
+  margin-top: 6px;
+}
+.fieldFoot .fieldHint {
+  margin: 0;
 }
 .fieldHint {
   margin: 4px 0 0;

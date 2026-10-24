@@ -20,7 +20,7 @@ export const metadata: Metadata = { title: '表單設定' };
 export default function FormDetailPage({ params }: PageProps<'/admin/forms/[formId]'>) {
   return (
     <>
-      <Link className={styles.back} href="/admin/forms">
+      <Link className={`btn btn--ghost btn--sm ${styles.back}`} href="/admin/forms">
         ← 表單管理
       </Link>
       <Suspense fallback={<div className={adminStyles.skeleton} aria-label="載入中" />}>

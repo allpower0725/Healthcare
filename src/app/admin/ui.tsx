@@ -1,4 +1,4 @@
-import type { UserRole } from '@/db/schema';
+import type { SubmissionStatus, UserRole } from '@/db/schema';
 import type { FormStatus } from '@/lib/forms/settings';
 import styles from './admin.module.css';
 
@@ -17,6 +17,17 @@ const FORM_STATUS_LABELS: Record<FormStatus, string> = {
 
 export function FormStatusBadge({ status }: { status: FormStatus }) {
   return <span className={`badge badge--${status}`}>{FORM_STATUS_LABELS[status]}</span>;
+}
+
+export const SUBMISSION_STATUS_LABELS: Record<SubmissionStatus, string> = {
+  submitted: '待院所填寫',
+  returned: '民眾修改中',
+  completed: '已完成',
+  voided: '已作廢',
+};
+
+export function SubmissionStatusBadge({ status }: { status: SubmissionStatus }) {
+  return <span className={`badge badge--sub-${status}`}>{SUBMISSION_STATUS_LABELS[status]}</span>;
 }
 
 export function Avatar({ name, src }: { name: string; src: string | null }) {

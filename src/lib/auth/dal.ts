@@ -4,6 +4,9 @@ import { cache } from 'react';
 import { readSessionToken } from './cookies';
 import { validateSession } from './session';
 
+/** 後台首頁：表單管理 */
+export const ADMIN_HOME = '/admin/forms';
+
 /** 目前請求的 session；同一次渲染只查一次資料庫 */
 export const getSession = cache(async () => {
   const token = await readSessionToken();
@@ -25,7 +28,7 @@ export async function requireUser() {
 /** 需要管理者（最高管理者或管理者）權限 */
 export async function requireManager() {
   const user = await requireUser();
-  if (user.role === 'staff') redirect('/admin');
+  if (user.role === 'staff') redirect(ADMIN_HOME);
   return user;
 }
 
@@ -33,6 +36,6 @@ export async function requireManager() {
 export async function requireBindSession() {
   const current = await getSession();
   if (!current) redirect('/login');
-  if (current.session.purpose === 'full') redirect('/admin');
+  if (current.session.purpose === 'full') redirect(ADMIN_HOME);
   return current.session;
 }

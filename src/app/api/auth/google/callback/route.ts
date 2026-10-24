@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers';
+import { ADMIN_HOME } from '@/lib/auth/dal';
 import type { NextRequest } from 'next/server';
 import { readSessionToken, requestMeta, setSessionCookie, clearSessionCookie } from '@/lib/auth/cookies';
 import { createGoogleClient, identityFromIdToken, OAUTH_STATE_COOKIE, OAUTH_VERIFIER_COOKIE } from '@/lib/auth/google';
@@ -48,7 +49,7 @@ export async function GET(request: NextRequest) {
       await deleteSession(token);
       const session = await createSession(binding.user.id, 'full', meta);
       await setSessionCookie(session.token, session.expiresAt);
-      return redirectTo('/admin');
+      return redirectTo(ADMIN_HOME);
     }
 
     // 換人登入時，先結束原本的 session
@@ -62,7 +63,7 @@ export async function GET(request: NextRequest) {
 
     const session = await createSession(result.userId, 'full', meta);
     await setSessionCookie(session.token, session.expiresAt);
-    return redirectTo('/admin');
+    return redirectTo(ADMIN_HOME);
   } catch (error) {
     console.error('Google 登入處理失敗', error);
     return redirectTo(failed);

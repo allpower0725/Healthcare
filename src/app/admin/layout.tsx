@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Suspense } from 'react';
 import { logout } from '@/lib/auth/actions';
-import { requireUser } from '@/lib/auth/dal';
+import { ADMIN_HOME, requireUser } from '@/lib/auth/dal';
 import { countPendingUsers } from '@/lib/users/service';
 import styles from './admin.module.css';
 import { Avatar, ROLE_LABELS } from './ui';
@@ -10,31 +10,29 @@ import { NavLinks } from './nav-links';
 export default function AdminLayout({ children }: LayoutProps<'/admin'>) {
   return (
     <div className={styles.shell}>
-      <aside className={styles.sidebar}>
-        <Link className={styles.brand} href="/admin">
-          <img src="/brand/logo.svg" alt="烏日澄清醫院" width={160} height={30} />
-          <span>預防保健表單後台</span>
-        </Link>
-        <Suspense
-          fallback={
-            <div className={styles.navSkeleton} aria-hidden="true">
-              <span />
-              <span />
-            </div>
-          }
-        >
-          <Nav />
-        </Suspense>
-      </aside>
-
-      <div className={styles.main}>
-        <header className={styles.topbar}>
+      {/* 功能不多，選單直接放在頂部列 */}
+      <header className={styles.topbar}>
+        <div className={styles.topbarInner}>
+          <Link className={styles.brand} href={ADMIN_HOME}>
+            <img src="/brand/logo.svg" alt="烏日澄清醫院" width={160} height={30} />
+            <span>預防保健表單後台</span>
+          </Link>
+          <Suspense
+            fallback={
+              <div className={styles.navSkeleton} aria-hidden="true">
+                <span />
+                <span />
+              </div>
+            }
+          >
+            <Nav />
+          </Suspense>
           <Suspense fallback={null}>
             <UserMenu />
           </Suspense>
-        </header>
-        <main className={styles.content}>{children}</main>
-      </div>
+        </div>
+      </header>
+      <main className={styles.content}>{children}</main>
     </div>
   );
 }
@@ -47,8 +45,8 @@ async function Nav() {
   return (
     <NavLinks
       items={[
-        { href: '/admin', label: '首頁', icon: 'home' },
-        { href: '/admin/forms', label: '表單管理', icon: 'forms' },
+        { href: ADMIN_HOME, label: '表單管理', icon: 'forms' },
+        { href: '/admin/submissions', label: '協同完成', icon: 'docs' },
         ...(isManager ? [{ href: '/admin/users', label: '使用者管理', icon: 'users' as const, count: pending }] : []),
       ]}
     />

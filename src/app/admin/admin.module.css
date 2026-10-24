@@ -1,52 +1,65 @@
 .shell {
+  --content-max: 1360px;
   min-height: 100dvh;
-  display: grid;
-  grid-template-columns: 248px minmax(0, 1fr);
-}
-
-/* ---------- 側邊欄 ---------- */
-
-.sidebar {
-  position: sticky;
-  top: 0;
-  height: 100dvh;
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  padding: 22px 16px;
-  border-right: 1px solid var(--line);
-  background: var(--surface);
+}
+
+/* ---------- 頂部列：院徽、主選單、使用者 ---------- */
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.92);
+  -webkit-backdrop-filter: saturate(1.6) blur(12px);
+  backdrop-filter: saturate(1.6) blur(12px);
+}
+.topbarInner {
+  display: flex;
+  align-items: center;
+  gap: 8px 28px;
+  max-width: var(--content-max);
+  min-height: 64px;
+  margin: 0 auto;
+  padding: 8px 28px;
 }
 
 .brand {
-  display: grid;
-  gap: 8px;
-  padding: 0 8px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
   color: inherit;
   text-decoration: none;
 }
 .brand img {
   width: auto;
-  height: 30px;
+  height: 28px;
 }
 .brand span {
+  padding-left: 12px;
+  border-left: 1px solid var(--line);
   color: var(--primary);
   font-size: 0.8125rem;
   font-weight: 700;
   letter-spacing: 0.08em;
+  white-space: nowrap;
 }
 
-.nav {
-  display: grid;
+.nav,
+.navSkeleton {
+  display: flex;
   gap: 4px;
 }
 
 .navLink {
   display: flex;
   align-items: center;
-  gap: 10px;
-  min-height: 2.75rem;
-  padding: 0 12px;
+  gap: 8px;
+  min-height: 2.5rem;
+  padding: 0 14px;
   border-radius: var(--radius-sm);
   color: var(--text);
   font-weight: 600;
@@ -68,47 +81,19 @@
   width: 20px;
   height: 20px;
 }
-.navLink .badge {
-  margin-left: auto;
-}
 
-.navSkeleton {
-  display: grid;
-  gap: 8px;
-}
 .navSkeleton span {
-  height: 2.75rem;
+  width: 108px;
+  height: 2.5rem;
   border-radius: var(--radius-sm);
   background: var(--bg);
-}
-
-/* ---------- 主要區域 ---------- */
-
-.main {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.topbar {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  min-height: 60px;
-  padding: 8px 28px;
-  border-bottom: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.92);
-  -webkit-backdrop-filter: saturate(1.6) blur(12px);
-  backdrop-filter: saturate(1.6) blur(12px);
 }
 
 .user {
   display: flex;
   align-items: center;
   gap: 12px;
+  margin-left: auto;
 }
 .userText {
   display: grid;
@@ -117,6 +102,7 @@
 }
 .userName {
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .avatar {
@@ -133,9 +119,12 @@
   object-fit: cover;
 }
 
+/* ---------- 內容區：加寬並置中 ---------- */
+
 .content {
   width: 100%;
-  max-width: 1120px;
+  max-width: var(--content-max);
+  margin: 0 auto;
   padding: 28px;
 }
 
@@ -172,36 +161,27 @@
   }
 }
 
-/* ---------- 窄螢幕：側邊欄改為頂部列 ---------- */
+/* ---------- 較窄的螢幕：主選單移到第二列 ---------- */
 
-@media (max-width: 860px) {
-  .shell {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto 1fr;
-  }
-  .sidebar {
-    position: static;
-    height: auto;
-    flex-direction: row;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 16px;
-    border-right: 0;
-    border-bottom: 1px solid var(--line);
-    overflow-x: auto;
-  }
+@media (max-width: 1100px) {
   .brand span {
     display: none;
   }
+}
+
+@media (max-width: 900px) {
+  .topbar {
+    position: static;
+  }
+  .topbarInner {
+    flex-wrap: wrap;
+    padding: 8px 16px 10px;
+  }
   .nav,
   .navSkeleton {
-    display: flex;
-  }
-  .navSkeleton span {
-    width: 96px;
-  }
-  .topbar {
-    padding: 8px 16px;
+    order: 3;
+    width: 100%;
+    overflow-x: auto;
   }
   .content {
     padding: 20px 16px;
@@ -212,6 +192,13 @@
   .userText {
     display: none;
   }
+  .nav {
+    gap: 2px;
+  }
+  .navLink {
+    gap: 5px;
+    padding: 0 8px;
+  }
 }
 
 /* ---------- 列印：只印內容區（例如表單海報） ---------- */
@@ -221,7 +208,6 @@
     display: block;
     min-height: 0;
   }
-  .sidebar,
   .topbar {
     display: none;
   }

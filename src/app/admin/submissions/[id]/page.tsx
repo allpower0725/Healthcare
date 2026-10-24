@@ -91,7 +91,6 @@ async function SubmissionDetail({ params }: { params: Params }) {
       <header className={styles.head}>
         <div
           className={styles.headArt}
-          style={{ background: `color-mix(in srgb, ${form.tint} 22%, #fff)` }}
           aria-hidden="true"
           dangerouslySetInnerHTML={{ __html: artSvg(submission.formId) }}
         />

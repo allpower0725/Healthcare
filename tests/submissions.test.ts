@@ -16,13 +16,21 @@ import {
   voidSubmission,
 } from '@/lib/submissions/service';
 import { parseQuery } from '@/lib/submissions/query';
-import { adultPublicSample, hpvPublicSample } from './fixtures';
+import { FORM_IDS, type FormId } from '@/lib/forms/catalog';
+import {
+  adultPublicSample,
+  fitPublicSample,
+  hpPublicSample,
+  hpvPublicSample,
+  oralPublicSample,
+  papPublicSample,
+} from './fixtures';
 import { createUser, resetDb } from './helpers';
 
 const DEVICE = 'device-token-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 const OTHER_DEVICE = 'device-token-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
 
-async function openForm(formId: 'hpv' | 'pap' | 'adult' = 'hpv') {
+async function openForm(formId: FormId = 'hpv') {
   await db.update(formSettings).set({ isOpen: true }).where(eq(formSettings.formId, formId));
 }
 
@@ -48,12 +56,19 @@ describe('民眾送出', () => {
     expect(await createPublicSubmission('hpv', hpvPublicSample(), DEVICE)).toEqual({ ok: false, reason: 'not_open' });
   });
 
-  it('尚未電子化的表單不接受', async () => {
-    await openForm('pap');
-    expect(await createPublicSubmission('pap', hpvPublicSample(), DEVICE)).toEqual({
+  it('子宮頸抹片、口腔黏膜、胃幽門螺旋桿菌、糞便潛血：各自的欄位驗證後送出', async () => {
+    const samples = { pap: papPublicSample, oral: oralPublicSample, hp: hpPublicSample, fit: fitPublicSample };
+    for (const [formId, sample] of Object.entries(samples) as [FormId, () => Record<string, string | string[]>][]) {
+      await openForm(formId);
+      expect(await createPublicSubmission(formId, sample(), DEVICE), formId).toMatchObject({ ok: true });
+    }
+    // 用 HPV 的資料送子宮頸抹片：缺抹片的題目
+    expect(await createPublicSubmission('pap', hpvPublicSample(), DEVICE)).toMatchObject({
       ok: false,
-      reason: 'not_supported',
+      reason: 'invalid',
+      errors: { 'pap.q9': '請選擇一個選項' },
     });
+    expect(await db.select().from(submissions)).toHaveLength(4);
   });
 
   it('驗證不通過時回傳錯誤欄位', async () => {
@@ -193,7 +208,10 @@ describe('列表與重複提示', () => {
   const listSubmissions = async (options: { includeVoided?: boolean } = {}) =>
     (
       await searchSubmissions(
-        parseQuery(options.includeVoided ? { status: ['submitted', 'returned', 'completed', 'voided'] } : {}),
+        parseQuery({
+          form: [...FORM_IDS],
+          status: ['submitted', 'returned', 'completed', ...(options.includeVoided ? ['voided'] : [])],
+        }),
       )
     ).rows;
 
@@ -251,5 +269,35 @@ describe('成人預防保健', () => {
     const done = await getSubmission(created.id);
     expect(done?.status).toBe('completed');
     expect(done?.staffData).toMatchObject({ ...staffData, 'adult.sigDoctor': signature });
+  });
+});
+
+describe('糞便潛血檢查', () => {
+  it('附表適用時保留訪問人員簽名；民眾退回修改後附表不再適用時，確認送出會清掉', async () => {
+    await openForm('fit');
+    const staff = await createUser();
+    const created = await createPublicSubmission('fit', fitPublicSample(), DEVICE);
+    if (!created.ok) throw new Error(`submit failed: ${created.reason}`);
+
+    const staffData = { 'fit.sigInterviewer': 'data:image/png;base64,iVBORw0KGgo=', 'fit.ivY': '115', 'fit.result': '0' };
+    expect(await saveStaffData(staff.id, created.id, 1, staffData)).toEqual({ ok: true, version: 2 });
+    expect((await getSubmission(created.id))?.staffData).toMatchObject(staffData);
+
+    expect(await returnToPublic(created.id, DEVICE)).toEqual({ ok: true });
+    const resubmitted = await resubmitPublic(created.id, DEVICE, {
+      ...fitPublicSample(),
+      'fit.smoke': '0',
+      'fit.famCrc': '0',
+    });
+    expect(resubmitted).toEqual({ ok: true });
+    const row = await getSubmission(created.id);
+    expect(row?.publicData).toMatchObject({ 'fit.annexConsent': '', 'fit.t1Rel': [], 'fit.sigAnnex': '' });
+
+    expect(await completeSubmission(staff.id, created.id, row!.version, row!.staffData)).toMatchObject({ ok: true });
+    expect((await getSubmission(created.id))?.staffData).toMatchObject({
+      'fit.sigInterviewer': '',
+      'fit.ivY': '',
+      'fit.result': '0',
+    });
   });
 });

@@ -8,13 +8,12 @@ export const SORT_KEYS = ['form', 'status', 'name', 'idNo', 'submitted', 'comple
 export type SortKey = (typeof SORT_KEYS)[number];
 export type SortDir = 'asc' | 'desc';
 
-/** 狀態預設不含已作廢 */
-export const DEFAULT_STATUSES: SubmissionStatus[] = ['submitted', 'returned', 'completed'];
-
 export type SubmissionQuery = {
   /** 身分證號（部分比對） */
   idNo: string;
+  /** 勾選的表單；全不勾時沒有資料 */
   forms: FormId[];
+  /** 勾選的狀態；全不勾時沒有資料 */
   statuses: SubmissionStatus[];
   sort: SortKey;
   dir: SortDir;
@@ -37,24 +36,21 @@ export function parseQuery(raw: Raw): SubmissionQuery {
 
   return {
     idNo: (list(raw.id)[0] ?? '').toUpperCase().replace(/\s+/g, '').slice(0, 20),
-    // 一組勾選框全部不勾，等於不限制該組
-    forms: forms.length ? forms : [...FORM_IDS],
-    statuses: statuses.length ? statuses : DEFAULT_STATUSES,
+    forms,
+    statuses,
     sort,
     dir: dirRaw === 'asc' || dirRaw === 'desc' ? dirRaw : defaultDir(sort),
     page: Number.isFinite(page) && page > 1 ? page : 1,
   };
 }
 
-const sameSet = (a: readonly string[], b: readonly string[]) => a.length === b.length && a.every((v) => b.includes(v));
-
 /** 組回網址參數，省略預設值 */
 export function queryString(q: SubmissionQuery, patch: Partial<SubmissionQuery> = {}) {
   const next = { ...q, ...patch };
   const params = new URLSearchParams();
   if (next.idNo) params.set('id', next.idNo);
-  if (!sameSet(next.forms, FORM_IDS)) next.forms.forEach((f) => params.append('form', f));
-  if (!sameSet(next.statuses, DEFAULT_STATUSES)) next.statuses.forEach((s) => params.append('status', s));
+  next.forms.forEach((f) => params.append('form', f));
+  next.statuses.forEach((s) => params.append('status', s));
   if (next.sort !== 'submitted' || next.dir !== 'desc') {
     params.set('sort', next.sort);
     params.set('dir', next.dir);
@@ -72,4 +68,10 @@ export function sortHref(q: SubmissionQuery, sort: SortKey) {
 
 export function pageHref(q: SubmissionQuery, page: number) {
   return `${LIST_PATH}${queryString(q, { page })}`;
+}
+
+/** 從其他頁連到列表：沒指定的表單、狀態全選（全不勾時沒有資料） */
+export function listHref(patch: Partial<SubmissionQuery> = {}) {
+  const all = parseQuery({ form: [...FORM_IDS], status: [...SUBMISSION_STATUSES] });
+  return `${LIST_PATH}${queryString(all, patch)}`;
 }

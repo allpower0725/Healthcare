@@ -43,7 +43,7 @@ async function FormDetail({ params }: { params: PageProps<'/admin/forms/[formId]
   const period = describePeriod(setting);
 
   return (
-    <div style={{ '--form-tint': form.tint } as React.CSSProperties}>
+    <>
       <header className={styles.head}>
         <div className={styles.headArt} aria-hidden="true" dangerouslySetInnerHTML={{ __html: artSvg(formId) }} />
         <div>
@@ -103,6 +103,6 @@ async function FormDetail({ params }: { params: PageProps<'/admin/forms/[formId]
           )}
         </section>
       </div>
-    </div>
+    </>
   );
 }

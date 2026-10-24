@@ -6,7 +6,6 @@ import { SUBMISSION_STATUSES } from '@/db/schema';
 import { requireUser } from '@/lib/auth/dal';
 import { FORM_IDS, FORMS } from '@/lib/forms/catalog';
 import {
-  DEFAULT_STATUSES,
   LIST_PATH,
   pageHref,
   parseQuery,
@@ -19,7 +18,7 @@ import { searchSubmissions } from '@/lib/submissions/service';
 import { formatDateTime } from '@/lib/time';
 import adminStyles from '../admin.module.css';
 import { SUBMISSION_STATUS_LABELS, SubmissionStatusBadge } from '../ui';
-import { ClearFilters } from './clear-filters';
+import { FilterToggle } from './filter-toggle';
 import styles from './submissions.module.css';
 
 export const metadata: Metadata = { title: '協同完成' };
@@ -30,7 +29,7 @@ export default function SubmissionsPage({ searchParams }: PageProps<'/admin/subm
       <div className={adminStyles.pageHead}>
         <h1>協同完成</h1>
         <p>
-          民眾送出的表單由院所人員接續填寫院所區、確認送出後列印。篩選條件可以單獨使用，一組勾選全部不勾等於不限制；點欄位標題排序。
+          民眾送出的表單由院所人員接續填寫院所區、確認送出後列印。勾選要查看的表單種類與狀態後按「篩選」，兩組都至少要勾一項才有資料；輸入身分證號時自動全選，清空號碼則恢復原本的勾選。點欄位標題排序。
         </p>
       </div>
       <Suspense fallback={<div className={adminStyles.skeleton} aria-label="載入中" />}>
@@ -42,8 +41,6 @@ export default function SubmissionsPage({ searchParams }: PageProps<'/admin/subm
 
 function Filters({ q }: { q: SubmissionQuery }) {
   const keepSort = q.sort !== 'submitted' || q.dir !== 'desc';
-  // 清除條件只清篩選，保留目前的排序
-  const clearHref = `${LIST_PATH}${queryString(q, { idNo: '', forms: [...FORM_IDS], statuses: DEFAULT_STATUSES, page: 1 })}`;
   return (
     // key：條件改變時重建，讓欄位顯示目前套用的條件
     <Form key={queryString(q)} action={LIST_PATH} className={styles.filters}>
@@ -101,7 +98,7 @@ function Filters({ q }: { q: SubmissionQuery }) {
         <button type="submit" className="btn btn--primary">
           篩選
         </button>
-        <ClearFilters href={clearHref} defaultStatuses={DEFAULT_STATUSES} />
+        <FilterToggle initialActive={Boolean(q.idNo) || q.forms.length > 0 || q.statuses.length > 0} />
       </div>
     </Form>
   );
@@ -126,6 +123,8 @@ async function SubmissionList({ searchParams }: { searchParams: PageProps<'/admi
   await requireUser();
   const q = parseQuery(await searchParams);
   const { rows, total, pages } = await searchSubmissions(q);
+  // 任一組全不勾就沒有資料：提示要勾哪一組，免得誤以為查無此人
+  const unchecked = [!q.forms.length && '表單種類', !q.statuses.length && '狀態'].filter(Boolean);
 
   return (
     <>
@@ -139,7 +138,11 @@ async function SubmissionList({ searchParams }: { searchParams: PageProps<'/admi
 
       <div className={`${adminStyles.card} ${styles.tableCard}`}>
         {rows.length === 0 ? (
-          <p className={styles.empty}>沒有符合條件的資料。</p>
+          <p className={styles.empty}>
+            {unchecked.length
+              ? `尚未勾選${unchecked.join('與')}。請勾選要查看的條件，或按「條件全選」後再按「篩選」。`
+              : '沒有符合條件的資料。'}
+          </p>
         ) : (
           <table className={styles.table}>
             <thead>

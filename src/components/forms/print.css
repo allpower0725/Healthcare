@@ -122,6 +122,8 @@
   text-indent: 0;
 }
 .ps-stack .ps-opt.on { outline-width: .8pt; }
+/* 兩列各兩個單位字（例：市鄉／區鎮） */
+.ps-stack--2 > span { display: flex; gap: .2em; }
 
 .ps-box { margin: 1.6mm 0; padding: 1.2mm 2mm; border: .6pt solid #000; font-size: 8.5pt; line-height: 1.45; }
 
@@ -189,6 +191,90 @@
 .pa-signrow .ps-sign { display: block; width: 60mm; height: 14mm; margin: 1.5mm auto 0; border-bottom: 0; }
 .pa-signrow .ps-sign img { max-height: 13mm; }
 .pa-dual { margin-top: 4mm; padding: 0 6mm; line-height: 1.8; }
+
+/* 加框的區塊標題、兩位數圈號（例：71、99）、小字、斜線格、部位圖與標示疊圖 */
+.ps-boxed { display: inline-block; padding: 0 1mm; border: .6pt solid #000; font-weight: 700; line-height: 1.25; text-indent: 0; }
+.ps-nc {
+  display: inline-block;
+  min-width: 1.5em;
+  height: 1.5em;
+  padding: 0 .12em;
+  border: .6pt solid #000;
+  border-radius: 1em;
+  font-size: 6.8pt;
+  line-height: 1.38em;
+  text-align: center;
+  text-indent: 0;
+  vertical-align: .12em;
+}
+.ps-small { font-size: 8.5pt; }
+.ps-table .ps-diag { position: relative; }
+.ps-diag svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.ps-map { position: relative; display: block; aspect-ratio: 366 / 356; }
+.ps-map > img { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+/* ---------- 子宮頸抹片：單頁兩欄 ---------- */
+.ps--pap { font-size: 9.8pt; line-height: 1.34; }
+.ps--pap .ps-title { margin: 0; font-size: 15pt; }
+.pp-head { position: relative; }
+.pp-annex { position: absolute; left: 0; bottom: .6mm; font-family: "DFKai-SB", "BiauKai", "標楷體", "Kaiti TC", "STKaiti", serif; font-size: 10pt; }
+.pp-fund { margin: 0 0 1.2mm; text-align: right; font-size: 7.5pt; }
+.pp-na { padding-left: 1em; }
+.pp-na.ps-q { padding-left: 2.5em; }
+.pp-grid2 { display: grid; grid-template-columns: auto 1fr; column-gap: 1.5mm; }
+.pp-dxlist { margin-top: .4mm; font-size: 8.4pt; line-height: 1.3; }
+.pp-dx { display: flex; align-items: baseline; }
+.pp-dx--in { padding-left: 1.8em; }
+.pp-dx--gap { margin-top: 2.4mm; }
+.pp-dx > i { flex: 1; min-width: 4mm; margin: 0 1mm; border-bottom: .6pt dashed #000; }
+.pp-signers { display: grid; grid-template-columns: 40mm 1fr; column-gap: 2mm; font-size: 9pt; }
+.pp-signers p { white-space: nowrap; }
+.pp-signers .ps-sign { width: 26mm; }
+.pp-line { display: block; height: 6mm; border-bottom: .6pt solid #000; }
+.pp-foot { display: flex; justify-content: space-between; margin-top: 1mm; font-size: 8.5pt; }
+
+/* ---------- 口腔黏膜：單頁兩欄，右欄為部位圖與複檢結果 ---------- */
+.ps--oral { font-size: 9.8pt; line-height: 1.32; }
+.ps--oral .ps-title { margin: 0; font-size: 15pt; }
+.ps--oral .ps-cb { margin: 0 .3mm 0 .6mm; }
+.po-rev { font-size: 9pt; font-weight: 400; letter-spacing: 0; }
+.po-copy { margin: -.5mm 0 .6mm; text-align: right; font-size: 9pt; }
+.po-copy span { padding: 0 1.5mm; border: .6pt solid #000; }
+.po-elig { margin: 0 0 1mm; font-size: 8.2pt; }
+.po-cols { column-gap: 0; }
+.po-cols > div:first-child { padding-right: 2.5mm; }
+.po-right { padding-left: 2.5mm; border-left: .6pt solid #000; }
+.po-sec { margin-top: 1.2mm; }
+.po-map { display: grid; grid-template-columns: 48mm 1fr; gap: 2mm; align-items: start; margin: .8mm 0 1.2mm; }
+.po-legend { padding: .8mm 1.5mm; border: .6pt solid #000; font-size: 8pt; line-height: 1.32; }
+.po-refer { margin: 1.2mm 0; padding: .8mm 2mm; border: .6pt solid #000; }
+
+/* ---------- 胃幽門螺旋桿菌：單欄 ---------- */
+.ps--hp { font-size: 10.5pt; line-height: 1.42; }
+.ps--hp .ps-title { margin: .5mm 0 1.5mm; font-size: 15pt; }
+.ps--hp .ps-cb { margin: 0 .5mm 0 .8mm; }
+.ph-top { display: flex; justify-content: space-between; font-size: 8.5pt; }
+.ph-rev { float: right; font-size: 9pt; }
+.ph-sec { margin-top: 1.4mm; }
+.ph-sec .ps-boxed { font-size: 11pt; padding: 0 1.2mm; }
+.ph-ind { padding-left: 1.6em; }
+.ph-ind2 { padding-left: 13.5em; }
+
+
+/* ---------- 糞便潛血：檢查紀錄結果表單、衛教指引檢核表、附表五之六 ---------- */
+.ps--fit { font-size: 10pt; line-height: 1.42; }
+.ps--fit .ps-title { margin: 0 0 2mm; font-size: 15pt; }
+.ps--fit .ps-cb { margin: 0 .3mm 0 .6mm; }
+.pf-ind { padding-left: 2em; }
+.pf-sec { margin-top: 1.4mm; }
+.pf-sec .ps-boxed { font-size: 10.5pt; }
+.pf-row { display: flex; justify-content: space-between; gap: 4mm; }
+.pf-check td, .pf-check th { padding: 1.6mm 2mm; line-height: 1.6; }
+.pf-check td:first-child { width: 26%; }
+.pf-fam { margin: 1mm 0 3mm; font-size: 9pt; }
+.pf-fam th, .pf-fam td { height: 7mm; padding: .5mm 1mm; }
+.pf-fam th:first-child { width: 12%; }
+.pf-note { font-size: 8.5pt; line-height: 1.5; }
 
 .ps-toolbar {
   display: flex;

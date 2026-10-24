@@ -2,7 +2,7 @@
 
 import { type ReactNode, useId, useRef } from 'react';
 import type { Condition } from '@/lib/forms/engine';
-import { clampDay, clampMonth, todayRoc } from '@/lib/forms/format';
+import { clampDay, clampMonth, codeOf, todayRoc } from '@/lib/forms/format';
 import type { Option } from '@/lib/forms/profile';
 import { TW_COUNTIES, TW_DISTRICTS } from '@/lib/forms/tw-districts';
 import { useFormContext, useText } from './context';
@@ -210,13 +210,6 @@ export function TodayButton({ prefix }: { prefix: string }) {
   );
 }
 
-const CIRCLED = '⓪①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳';
-/** 院所區選項前的代碼：0–20 用圈號，其餘照原數字 */
-export function codeOf(value: string) {
-  const n = Number(value);
-  return Number.isInteger(n) && n >= 0 && n <= 20 && String(n) === value ? CIRCLED[n] : value;
-}
-
 /** 單選題；codes 時在選項前顯示代碼（院所區） */
 export function Choices({
   name,
@@ -259,21 +252,28 @@ export function Choices({
   );
 }
 
-/** 複選題；欄位定義的互斥選項（例：「以上均無」）勾選時會清掉其他選項，反之亦然 */
+/**
+ * 複選題；欄位定義的互斥選項（例：「以上均無」）勾選時會清掉其他選項，反之亦然。
+ * 欄位定義有最多可選幾項時，選滿後其餘選項停用；codes 時在選項前顯示代碼（院所區）。
+ */
 export function Checks({
   name,
   options,
   className = 'choices',
   ariaLabel,
+  codes,
 }: {
   name: string;
   options: readonly Option[];
   className?: string;
   ariaLabel?: string;
+  codes?: boolean;
 }) {
   const { def, values, set, readOnly } = useFormContext();
   const current = Array.isArray(values[name]) ? (values[name] as string[]) : [];
-  const exclusive = def.fields[name]?.exclusive ?? [];
+  const spec = def.fields[name];
+  const exclusive = spec?.exclusive ?? [];
+  const full = spec?.maxPick != null && current.length >= spec.maxPick;
   const check = (v: string) =>
     exclusive.includes(v) ? [v] : [...current.filter((item) => !exclusive.includes(item)), v];
   return (
@@ -285,13 +285,60 @@ export function Checks({
             name={name}
             value={v}
             checked={current.includes(v)}
-            disabled={readOnly}
+            disabled={readOnly || (full && !current.includes(v))}
             onChange={(e) => set(name, e.target.checked ? check(v) : current.filter((item) => item !== v))}
           />
-          <span>{label}</span>
+          <span>
+            {codes ? (
+              <span className="choice__text">
+                <span className="choice__code">{codeOf(v)}</span>
+                {label}
+              </span>
+            ) : (
+              label
+            )}
+          </span>
         </label>
       ))}
     </div>
+  );
+}
+
+/** 多行文字（例：臨床所見、其他建議） */
+export function TextArea({
+  name,
+  id,
+  maxLength,
+  rows = 3,
+  placeholder,
+  ariaLabel,
+}: {
+  name: string;
+  id?: string;
+  maxLength: number;
+  rows?: number;
+  placeholder?: string;
+  ariaLabel?: string;
+}) {
+  const { set, readOnly } = useFormContext();
+  const value = useText(name);
+  return (
+    <textarea
+      className="input"
+      id={id}
+      name={name}
+      value={value}
+      rows={rows}
+      maxLength={maxLength}
+      placeholder={placeholder}
+      aria-label={ariaLabel}
+      disabled={readOnly}
+      onChange={(e) => set(name, e.target.value)}
+      onBlur={(e) => {
+        const v = e.target.value.trim();
+        if (v !== value) set(name, v);
+      }}
+    />
   );
 }
 

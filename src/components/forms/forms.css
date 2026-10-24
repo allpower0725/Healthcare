@@ -595,6 +595,60 @@ html[data-font-size="xl"] .ppf .intro__art { width: clamp(88px, 24vw, 168px); }
   .ppf .labrow__inputs { grid-template-columns: 1fr; }
 }
 
+/* ---------- 子宮頸抹片：細胞病理診斷分類 ---------- */
+
+.ppf .dx__head { margin: .9rem 0 .4rem; color: var(--staff); font-size: .78rem; font-weight: 700; letter-spacing: .02em; line-height: 1.45; }
+.ppf .dx__head:first-child { margin-top: .2rem; }
+.ppf .dx__gap { height: .6rem; }
+.ppf .signer + .signer { margin-top: .9rem; padding-top: .9rem; border-top: 1px solid #f3e4c4; }
+
+/* ---------- 口腔黏膜：部位圖標示 ---------- */
+
+.ppf .q__hint { margin: -.2rem 0 .55rem; }
+.ppf .choices__note { margin: .7rem 0 .45rem; color: var(--muted); font-size: .85rem; line-height: 1.6; }
+.ppf .card > .choices__note { margin-top: 0; }
+
+.ppf .sig--map .sig__preview { position: relative; padding: .6rem; }
+.ppf .sig.sig--map.is-signed .sig__preview { background: #fff; }
+.ppf .mapview { position: relative; display: block; width: min(100%, 17rem); }
+.ppf .mapview img { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none; }
+.ppf .sig--map .sig__ph {
+  position: absolute;
+  left: 50%;
+  bottom: .7rem;
+  transform: translateX(-50%);
+  padding: .3rem .85rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .94);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, .15);
+  white-space: nowrap;
+}
+.ppf .legend {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 9.5em), 1fr));
+  gap: .1rem .9rem;
+  margin: .6rem 0 0;
+  padding: .6rem .8rem;
+  border: 1px solid #f3e4c4;
+  border-radius: var(--radius-sm);
+  background: #fffaf0;
+  color: var(--staff-strong);
+  font-size: .82rem;
+  line-height: 1.6;
+}
+.ppf .legend b { margin-right: .35em; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+
+/* ---------- 糞便潛血：附表步驟、家人罹癌資料 ---------- */
+
+.ppf .step--annex .step__no { font-size: .8rem; }
+.ppf .famrow { margin-top: .6rem; padding: .7rem .8rem; border: 1px solid var(--line); border-radius: var(--radius-sm); background: #fff; }
+.ppf .famrow__title { margin: 0; font-weight: 700; }
+.ppf .famrow .inline-fields { margin-top: .45rem; }
+.ppf .ages { display: flex; flex-direction: column; flex-basis: 100%; gap: .3rem; }
+.ppf .ages__inputs { display: flex; gap: .4rem; }
+.ppf .ages .input { width: 3.6em; text-align: center; padding-left: .2rem; padding-right: .2rem; }
+.ppf .ages__unit { color: var(--muted); }
+
 /* ---------- 頁尾、提示 ---------- */
 
 .ppf .foot {
@@ -704,6 +758,8 @@ html:has(.sigdlg[open]), html:has(.sigdlg[open]) body { overflow: hidden; }
 }
 .ppf .sigdlg__canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
 .ppf .sigdlg__foot .btn { padding-left: .9rem; padding-right: .9rem; white-space: nowrap; }
+.ppf .sigdlg.is-annotate .sigdlg__pad { background: #f6f8f8; }
+.ppf .sigdlg.is-annotate .sigdlg__foot { grid-template-columns: auto auto 1fr; }
 .ppf .sigdlg__line {
   position: absolute;
   left: 1.2rem;

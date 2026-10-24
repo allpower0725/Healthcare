@@ -113,3 +113,10 @@ export function splitPhone(raw: string) {
 export function maskIdNo(id: string) {
   return id.length >= 6 ? `${id.slice(0, 3)}****${id.slice(-3)}` : id;
 }
+
+const CIRCLED = '⓪①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳';
+/** 選項代碼：0–20 用圈號，其餘照原數字（院所區選項前、紙本） */
+export function codeOf(value: string) {
+  const n = Number(value);
+  return Number.isInteger(n) && n >= 0 && n <= 20 && String(n) === value ? CIRCLED[n] : value;
+}

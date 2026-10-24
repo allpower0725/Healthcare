@@ -9,6 +9,8 @@
   /* 品牌色（取自院徽） */
   --mint: #a6d6cb;
   --blue: #a9bede;
+  /* 表單插圖底色：品牌雙色漸層（薄荷綠 → 淡藍），各表單共用 */
+  --art-bg: linear-gradient(135deg, #d6efe6 0%, #e1e9f7 100%);
 
   --primary: #23786a;
   --primary-strong: #19594e;

@@ -34,7 +34,7 @@
   transition: border-color 0.15s, transform 0.15s;
 }
 .formCard:hover {
-  border-color: var(--form-tint);
+  border-color: var(--primary-line);
   transform: translateY(-2px);
 }
 .formCard:focus-visible {
@@ -46,7 +46,7 @@
   display: grid;
   place-items: center;
   padding: 18px 0 10px;
-  background: color-mix(in srgb, var(--form-tint) 22%, #fff);
+  background: var(--art-bg);
 }
 .cardArt svg {
   width: 112px;
@@ -91,7 +91,7 @@
   width: 84px;
   height: 84px;
   border-radius: 22px;
-  background: color-mix(in srgb, var(--form-tint) 22%, #fff);
+  background: var(--art-bg);
 }
 .headArt svg {
   width: 72px;

@@ -66,6 +66,7 @@ function Intro({ formId }: { formId: FormId }) {
         <li>未標示「選填」皆為必填</li>
         <li>共 {form.steps} 個步驟</li>
       </ul>
+      {form.notice && <p className="notice">{form.notice}</p>}
     </section>
   );
 }

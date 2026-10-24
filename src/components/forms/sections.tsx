@@ -4,7 +4,17 @@ import type { ReactNode } from 'react';
 import { ageOn, rocToIso, todayIsoTaipei } from '@/lib/forms/format';
 import { EDUCATION } from '@/lib/forms/profile';
 import { useText } from './context';
-import { AddressInputs, Choices, Field, RocDateInputs, TextInput } from './fields';
+import {
+  AddressInputs,
+  Choices,
+  Field,
+  Flag,
+  RegionInputs,
+  RocDateInputs,
+  ShowIf,
+  TextInput,
+  TodayButton,
+} from './fields';
 
 /** 民眾區的一個步驟 */
 export function StepCard(props: {
@@ -49,6 +59,51 @@ export function Req() {
   return <span className="req">＊</span>;
 }
 
+/** 院所區民國日期欄位（含「今天」按鈕）；req 時標題前加＊ */
+export function DateField(props: { prefix: string; label: string; req?: boolean; hint?: ReactNode }) {
+  const { prefix, label, req } = props;
+  return (
+    <Field
+      rule={prefix}
+      role="group"
+      hint={props.hint}
+      label={
+        <>
+          {req && <Req />}
+          {label}
+        </>
+      }
+      aside={<TodayButton prefix={prefix} />}
+    >
+      <RocDateInputs prefix={prefix} label={label} />
+    </Field>
+  );
+}
+
+function CurrentRegion() {
+  const county = useText('profile.addrCounty');
+  const town = useText('profile.addrTown');
+  return county ? <span className="check__sub">（{county + town}）</span> : null;
+}
+
+/** 戶籍地址（縣市與鄉鎮市區）；HPV、子宮頸抹片共用 */
+export function RegisteredRegionStep({ no }: { no: number }) {
+  return (
+    <StepCard no={no} title="戶籍地址" desc="只需要縣市與鄉鎮市區；其他表單有相同欄位時，也會自動帶入。">
+      <div className="field">
+        <Flag name="profile.regSame">
+          與現住址相同 <CurrentRegion />
+        </Flag>
+      </div>
+      <ShowIf when="profile.regSame!=1">
+        <Field rule="profile.reg" role="group">
+          <RegionInputs countyKey="profile.regCounty" townKey="profile.regTown" />
+        </Field>
+      </ShowIf>
+    </StepCard>
+  );
+}
+
 function BirthHint() {
   const iso = rocToIso(useText('profile.birthY'), useText('profile.birthM'), useText('profile.birthD'));
   const today = todayIsoTaipei();
@@ -58,6 +113,24 @@ function BirthHint() {
     <>
       西元 {y} 年 {m} 月 {d} 日・{ageOn(iso, today)} 歲
     </>
+  );
+}
+
+/** 手機（選填） */
+export function MobileField({ id }: { id: string }) {
+  return (
+    <Field
+      rule="profile.mobile"
+      label={
+        <>
+          手機 <span className="opt">選填</span>
+        </>
+      }
+      htmlFor={id}
+      hint="基本資料的聯絡電話若已是手機，可以不填。"
+    >
+      <TextInput name="profile.mobile" id={id} type="tel" inputMode="tel" autoComplete="tel" maxLength={20} />
+    </Field>
   );
 }
 

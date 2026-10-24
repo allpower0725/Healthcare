@@ -15,6 +15,8 @@ export type FieldSpec = {
   options?: readonly string[];
   /** multi 的互斥選項（例：「以上均無」）：不能與其他選項同時勾選 */
   exclusive?: readonly string[];
+  /** multi 最多可勾選幾項（例：抹片難以判讀之原因最多二個） */
+  maxPick?: number;
   /** flag 勾選時的值，預設 '1' */
   value?: string;
   /** town 對應的縣市欄位 */
@@ -102,7 +104,8 @@ function cleanField(spec: FieldSpec, raw: unknown, values: FormValues): string |
       const picked = [...new Set(list)].filter((v) => spec.options?.includes(v));
       // 互斥選項與其他選項同時出現時，只留其他選項
       const others = picked.filter((v) => !spec.exclusive?.includes(v));
-      return others.length > 0 ? others : picked.slice(0, 1);
+      const kept = others.length > 0 ? others : picked.slice(0, 1);
+      return spec.maxPick ? kept.slice(0, spec.maxPick) : kept;
     }
     case 'choice': {
       const v = asText(raw);

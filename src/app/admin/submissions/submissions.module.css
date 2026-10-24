@@ -12,6 +12,16 @@
   background: var(--surface);
   box-shadow: var(--shadow);
 }
+/* 資料多時往下捲仍看得到篩選條件；窄螢幕的頂部列不固定、篩選區塊又高，就不黏住 */
+@media (min-width: 901px) {
+  .filters {
+    position: sticky;
+    top: calc(var(--topbar-h) + 12px);
+    z-index: 5;
+    /* 第一層陰影用頁面底色蓋住與頂部列之間的空隙，捲動時下方資料不會從空隙露出 */
+    box-shadow: 0 -14px 0 6px var(--bg), var(--shadow);
+  }
+}
 .filterGroup {
   display: flex;
   flex-wrap: wrap;
@@ -300,6 +310,7 @@
   width: 64px;
   height: 64px;
   border-radius: 18px;
+  background: var(--art-bg);
 }
 .headArt svg {
   width: 54px;

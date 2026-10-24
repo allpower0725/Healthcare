@@ -5,6 +5,7 @@ import { requireUser } from '@/lib/auth/dal';
 import { artSvg } from '@/lib/forms/art';
 import { FORMS } from '@/lib/forms/catalog';
 import { describePeriod, formStatus, listFormSettings } from '@/lib/forms/settings';
+import { listHref } from '@/lib/submissions/query';
 import { countSubmissionsByStatus } from '@/lib/submissions/service';
 import { countPendingUsers } from '@/lib/users/service';
 import adminStyles from '../admin.module.css';
@@ -44,7 +45,7 @@ async function Reminders() {
       {counts.submitted > 0 && (
         <p className={`notice notice--warn ${styles.reminder}`} role="status">
           <span>有 {counts.submitted} 份民眾已送出的表單等待院所填寫。</span>
-          <Link className="btn btn--ghost btn--sm" href="/admin/submissions?status=submitted">
+          <Link className="btn btn--ghost btn--sm" href={listHref({ statuses: ['submitted'] })}>
             前往協同完成
           </Link>
         </p>
@@ -76,7 +77,6 @@ async function FormCards() {
             key={form.id}
             href={`/admin/forms/${form.id}`}
             className={styles.formCard}
-            style={{ '--form-tint': form.tint } as React.CSSProperties}
           >
             <div
               className={styles.cardArt}

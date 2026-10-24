@@ -360,13 +360,19 @@ const orderOf = (values: readonly string[], column: AnyColumn) =>
 
 /**
  * 協同完成列表：篩選（身分證號部分比對、表單、狀態；條件同時成立）、排序、分頁。
+ * 表單與狀態只列出勾選的，任一組全不勾就沒有資料。
  * duplicates 為同一人同表單其他未完成的筆數。
  */
 export async function searchSubmissions(q: SubmissionQuery) {
-  const conditions = [inArray(submissions.status, q.statuses)];
-  if (q.idNo) conditions.push(like(submissions.idNo, `%${escapeLike(q.idNo)}%`));
-  if (q.forms.length < FORM_IDS.length) conditions.push(inArray(submissions.formId, q.forms));
-  const where = and(...conditions);
+  // 全選的那一組不必加條件
+  const where =
+    q.forms.length && q.statuses.length
+      ? and(
+          q.forms.length < FORM_IDS.length ? inArray(submissions.formId, q.forms) : undefined,
+          q.statuses.length < SUBMISSION_STATUSES.length ? inArray(submissions.status, q.statuses) : undefined,
+          q.idNo ? like(submissions.idNo, `%${escapeLike(q.idNo)}%`) : undefined,
+        )
+      : sql`false`;
 
   const direction = q.dir === 'asc' ? sql`asc` : sql`desc`;
   const primary = {

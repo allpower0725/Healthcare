@@ -13,11 +13,13 @@ export type FormInfo = {
   officialTitle: string;
   /** 主色：取自插圖，選夠深的色號，QR 資料點與重點文字使用 */
   color: string;
-  /** 淡色：取自插圖，QR 中央插圖外圈與背景點綴使用 */
+  /** 淡色：取自插圖，QR 中央插圖外圈與海報點綴使用（後台插圖底色統一用 --art-bg） */
   tint: string;
   /** 民眾填寫約需幾分鐘、共幾個步驟（表單開頭的提示） */
   minutes: number;
   steps: number;
+  /** 表單開頭的補充說明（例：補助對象） */
+  notice?: string;
 };
 
 export const FORMS: Record<FormId, FormInfo> = {
@@ -50,6 +52,8 @@ export const FORMS: Record<FormId, FormInfo> = {
     tint: '#f59fb3',
     minutes: 3,
     steps: 4,
+    notice:
+      '補助對象：30 歲以上有嚼檳榔（含已戒）或吸菸習慣之民眾、18 歲以上未滿 30 歲有嚼檳榔（含已戒）習慣之原住民，每 2 年 1 次。',
   },
   hp: {
     id: 'hp',

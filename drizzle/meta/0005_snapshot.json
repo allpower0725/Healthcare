@@ -1,0 +1,692 @@
+{
+  "id": "ee186f73-4889-49a2-bbe0-6c09d6ab22e7",
+  "prevId": "f49289eb-85f9-4c0e-94b9-9ff67ca3ed8e",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.heal_form_settings": {
+      "name": "heal_form_settings",
+      "schema": "",
+      "columns": {
+        "form_id": {
+          "name": "form_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "is_open": {
+          "name": "is_open",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "opens_at": {
+          "name": "opens_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "closes_at": {
+          "name": "closes_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "heal_form_settings_updated_by_heal_users_id_fk": {
+          "name": "heal_form_settings_updated_by_heal_users_id_fk",
+          "tableFrom": "heal_form_settings",
+          "tableTo": "heal_users",
+          "columnsFrom": [
+            "updated_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "heal_form_settings_form_id_check": {
+          "name": "heal_form_settings_form_id_check",
+          "value": "\"heal_form_settings\".\"form_id\" in ('hpv', 'pap', 'oral', 'hp', 'fit', 'adult')"
+        },
+        "heal_form_settings_period_check": {
+          "name": "heal_form_settings_period_check",
+          "value": "\"heal_form_settings\".\"opens_at\" is null or \"heal_form_settings\".\"closes_at\" is null or \"heal_form_settings\".\"opens_at\" < \"heal_form_settings\".\"closes_at\""
+        }
+      },
+      "isRLSEnabled": true
+    },
+    "public.heal_sessions": {
+      "name": "heal_sessions",
+      "schema": "",
+      "columns": {
+        "token_hash": {
+          "name": "token_hash",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "purpose": {
+          "name": "purpose",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'full'"
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "ip": {
+          "name": "ip",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "user_agent": {
+          "name": "user_agent",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "heal_sessions_user_idx": {
+          "name": "heal_sessions_user_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "heal_sessions_user_id_heal_users_id_fk": {
+          "name": "heal_sessions_user_id_heal_users_id_fk",
+          "tableFrom": "heal_sessions",
+          "tableTo": "heal_users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "heal_sessions_purpose_check": {
+          "name": "heal_sessions_purpose_check",
+          "value": "\"heal_sessions\".\"purpose\" in ('full', 'bind_google')"
+        }
+      },
+      "isRLSEnabled": true
+    },
+    "public.heal_submission_events": {
+      "name": "heal_submission_events",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "always",
+            "name": "heal_submission_events_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "9223372036854775807",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "submission_id": {
+          "name": "submission_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "action": {
+          "name": "action",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "actor_id": {
+          "name": "actor_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "heal_submission_events_submission_idx": {
+          "name": "heal_submission_events_submission_idx",
+          "columns": [
+            {
+              "expression": "submission_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "heal_submission_events_submission_id_heal_submissions_id_fk": {
+          "name": "heal_submission_events_submission_id_heal_submissions_id_fk",
+          "tableFrom": "heal_submission_events",
+          "tableTo": "heal_submissions",
+          "columnsFrom": [
+            "submission_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "heal_submission_events_actor_id_heal_users_id_fk": {
+          "name": "heal_submission_events_actor_id_heal_users_id_fk",
+          "tableFrom": "heal_submission_events",
+          "tableTo": "heal_users",
+          "columnsFrom": [
+            "actor_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "heal_submission_events_action_check": {
+          "name": "heal_submission_events_action_check",
+          "value": "\"heal_submission_events\".\"action\" in ('submitted', 'returned', 'resubmitted', 'completed', 'reopened', 'voided', 'restored')"
+        }
+      },
+      "isRLSEnabled": true
+    },
+    "public.heal_submissions": {
+      "name": "heal_submissions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "form_id": {
+          "name": "form_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "id_no": {
+          "name": "id_no",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "birth_date": {
+          "name": "birth_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "public_data": {
+          "name": "public_data",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "staff_data": {
+          "name": "staff_data",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        "device_token_hash": {
+          "name": "device_token_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "device_expires_at": {
+          "name": "device_expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "public_submitted_at": {
+          "name": "public_submitted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "staff_updated_by": {
+          "name": "staff_updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "staff_updated_at": {
+          "name": "staff_updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "completed_by": {
+          "name": "completed_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "completed_at": {
+          "name": "completed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version": {
+          "name": "version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "heal_submissions_id_no_idx": {
+          "name": "heal_submissions_id_no_idx",
+          "columns": [
+            {
+              "expression": "id_no",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "heal_submissions_form_status_idx": {
+          "name": "heal_submissions_form_status_idx",
+          "columns": [
+            {
+              "expression": "form_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "heal_submissions_created_idx": {
+          "name": "heal_submissions_created_idx",
+          "columns": [
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "heal_submissions_submitted_at_idx": {
+          "name": "heal_submissions_submitted_at_idx",
+          "columns": [
+            {
+              "expression": "public_submitted_at",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "heal_submissions_completed_at_idx": {
+          "name": "heal_submissions_completed_at_idx",
+          "columns": [
+            {
+              "expression": "completed_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "heal_submissions_device_idx": {
+          "name": "heal_submissions_device_idx",
+          "columns": [
+            {
+              "expression": "device_token_hash",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "heal_submissions_staff_updated_by_heal_users_id_fk": {
+          "name": "heal_submissions_staff_updated_by_heal_users_id_fk",
+          "tableFrom": "heal_submissions",
+          "tableTo": "heal_users",
+          "columnsFrom": [
+            "staff_updated_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "heal_submissions_completed_by_heal_users_id_fk": {
+          "name": "heal_submissions_completed_by_heal_users_id_fk",
+          "tableFrom": "heal_submissions",
+          "tableTo": "heal_users",
+          "columnsFrom": [
+            "completed_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "heal_submissions_form_id_check": {
+          "name": "heal_submissions_form_id_check",
+          "value": "\"heal_submissions\".\"form_id\" in ('hpv', 'pap', 'oral', 'hp', 'fit', 'adult')"
+        },
+        "heal_submissions_status_check": {
+          "name": "heal_submissions_status_check",
+          "value": "\"heal_submissions\".\"status\" in ('submitted', 'returned', 'completed', 'voided')"
+        }
+      },
+      "isRLSEnabled": true
+    },
+    "public.heal_users": {
+      "name": "heal_users",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "role": {
+          "name": "role",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'staff'"
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
+        },
+        "google_sub": {
+          "name": "google_sub",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "avatar_url": {
+          "name": "avatar_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reviewed_by": {
+          "name": "reviewed_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reviewed_at": {
+          "name": "reviewed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_login_at": {
+          "name": "last_login_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "heal_users_one_superadmin": {
+          "name": "heal_users_one_superadmin",
+          "columns": [
+            {
+              "expression": "role",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"heal_users\".\"role\" = 'superadmin'",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "heal_users_reviewed_by_heal_users_id_fk": {
+          "name": "heal_users_reviewed_by_heal_users_id_fk",
+          "tableFrom": "heal_users",
+          "tableTo": "heal_users",
+          "columnsFrom": [
+            "reviewed_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "heal_users_google_sub_unique": {
+          "name": "heal_users_google_sub_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "google_sub"
+          ]
+        },
+        "heal_users_email_unique": {
+          "name": "heal_users_email_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "email"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "heal_users_role_check": {
+          "name": "heal_users_role_check",
+          "value": "\"heal_users\".\"role\" in ('superadmin', 'admin', 'staff')"
+        },
+        "heal_users_status_check": {
+          "name": "heal_users_status_check",
+          "value": "\"heal_users\".\"status\" in ('pending', 'active', 'rejected', 'disabled')"
+        }
+      },
+      "isRLSEnabled": true
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

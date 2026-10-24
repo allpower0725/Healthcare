@@ -24,6 +24,8 @@ export type UserRole = (typeof USER_ROLES)[number];
 export type UserStatus = (typeof USER_STATUSES)[number];
 export type SessionPurpose = (typeof SESSION_PURPOSES)[number];
 
+// 所有資料表都開啟 RLS 且不設 policy：Supabase 公開 API（anon／authenticated）讀寫不到；
+// 程式以資料表擁有者連線，不受 RLS 限制
 const timestamptz = (name: string) => timestamp(name, { withTimezone: true });
 
 /** 後台使用者（院所人員） */
@@ -54,7 +56,7 @@ export const users = pgTable(
     // 最高管理者只能有一位
     uniqueIndex('heal_users_one_superadmin').on(t.role).where(sql`${t.role} = 'superadmin'`),
   ],
-);
+).enableRLS();
 
 /** 登入 session；cookie 只放隨機 token，這裡只存 SHA-256 */
 export const sessions = pgTable(
@@ -74,7 +76,7 @@ export const sessions = pgTable(
     check('heal_sessions_purpose_check', sql`${t.purpose} in ('full', 'bind_google')`),
     index('heal_sessions_user_idx').on(t.userId),
   ],
-);
+).enableRLS();
 
 /** 每張表單的開放設定；6 筆由 migration 建立，預設關閉 */
 export const formSettings = pgTable(
@@ -100,7 +102,7 @@ export const formSettings = pgTable(
       sql`${t.opensAt} is null or ${t.closesAt} is null or ${t.opensAt} < ${t.closesAt}`,
     ),
   ],
-);
+).enableRLS();
 
 export const SUBMISSION_STATUSES = ['submitted', 'returned', 'completed', 'voided'] as const;
 export type SubmissionStatus = (typeof SUBMISSION_STATUSES)[number];
@@ -163,7 +165,7 @@ export const submissions = pgTable(
     index('heal_submissions_completed_at_idx').on(t.completedAt),
     index('heal_submissions_device_idx').on(t.deviceTokenHash),
   ],
-);
+).enableRLS();
 
 /** 送出、退回修改、確認送出、取消送出、作廢、復原的紀錄；民眾操作時 actor_id 為 NULL */
 export const submissionEvents = pgTable(
@@ -184,7 +186,7 @@ export const submissionEvents = pgTable(
     ),
     index('heal_submission_events_submission_idx').on(t.submissionId),
   ],
-);
+).enableRLS();
 
 export type User = typeof users.$inferSelect;
 export type Session = typeof sessions.$inferSelect;

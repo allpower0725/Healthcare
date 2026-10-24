@@ -4,8 +4,8 @@
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.sessions": {
-      "name": "sessions",
+    "public.heal_sessions": {
+      "name": "heal_sessions",
       "schema": "",
       "columns": {
         "token_hash": {
@@ -54,8 +54,8 @@
         }
       },
       "indexes": {
-        "sessions_user_idx": {
-          "name": "sessions_user_idx",
+        "heal_sessions_user_idx": {
+          "name": "heal_sessions_user_idx",
           "columns": [
             {
               "expression": "user_id",
@@ -71,10 +71,10 @@
         }
       },
       "foreignKeys": {
-        "sessions_user_id_users_id_fk": {
-          "name": "sessions_user_id_users_id_fk",
-          "tableFrom": "sessions",
-          "tableTo": "users",
+        "heal_sessions_user_id_heal_users_id_fk": {
+          "name": "heal_sessions_user_id_heal_users_id_fk",
+          "tableFrom": "heal_sessions",
+          "tableTo": "heal_users",
           "columnsFrom": [
             "user_id"
           ],
@@ -89,15 +89,15 @@
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {
-        "sessions_purpose_check": {
-          "name": "sessions_purpose_check",
-          "value": "\"sessions\".\"purpose\" in ('full', 'bind_google')"
+        "heal_sessions_purpose_check": {
+          "name": "heal_sessions_purpose_check",
+          "value": "\"heal_sessions\".\"purpose\" in ('full', 'bind_google')"
         }
       },
       "isRLSEnabled": false
     },
-    "public.users": {
-      "name": "users",
+    "public.heal_users": {
+      "name": "heal_users",
       "schema": "",
       "columns": {
         "id": {
@@ -179,8 +179,8 @@
         }
       },
       "indexes": {
-        "users_one_superadmin": {
-          "name": "users_one_superadmin",
+        "heal_users_one_superadmin": {
+          "name": "heal_users_one_superadmin",
           "columns": [
             {
               "expression": "role",
@@ -190,17 +190,17 @@
             }
           ],
           "isUnique": true,
-          "where": "\"users\".\"role\" = 'superadmin'",
+          "where": "\"heal_users\".\"role\" = 'superadmin'",
           "concurrently": false,
           "method": "btree",
           "with": {}
         }
       },
       "foreignKeys": {
-        "users_reviewed_by_users_id_fk": {
-          "name": "users_reviewed_by_users_id_fk",
-          "tableFrom": "users",
-          "tableTo": "users",
+        "heal_users_reviewed_by_heal_users_id_fk": {
+          "name": "heal_users_reviewed_by_heal_users_id_fk",
+          "tableFrom": "heal_users",
+          "tableTo": "heal_users",
           "columnsFrom": [
             "reviewed_by"
           ],
@@ -213,15 +213,15 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "users_google_sub_unique": {
-          "name": "users_google_sub_unique",
+        "heal_users_google_sub_unique": {
+          "name": "heal_users_google_sub_unique",
           "nullsNotDistinct": false,
           "columns": [
             "google_sub"
           ]
         },
-        "users_email_unique": {
-          "name": "users_email_unique",
+        "heal_users_email_unique": {
+          "name": "heal_users_email_unique",
           "nullsNotDistinct": false,
           "columns": [
             "email"
@@ -230,13 +230,13 @@
       },
       "policies": {},
       "checkConstraints": {
-        "users_role_check": {
-          "name": "users_role_check",
-          "value": "\"users\".\"role\" in ('superadmin', 'admin', 'staff')"
+        "heal_users_role_check": {
+          "name": "heal_users_role_check",
+          "value": "\"heal_users\".\"role\" in ('superadmin', 'admin', 'staff')"
         },
-        "users_status_check": {
-          "name": "users_status_check",
-          "value": "\"users\".\"status\" in ('pending', 'active', 'rejected', 'disabled')"
+        "heal_users_status_check": {
+          "name": "heal_users_status_check",
+          "value": "\"heal_users\".\"status\" in ('pending', 'active', 'rejected', 'disabled')"
         }
       },
       "isRLSEnabled": false

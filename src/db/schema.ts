@@ -28,7 +28,7 @@ const timestamptz = (name: string) => timestamp(name, { withTimezone: true });
 
 /** 後台使用者（院所人員） */
 export const users = pgTable(
-  'users',
+  'heal_users',
   {
     id: uuid('id').primaryKey().defaultRandom(),
     role: text('role', { enum: USER_ROLES }).notNull().default('staff'),
@@ -49,16 +49,16 @@ export const users = pgTable(
       .$onUpdate(() => new Date()),
   },
   (t) => [
-    check('users_role_check', sql`${t.role} in ('superadmin', 'admin', 'staff')`),
-    check('users_status_check', sql`${t.status} in ('pending', 'active', 'rejected', 'disabled')`),
+    check('heal_users_role_check', sql`${t.role} in ('superadmin', 'admin', 'staff')`),
+    check('heal_users_status_check', sql`${t.status} in ('pending', 'active', 'rejected', 'disabled')`),
     // 最高管理者只能有一位
-    uniqueIndex('users_one_superadmin').on(t.role).where(sql`${t.role} = 'superadmin'`),
+    uniqueIndex('heal_users_one_superadmin').on(t.role).where(sql`${t.role} = 'superadmin'`),
   ],
 );
 
 /** 登入 session；cookie 只放隨機 token，這裡只存 SHA-256 */
 export const sessions = pgTable(
-  'sessions',
+  'heal_sessions',
   {
     tokenHash: text('token_hash').primaryKey(),
     userId: uuid('user_id')
@@ -71,14 +71,14 @@ export const sessions = pgTable(
     userAgent: text('user_agent'),
   },
   (t) => [
-    check('sessions_purpose_check', sql`${t.purpose} in ('full', 'bind_google')`),
-    index('sessions_user_idx').on(t.userId),
+    check('heal_sessions_purpose_check', sql`${t.purpose} in ('full', 'bind_google')`),
+    index('heal_sessions_user_idx').on(t.userId),
   ],
 );
 
 /** 每張表單的開放設定；6 筆由 migration 建立，預設關閉 */
 export const formSettings = pgTable(
-  'form_settings',
+  'heal_form_settings',
   {
     formId: text('form_id', { enum: FORM_IDS }).primaryKey(),
     /** 開放開關 */
@@ -94,9 +94,9 @@ export const formSettings = pgTable(
       .$onUpdate(() => new Date()),
   },
   (t) => [
-    check('form_settings_form_id_check', sql`${t.formId} in ('hpv', 'pap', 'oral', 'hp', 'fit', 'adult')`),
+    check('heal_form_settings_form_id_check', sql`${t.formId} in ('hpv', 'pap', 'oral', 'hp', 'fit', 'adult')`),
     check(
-      'form_settings_period_check',
+      'heal_form_settings_period_check',
       sql`${t.opensAt} is null or ${t.closesAt} is null or ${t.opensAt} < ${t.closesAt}`,
     ),
   ],
@@ -124,7 +124,7 @@ export type FormValues = Record<string, string | string[]>;
  * submitted 民眾已送出／returned 民眾修改中／completed 院所已送出（鎖定）／voided 已作廢
  */
 export const submissions = pgTable(
-  'submissions',
+  'heal_submissions',
   {
     id: uuid('id').primaryKey().defaultRandom(),
     formId: text('form_id', { enum: FORM_IDS }).notNull(),
@@ -154,20 +154,20 @@ export const submissions = pgTable(
       .$onUpdate(() => new Date()),
   },
   (t) => [
-    check('submissions_form_id_check', sql`${t.formId} in ('hpv', 'pap', 'oral', 'hp', 'fit', 'adult')`),
-    check('submissions_status_check', sql`${t.status} in ('submitted', 'returned', 'completed', 'voided')`),
-    index('submissions_id_no_idx').on(t.idNo),
-    index('submissions_form_status_idx').on(t.formId, t.status),
-    index('submissions_created_idx').on(t.createdAt.desc()),
-    index('submissions_submitted_at_idx').on(t.publicSubmittedAt.desc()),
-    index('submissions_completed_at_idx').on(t.completedAt),
-    index('submissions_device_idx').on(t.deviceTokenHash),
+    check('heal_submissions_form_id_check', sql`${t.formId} in ('hpv', 'pap', 'oral', 'hp', 'fit', 'adult')`),
+    check('heal_submissions_status_check', sql`${t.status} in ('submitted', 'returned', 'completed', 'voided')`),
+    index('heal_submissions_id_no_idx').on(t.idNo),
+    index('heal_submissions_form_status_idx').on(t.formId, t.status),
+    index('heal_submissions_created_idx').on(t.createdAt.desc()),
+    index('heal_submissions_submitted_at_idx').on(t.publicSubmittedAt.desc()),
+    index('heal_submissions_completed_at_idx').on(t.completedAt),
+    index('heal_submissions_device_idx').on(t.deviceTokenHash),
   ],
 );
 
 /** 送出、退回修改、確認送出、取消送出、作廢、復原的紀錄；民眾操作時 actor_id 為 NULL */
 export const submissionEvents = pgTable(
-  'submission_events',
+  'heal_submission_events',
   {
     id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
     submissionId: uuid('submission_id')
@@ -179,10 +179,10 @@ export const submissionEvents = pgTable(
   },
   (t) => [
     check(
-      'submission_events_action_check',
+      'heal_submission_events_action_check',
       sql`${t.action} in ('submitted', 'returned', 'resubmitted', 'completed', 'reopened', 'voided', 'restored')`,
     ),
-    index('submission_events_submission_idx').on(t.submissionId),
+    index('heal_submission_events_submission_idx').on(t.submissionId),
   ],
 );
 

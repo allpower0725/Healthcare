@@ -385,11 +385,11 @@ export async function searchSubmissions(q: SubmissionQuery) {
     completed: sql`${submissions.completedAt} ${direction} nulls last`,
   }[q.sort];
 
-  const duplicates = sql<number>`case when "submissions"."status" in ('submitted', 'returned') then (
-    select count(*)::int from "submissions" as "others"
-    where "others"."id_no" = "submissions"."id_no"
-      and "others"."form_id" = "submissions"."form_id"
-      and "others"."id" <> "submissions"."id"
+  const duplicates = sql<number>`case when "heal_submissions"."status" in ('submitted', 'returned') then (
+    select count(*)::int from "heal_submissions" as "others"
+    where "others"."id_no" = "heal_submissions"."id_no"
+      and "others"."form_id" = "heal_submissions"."form_id"
+      and "others"."id" <> "heal_submissions"."id"
       and "others"."status" in ('submitted', 'returned')
   ) else 0 end`;
   const [{ total }] = await db.select({ total: count() }).from(submissions).where(where);

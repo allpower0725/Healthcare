@@ -1,0 +1,17 @@
+{
+  "id": "/admin/forms",
+  "name": "預防保健表單後台｜烏日澄清醫院",
+  "short_name": "預防保健後台",
+  "description": "烏日澄清醫院預防保健電子表單的院內管理後台",
+  "lang": "zh-Hant-TW",
+  "start_url": "/admin/forms",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f2f6f5",
+  "theme_color": "#ffffff",
+  "icons": [
+    { "src": "/brand/app-icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/brand/app-icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/brand/app-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

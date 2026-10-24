@@ -1,5 +1,8 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
+
+// 手機網址列與各頁白色頂部列同色，看起來連成一片
+export const viewport: Viewport = { themeColor: '#ffffff' };
 
 export const metadata: Metadata = {
   title: {

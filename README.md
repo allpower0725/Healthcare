@@ -35,6 +35,7 @@ npm run dev                    # http://localhost:3000
 
 - 民眾掃描 QR code 開啟 `/f/{表單代號}`，先輸入身分證號再填寫；草稿只存在民眾裝置（12 小時），按「確認送出」才寫入資料庫。
 - 後台「協同完成」：列表可依身分證號（部分號碼即可）、表單種類、狀態篩選，點欄位標題排序；開啟後填寫院所區（自動儲存）→ 院所區最下方「確認送出」鎖定 →「列印 / 另存原樣 PDF」；「取消送出」後民眾才能再退回修改。重複送出的資料可作廢。
+- 院內平板可把後台「加入主畫面」（iPad 用 Safari、Android 用 Chrome，按分享→加入主畫面），之後從圖示開啟就沒有網址列。設定在 `public/admin.webmanifest` 與 `src/lib/admin-app.ts`，圖示原檔為 `public/brand/app-icon.svg`；民眾表單頁不提供安裝。
 - 6 張表單（人類乳突病毒、子宮頸抹片、口腔黏膜檢查、胃幽門螺旋桿菌、糞便潛血、成人預防保健）皆已電子化。表單欄位定義在 `src/lib/forms/defs/`，畫面在 `src/forms/`，各表單的設計見 `docs/specs/2026-10-24-forms-5b-design.md`。
 - 成人預防保健的同意簽名在院所區由服務對象本人簽；年齡、BMI、LDL、eGFR 自動計算（只顯示與列印，不存入資料庫）。本院檢驗參考值目前留空，之後可在 `src/lib/forms/defs/adult.ts` 的 `staffDefaults` 加入。
 

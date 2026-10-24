@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- 後台主畫面圖示：logo 左側的院徽置中於白底。512 也當 maskable 用，院徽留在中央 80% 的安全範圍內 -->
+  <rect width="512" height="512" fill="#fff"/>
+  <g transform="translate(256 256) scale(6.6) translate(-19.395 -19.957)">
+    <path d="M44.049,16.78v5.053l-12.3,2.526V19.306Z" transform="translate(-18.504 -16.78)" fill="#a9bede"/>
+    <path d="M44.049,24.04V29.1l-12.3,2.526V26.575Z" transform="translate(-18.504 -17.671)" fill="#a9bede"/>
+    <path d="M44.049,46.58v5.062l-12.3,2.526V49.106Z" transform="translate(-18.504 -20.439)" fill="#a6d6cb"/>
+    <path d="M44.049,53.64v5.053l-12.3,2.526V56.166Z" transform="translate(-18.504 -21.306)" fill="#a6d6cb"/>
+    <path d="M57.294,35.95,31.75,41.2v5.053L57.294,41Z" transform="translate(-18.504 -19.134)" fill="#a6d6cb"/>
+    <path d="M42.194,31.4,16.65,36.646v5.062l25.544-5.254Z" transform="translate(-16.65 -18.575)" fill="#a9bede"/>
+  </g>
+</svg>

@@ -1,4 +1,8 @@
+import type { Metadata } from 'next';
+import { ADMIN_APP_METADATA } from '@/lib/admin-app';
 import styles from './auth.module.css';
+
+export const metadata: Metadata = ADMIN_APP_METADATA;
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (

@@ -1,11 +1,15 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Suspense } from 'react';
+import { ADMIN_APP_METADATA } from '@/lib/admin-app';
 import { logout } from '@/lib/auth/actions';
 import { ADMIN_HOME, requireUser } from '@/lib/auth/dal';
 import { countPendingUsers } from '@/lib/users/service';
 import styles from './admin.module.css';
 import { Avatar, ROLE_LABELS } from './ui';
 import { NavLinks } from './nav-links';
+
+export const metadata: Metadata = ADMIN_APP_METADATA;
 
 export default function AdminLayout({ children }: LayoutProps<'/admin'>) {
   return (

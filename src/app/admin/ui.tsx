@@ -1,4 +1,5 @@
 import type { UserRole } from '@/db/schema';
+import type { FormStatus } from '@/lib/forms/settings';
 import styles from './admin.module.css';
 
 export const ROLE_LABELS: Record<UserRole, string> = {
@@ -7,18 +8,15 @@ export const ROLE_LABELS: Record<UserRole, string> = {
   staff: '一般人員',
 };
 
-const dateTime = new Intl.DateTimeFormat('zh-TW', {
-  timeZone: 'Asia/Taipei',
-  year: 'numeric',
-  month: '2-digit',
-  day: '2-digit',
-  hour: '2-digit',
-  minute: '2-digit',
-  hour12: false,
-});
+const FORM_STATUS_LABELS: Record<FormStatus, string> = {
+  closed: '關閉',
+  scheduled: '尚未開始',
+  open: '開放中',
+  ended: '已結束',
+};
 
-export function formatDateTime(value: Date | null) {
-  return value ? dateTime.format(value) : '—';
+export function FormStatusBadge({ status }: { status: FormStatus }) {
+  return <span className={`badge badge--${status}`}>{FORM_STATUS_LABELS[status]}</span>;
 }
 
 export function Avatar({ name, src }: { name: string; src: string | null }) {

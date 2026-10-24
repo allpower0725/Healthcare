@@ -1,9 +1,12 @@
 import { sql } from 'drizzle-orm';
 import { db } from '@/db';
-import { type UserRole, type UserStatus, users } from '@/db/schema';
+import { formSettings, type UserRole, type UserStatus, users } from '@/db/schema';
+import { FORM_IDS } from '@/lib/forms/catalog';
 
 export async function resetDb() {
-  await db.execute(sql`truncate table sessions, users cascade`);
+  await db.execute(sql`truncate table sessions, users, form_settings cascade`);
+  // 與 migration 相同：6 張表單各一筆，預設關閉
+  await db.insert(formSettings).values(FORM_IDS.map((formId) => ({ formId })));
 }
 
 let seq = 0;

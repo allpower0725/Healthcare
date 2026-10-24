@@ -48,6 +48,7 @@ async function Nav() {
     <NavLinks
       items={[
         { href: '/admin', label: '首頁', icon: 'home' },
+        { href: '/admin/forms', label: '表單管理', icon: 'forms' },
         ...(isManager ? [{ href: '/admin/users', label: '使用者管理', icon: 'users' as const, count: pending }] : []),
       ]}
     />

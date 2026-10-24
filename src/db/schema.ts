@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm';
 import {
   type AnyPgColumn,
+  boolean,
   check,
   index,
   pgTable,
@@ -9,6 +10,7 @@ import {
   uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core';
+import { FORM_IDS } from '../lib/forms/catalog';
 
 export const USER_ROLES = ['superadmin', 'admin', 'staff'] as const;
 export const USER_STATUSES = ['pending', 'active', 'rejected', 'disabled'] as const;
@@ -70,5 +72,32 @@ export const sessions = pgTable(
   ],
 );
 
+/** 每張表單的開放設定；6 筆由 migration 建立，預設關閉 */
+export const formSettings = pgTable(
+  'form_settings',
+  {
+    formId: text('form_id', { enum: FORM_IDS }).primaryKey(),
+    /** 開放開關 */
+    isOpen: boolean('is_open').notNull().default(false),
+    /** NULL：開關打開就開放 */
+    opensAt: timestamptz('opens_at'),
+    /** NULL：不設結束時間 */
+    closesAt: timestamptz('closes_at'),
+    updatedBy: uuid('updated_by').references(() => users.id, { onDelete: 'set null' }),
+    updatedAt: timestamptz('updated_at')
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (t) => [
+    check('form_settings_form_id_check', sql`${t.formId} in ('hpv', 'pap', 'oral', 'hp', 'fit', 'adult')`),
+    check(
+      'form_settings_period_check',
+      sql`${t.opensAt} is null or ${t.closesAt} is null or ${t.opensAt} < ${t.closesAt}`,
+    ),
+  ],
+);
+
 export type User = typeof users.$inferSelect;
 export type Session = typeof sessions.$inferSelect;
+export type FormSetting = typeof formSettings.$inferSelect;

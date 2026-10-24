@@ -2,9 +2,10 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import type { UserStatus } from '@/db/schema';
 import { requireManager } from '@/lib/auth/dal';
+import { formatDateTime } from '@/lib/time';
 import { availableActions, listUsers, type UserAction } from '@/lib/users/service';
 import adminStyles from '../admin.module.css';
-import { Avatar, formatDateTime, ROLE_LABELS } from '../ui';
+import { Avatar, ROLE_LABELS } from '../ui';
 import { UserActionButton } from './user-action-button';
 import styles from './users.module.css';
 

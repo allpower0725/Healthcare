@@ -213,3 +213,20 @@
     display: none;
   }
 }
+
+/* ---------- 列印：只印內容區（例如表單海報） ---------- */
+
+@media print {
+  .shell {
+    display: block;
+    min-height: 0;
+  }
+  .sidebar,
+  .topbar {
+    display: none;
+  }
+  .content {
+    max-width: none;
+    padding: 0;
+  }
+}

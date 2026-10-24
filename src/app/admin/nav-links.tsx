@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import styles from './admin.module.css';
 
-type Item = { href: string; label: string; icon: 'home' | 'users'; count?: number };
+type Item = { href: string; label: string; icon: keyof typeof ICONS; count?: number };
 
 const ICONS = {
   home: (
@@ -16,6 +16,14 @@ const ICONS = {
         strokeWidth="1.8"
         strokeLinejoin="round"
       />
+    </svg>
+  ),
+  forms: (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="4" y="4" width="6" height="6" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.8" />
+      <rect x="14" y="4" width="6" height="6" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.8" />
+      <rect x="4" y="14" width="6" height="6" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M14 14h2.5v2.5H14zM17.5 17.5H20V20h-2.5zM14 19h1.5M19 14h1" fill="none" stroke="currentColor" strokeWidth="1.8" />
     </svg>
   ),
   users: (

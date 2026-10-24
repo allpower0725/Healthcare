@@ -89,6 +89,17 @@ a {
   display: none !important;
 }
 
+/* 列印一律 A4、無邊界；邊界由各列印版面自行安排 */
+@page {
+  size: A4;
+  margin: 0;
+}
+@media print {
+  body {
+    background: #fff;
+  }
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -249,6 +260,19 @@ a {
 .badge--pending {
   background: var(--staff-soft);
   color: var(--staff-strong);
+}
+.badge--open {
+  background: #e1f3e8;
+  color: #1d6b43;
+}
+.badge--scheduled {
+  background: var(--staff-soft);
+  color: var(--staff-strong);
+}
+.badge--ended,
+.badge--closed {
+  background: #eef2f1;
+  color: var(--muted);
 }
 .badge--count {
   min-width: 1.5rem;

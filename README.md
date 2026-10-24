@@ -31,6 +31,12 @@ npm run dev                    # http://localhost:3000
 2. 其他人員：用 Google 登入即送出申請，管理者在「使用者管理」核准後即可使用。
 3. 最高管理者的 Google 帳號遺失時：執行 `npm run admin:unbind` 解除綁定，再以帳密登入重新綁定。
 
+## 表單 QR code
+
+- 後台「表單管理」：設定每張表單的開放開關與期間，下載 QR code（PNG／SVG）與 A4 海報。
+- QR code 內容是 `{APP_URL}/f/{表單代號}`。本機的 `localhost` 網址手機打不開，**正式列印請在部署、確定網域之後**；網域一換就要重印。
+- `npm test` 會用 ZXing 與 jsQR 兩套解碼器實際掃描 6 張表單的 QR code（多種尺寸、長短網址），修改 QR 樣式後請務必跑過。
+
 ## 指令
 
 | 指令 | 用途 |

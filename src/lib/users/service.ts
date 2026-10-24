@@ -88,6 +88,11 @@ export async function listUsers() {
     .orderBy(desc(users.createdAt));
 }
 
+export async function getUserName(id: string) {
+  const [row] = await db.select({ name: users.name }).from(users).where(eq(users.id, id));
+  return row?.name ?? null;
+}
+
 export async function countPendingUsers() {
   const [row] = await db.select({ n: count() }).from(users).where(eq(users.status, 'pending'));
   return row.n;

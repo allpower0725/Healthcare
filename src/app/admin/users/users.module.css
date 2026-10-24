@@ -1,0 +1,195 @@
+.section + .section {
+  margin-top: 28px;
+}
+
+.sectionHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  font-size: 1.125rem;
+}
+.sectionHead .count {
+  color: var(--muted);
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.pending {
+  border-color: var(--staff-line);
+  background: var(--staff-bg);
+}
+
+.empty {
+  margin: 0;
+  color: var(--muted);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.table th {
+  padding: 0 12px 10px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+}
+.table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+.table tr:last-child td {
+  border-bottom: 0;
+}
+.table th:first-child,
+.table td:first-child {
+  padding-left: 0;
+}
+.table th:last-child,
+.table td:last-child {
+  padding-right: 0;
+}
+.pending .table th,
+.pending .table td {
+  border-color: var(--staff-soft);
+}
+
+.person {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.personText {
+  display: grid;
+  min-width: 0;
+  line-height: 1.35;
+}
+.personName {
+  font-weight: 600;
+}
+.you {
+  margin-left: 6px;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  font-weight: 400;
+}
+.email {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.875rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meta {
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+.metaSub {
+  display: block;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.person {
+  min-width: 14rem;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* 內容區不夠寬時：每位人員改為一張卡片（人員與操作在上，其他資訊在下） */
+@media (max-width: 1100px) {
+  .table thead {
+    display: none;
+  }
+  .table,
+  .table tbody,
+  .table td {
+    display: block;
+  }
+  .table tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .pending .table tr {
+    border-color: var(--staff-soft);
+  }
+  .table tr:first-child {
+    padding-top: 0;
+  }
+  .table tr:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+  .table td,
+  .table td:first-child,
+  .table td:last-child {
+    padding: 0;
+    border: 0;
+  }
+  .table td:first-child {
+    margin-bottom: 6px;
+  }
+  .table td:last-child {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .table td[data-label] {
+    grid-column: 1 / -1;
+    padding-left: 48px;
+  }
+  .table td[data-label]::before {
+    content: attr(data-label) "：";
+    color: var(--muted);
+    font-size: 0.8125rem;
+  }
+  .person {
+    min-width: 0;
+  }
+  .meta {
+    white-space: normal;
+  }
+  .meta,
+  .metaSub {
+    display: inline;
+  }
+  .metaSub::before {
+    content: "（";
+  }
+  .metaSub::after {
+    content: "）";
+  }
+}
+
+@media (max-width: 520px) {
+  .table tr {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .table td:last-child {
+    grid-column: 1;
+    grid-row: auto;
+    padding-top: 8px;
+  }
+  .table td[data-label],
+  .table td:last-child {
+    padding-left: 48px;
+  }
+  .actions {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+}

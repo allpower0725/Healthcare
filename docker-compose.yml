@@ -1,0 +1,18 @@
+# 本機開發用 PostgreSQL（上線改用 Supabase）
+services:
+  db:
+    image: postgres:17
+    container_name: healthcare-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: healthcare
+      POSTGRES_PASSWORD: healthcare
+      POSTGRES_DB: healthcare
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - healthcare-db:/var/lib/postgresql/data
+      - ./docker/init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql:ro
+
+volumes:
+  healthcare-db:

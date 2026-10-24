@@ -1,0 +1,215 @@
+.shell {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: 248px minmax(0, 1fr);
+}
+
+/* ---------- 側邊欄 ---------- */
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 22px 16px;
+  border-right: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.brand {
+  display: grid;
+  gap: 8px;
+  padding: 0 8px;
+  color: inherit;
+  text-decoration: none;
+}
+.brand img {
+  width: auto;
+  height: 30px;
+}
+.brand span {
+  color: var(--primary);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.nav {
+  display: grid;
+  gap: 4px;
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 2.75rem;
+  padding: 0 12px;
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.navLink:hover {
+  background: var(--bg);
+}
+.navLink[aria-current="page"] {
+  background: var(--primary-soft);
+  color: var(--primary-strong);
+}
+.navLink:focus-visible {
+  outline: 3px solid var(--primary-ring);
+}
+.navLink svg {
+  flex: none;
+  width: 20px;
+  height: 20px;
+}
+.navLink .badge {
+  margin-left: auto;
+}
+
+.navSkeleton {
+  display: grid;
+  gap: 8px;
+}
+.navSkeleton span {
+  height: 2.75rem;
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+}
+
+/* ---------- 主要區域 ---------- */
+
+.main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 60px;
+  padding: 8px 28px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.92);
+  -webkit-backdrop-filter: saturate(1.6) blur(12px);
+  backdrop-filter: saturate(1.6) blur(12px);
+}
+
+.user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.userText {
+  display: grid;
+  justify-items: end;
+  line-height: 1.3;
+}
+.userName {
+  font-weight: 600;
+}
+
+.avatar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--primary-soft);
+  color: var(--primary-strong);
+  font-weight: 700;
+  object-fit: cover;
+}
+
+.content {
+  width: 100%;
+  max-width: 1120px;
+  padding: 28px;
+}
+
+.pageHead {
+  margin-bottom: 22px;
+}
+.pageHead h1 {
+  margin: 0;
+  font-size: 1.625rem;
+}
+.pageHead p {
+  margin: 4px 0 0;
+  color: var(--muted);
+}
+
+.card {
+  padding: 22px 24px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.skeleton {
+  height: 160px;
+  border-radius: var(--radius);
+  background: linear-gradient(90deg, #e9efed, #f5f8f7, #e9efed);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s infinite linear;
+}
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* ---------- 窄螢幕：側邊欄改為頂部列 ---------- */
+
+@media (max-width: 860px) {
+  .shell {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+  }
+  .sidebar {
+    position: static;
+    height: auto;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    overflow-x: auto;
+  }
+  .brand span {
+    display: none;
+  }
+  .nav,
+  .navSkeleton {
+    display: flex;
+  }
+  .navSkeleton span {
+    width: 96px;
+  }
+  .topbar {
+    padding: 8px 16px;
+  }
+  .content {
+    padding: 20px 16px;
+  }
+}
+
+@media (max-width: 520px) {
+  .userText {
+    display: none;
+  }
+}

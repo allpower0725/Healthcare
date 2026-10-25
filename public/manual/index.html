@@ -1,0 +1,764 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="robots" content="noindex">
+<title>預防保健電子表單操作手冊</title>
+<link rel="icon" href="/favicon.ico">
+<style>
+  :root {
+    --brand: #23786a;
+    --brand-dark: #1b5e53;
+    --brand-soft: #e7f3f0;
+    --staff: #8a5300;
+    --staff-soft: #fff6e3;
+    --ink: #1b2326;
+    --muted: #56625f;
+    --line: #d5dfdc;
+    --bg: #f3f6f5;
+    --card: #ffffff;
+    --warn-bg: #fff7e6;
+    --warn-line: #e9c46a;
+    --mark: #e0102b;
+    --font: "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", "微軟正黑體", "Heiti TC", system-ui, -apple-system, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 20px/1.8 var(--font); }
+  img { display: block; max-width: 100%; height: auto; }
+  a { color: var(--brand-dark); }
+  h1, h2, h3 { line-height: 1.35; margin: 0; }
+  p { margin: 0 0 .6em; }
+
+  .topbar { background: #fff; border-bottom: 1px solid var(--line); }
+  .topbar__inner { max-width: 1000px; margin: 0 auto; padding: 14px 20px; display: flex; align-items: center; gap: 16px; justify-content: space-between; }
+  .topbar img { width: 168px; height: auto; }
+  .print-btn { font: inherit; font-size: 17px; font-weight: 700; padding: 8px 20px; border-radius: 999px; border: 2px solid var(--line); background: #fff; color: var(--ink); cursor: pointer; }
+  .print-btn:hover { border-color: var(--brand); }
+
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 0 20px 72px; }
+
+  .hero { padding: 40px 0 8px; }
+  .hero__eyebrow { display: inline-block; font-size: 17px; font-weight: 700; color: var(--brand-dark); background: var(--brand-soft); border-radius: 999px; padding: 4px 16px; margin-bottom: 14px; }
+  .hero h1 { font-size: 40px; letter-spacing: .02em; }
+  .hero__lead { font-size: 21px; color: var(--muted); margin-top: 14px; max-width: 46em; }
+
+  .toc { margin: 28px 0 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .toc a { display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 10px 18px; background: #fff; border: 2px solid var(--line); border-radius: 16px; text-decoration: none; color: var(--ink); font-weight: 700; font-size: 19px; line-height: 1.4; }
+  .toc a:hover { border-color: var(--brand); }
+  .toc .no { flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--brand); color: #fff; font-size: 17px; }
+  .toc .no--soft { background: var(--brand-soft); color: var(--brand-dark); }
+
+  .chapter { background: var(--card); border-radius: 22px; padding: 36px 40px; margin-top: 28px; box-shadow: 0 1px 2px rgba(20, 40, 36, .06), 0 6px 24px rgba(20, 40, 36, .05); scroll-margin-top: 16px; }
+  .chapter > h2 { display: flex; align-items: center; gap: 14px; font-size: 30px; margin-bottom: 18px; }
+  .chapter > h2 .no { flex: none; display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; background: var(--brand); color: #fff; font-size: 26px; }
+  .chapter > h2 .no--soft { background: var(--brand-soft); color: var(--brand-dark); }
+  .chapter--staff > h2 .no { background: var(--staff); }
+  .chapter__lead { font-size: 21px; color: var(--muted); }
+
+  .step { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 32px; align-items: start; padding: 28px 0; border-top: 2px dashed var(--line); }
+  .step:first-of-type { border-top: 0; }
+  .step--wide { grid-template-columns: minmax(0, 1fr); }
+  .step--pair { grid-template-columns: repeat(2, 300px); column-gap: 40px; justify-content: start; }
+  .step--pair > :first-child { grid-column: 1 / -1; }
+  .step h3 { font-size: 24px; margin-bottom: 12px; display: flex; gap: 10px; align-items: baseline; }
+  .step h3 .sub { flex: none; color: var(--brand); font-size: 26px; }
+  .chapter--staff .step h3 .sub { color: var(--staff); }
+
+  ol.do { list-style: none; counter-reset: do; margin: 0 0 12px; padding: 0; }
+  ol.do > li { counter-increment: do; position: relative; padding-left: 46px; margin-bottom: 10px; }
+  ol.do > li::before { content: counter(do); position: absolute; left: 0; top: .18em; width: 32px; height: 32px; border-radius: 50%; background: var(--ink); color: #fff; font-size: 17px; font-weight: 700; display: grid; place-items: center; line-height: 1; }
+  ul.dots { margin: 0 0 12px; padding-left: 1.2em; }
+  ul.dots li { margin-bottom: 6px; }
+
+  /* 系統上的按鈕名稱 */
+  .k { display: inline-block; padding: 0 .65em; margin: 0 .1em; border: 2px solid #b9c6c2; border-radius: 999px; background: #fff; font-weight: 700; line-height: 1.5; white-space: nowrap; }
+  .k--go { background: var(--brand); border-color: var(--brand); color: #fff; }
+  .k--staff { background: var(--staff); border-color: var(--staff); color: #fff; }
+  .menu { font-weight: 700; color: var(--brand-dark); white-space: nowrap; }
+
+  .tip, .warn, .planb { border-radius: 16px; padding: 16px 20px; margin: 14px 0 0; font-size: 19px; }
+  .tip { background: var(--brand-soft); }
+  .warn { background: var(--warn-bg); border: 2px solid var(--warn-line); }
+  .tip > b:first-child, .warn > b:first-child { display: block; margin-bottom: 4px; }
+  .tip ul, .warn ul { margin: 0; padding-left: 1.2em; }
+
+  .planb { margin-top: 28px; border: 3px solid var(--warn-line); background: var(--warn-bg); padding: 24px 28px; display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 28px; align-items: start; }
+  .planb h3 { font-size: 24px; margin-bottom: 10px; }
+  .planb__tag { display: inline-block; font-size: 16px; font-weight: 700; background: var(--staff); color: #fff; border-radius: 8px; padding: 0 10px; margin-right: 8px; vertical-align: 3px; }
+
+  table.simple { width: 100%; border-collapse: collapse; font-size: 19px; margin: 8px 0 4px; }
+  table.simple th, table.simple td { border: 1px solid var(--line); padding: 12px 16px; text-align: left; vertical-align: top; }
+  table.simple th { background: #f0f4f3; white-space: nowrap; }
+  table.simple td:first-child { width: 30%; }
+  table.simple--who td:first-child { width: 1%; white-space: nowrap; }
+  .keep { display: inline-block; }
+
+  .flow { list-style: none; margin: 8px 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+  .flow li { position: relative; background: #f6f9f8; border: 2px solid var(--line); border-radius: 18px; padding: 18px 18px 16px; }
+  .flow li:not(:last-child)::after { content: ""; position: absolute; right: -16px; top: 50%; width: 14px; height: 14px; border-top: 4px solid var(--brand); border-right: 4px solid var(--brand); transform: translateY(-50%) rotate(45deg); }
+  .flow .icon { width: 56px; height: 56px; border-radius: 16px; background: var(--brand); color: #fff; display: grid; place-items: center; margin-bottom: 10px; }
+  .flow .icon svg { width: 32px; height: 32px; }
+  .flow li:nth-child(3) .icon { background: var(--staff); }
+  .flow b { display: block; font-size: 22px; }
+  .flow .who { display: inline-block; font-size: 15px; font-weight: 700; color: var(--muted); border: 1.5px solid var(--line); border-radius: 999px; padding: 0 10px; margin-bottom: 6px; background: #fff; }
+  .flow p { font-size: 18px; margin: 6px 0 0; line-height: 1.6; }
+
+  .qa dt { font-weight: 700; font-size: 21px; margin-top: 20px; display: flex; gap: 10px; }
+  .qa dt::before { content: "Q"; flex: none; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: var(--brand); color: #fff; font-size: 18px; }
+  .qa dd { margin: 6px 0 0 44px; }
+
+  /* 截圖與紅框 */
+  .shot { margin: 0; }
+  .shot__img { position: relative; overflow: hidden; background: #fff; }
+  .shot--phone .shot__img { border: 9px solid #222b2e; border-radius: 34px; }
+  .shot--screen .shot__img { border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 4px 18px rgba(20, 40, 36, .08); }
+  .shot--strip { width: 100%; }
+  .shot--strip .shot__img img { width: 100%; }
+  .shot--poster { max-width: 360px; }
+  .shot--narrow { max-width: 560px; }
+  .shot .mark { position: absolute; border: 3.5px solid var(--mark); border-radius: 10px; box-shadow: 0 0 0 3px rgba(255, 255, 255, .75); pointer-events: none; }
+  .shot figcaption { font-size: 16px; color: var(--muted); text-align: center; margin-top: 8px; line-height: 1.5; }
+  .shots { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; margin-top: 16px; }
+
+  .foot { text-align: center; color: var(--muted); font-size: 16px; margin-top: 40px; }
+
+  @media (max-width: 860px) {
+    .toc { grid-template-columns: repeat(2, 1fr); }
+    .flow { grid-template-columns: repeat(2, 1fr); }
+    .flow li:nth-child(2)::after { display: none; }
+    .step--pair { grid-template-columns: repeat(2, minmax(0, 300px)); column-gap: 24px; }
+  }
+  @media (max-width: 720px) {
+    body { font-size: 19px; }
+    .topbar__inner { padding: 10px 16px; }
+    .topbar img { width: 140px; }
+    .print-btn { display: none; }
+    .wrap { padding: 0 16px 56px; }
+    .hero { padding-top: 28px; }
+    .hero h1 { font-size: 31px; }
+    .hero__lead { font-size: 19px; }
+    .toc { grid-template-columns: minmax(0, 1fr); }
+    .chapter { padding: 24px 18px; border-radius: 18px; }
+    .chapter > h2 { font-size: 25px; }
+    .chapter > h2 .no { width: 44px; height: 44px; font-size: 22px; }
+    .step, .step--pair { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+    .step .shot--phone { width: min(280px, 82%); margin: 0 auto; }
+    .planb { grid-template-columns: minmax(0, 1fr); padding: 20px 18px; }
+    .planb .shot--phone { width: min(260px, 80%); margin: 0 auto; }
+    .flow { grid-template-columns: minmax(0, 1fr); }
+    .flow li::after { display: none; }
+    table.simple, table.simple tbody, table.simple tr, table.simple td { display: block; width: 100%; }
+    table.simple thead { display: none; }
+    table.simple tr { border: 1px solid var(--line); border-radius: 12px; margin-bottom: 10px; overflow: hidden; }
+    table.simple td { border: 0; padding: 10px 14px; }
+    table.simple td:first-child, table.simple--who td:first-child { width: 100%; white-space: normal; background: #f0f4f3; font-weight: 700; }
+    .qa dd { margin-left: 0; }
+  }
+
+  @media print {
+    @page { size: A4; margin: 14mm 14mm 16mm; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    body { background: #fff; font-size: 11.5pt; line-height: 1.65; }
+    .topbar { border: 0; }
+    .print-btn, .toc { display: none; }
+    .wrap { max-width: none; padding: 0; }
+    .hero { padding-top: 6mm; }
+    .hero h1 { font-size: 22pt; }
+    .chapter { box-shadow: none; border-radius: 0; padding: 0; margin-top: 0; break-before: page; }
+    /* 前兩章很短，和封面放同一頁 */
+    #prepare, #flow { break-before: auto; margin-top: 8mm; }
+    .hero__lead, .tip, .warn, .planb, table.simple, .qa dd { font-size: 11.5pt; }
+    .qa dt { font-size: 12.5pt; }
+    .planb h3 { font-size: 14pt; }
+    .flow p { font-size: 11pt; }
+    .shot figcaption { font-size: 9.5pt; }
+    .shot--screen .shot__img { box-shadow: none; }
+    .shot--screen.shot--narrow { max-width: 100mm; }
+    .flow { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4mm; break-inside: avoid; }
+    .chapter > h2 { font-size: 17pt; }
+    .chapter > h2 .no { width: 30pt; height: 30pt; font-size: 15pt; }
+    .step { grid-template-columns: minmax(0, 1fr) 52mm; gap: 8mm; padding: 5mm 0; break-inside: avoid; }
+    .step--wide { grid-template-columns: minmax(0, 1fr); }
+    .step--pair { grid-template-columns: 52mm 52mm; column-gap: 10mm; }
+    .step h3 { font-size: 14pt; }
+    .planb { grid-template-columns: minmax(0, 1fr) 46mm; break-inside: avoid; }
+    .shot--phone .shot__img { border-width: 5px; border-radius: 18px; }
+    .shot--screen { max-width: 150mm; }
+    .shot--poster { max-width: 70mm; }
+    .shot .mark { border-width: 2.5px; box-shadow: none; }
+    .flow li, table.simple tr, .qa dt, .qa dd, .tip, .warn { break-inside: avoid; }
+    a { color: inherit; text-decoration: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar__inner">
+    <img src="/brand/logo.svg" alt="烏日澄清醫院" width="160" height="30">
+    <button type="button" class="print-btn" onclick="window.print()">列印本手冊</button>
+  </div>
+</header>
+
+<div class="wrap">
+
+<section class="hero">
+  <span class="hero__eyebrow">院方人員版</span>
+  <h1><span class="keep">預防保健電子表單</span>　<span class="keep">操作手冊</span></h1>
+  <p class="hero__lead">適用：在院外租借場地舉辦的預防保健活動。場地沒有院內醫療網路，所有表單都用手機上網填寫，不用紙本。</p>
+
+  <ul class="toc" aria-label="目錄">
+    <li><a href="#prepare"><span class="no no--soft">備</span>活動當天請準備</a></li>
+    <li><a href="#flow"><span class="no no--soft">流</span>整個流程只有 4 步</a></li>
+    <li><a href="#setup"><span class="no no--soft">前</span>活動前準備</a></li>
+    <li><a href="#step1"><span class="no">1</span>報名查詢</a></li>
+    <li><a href="#step2"><span class="no">2</span>引導民眾填寫</a></li>
+    <li><a href="#step3"><span class="no">3</span>協同完成（後台）</a></li>
+    <li><a href="#step4"><span class="no">4</span>結束</a></li>
+    <li><a href="#fix"><span class="no no--soft">改</span>民眾填錯了怎麼辦</a></li>
+    <li><a href="#faq"><span class="no no--soft">問</span>特殊情況與常見問題</a></li>
+  </ul>
+</section>
+
+<!-- 活動當天請準備 -->
+<section class="chapter" id="prepare">
+  <h2><span class="no no--soft">備</span>活動當天請準備</h2>
+  <table class="simple simple--who">
+    <thead><tr><th>誰</th><th>準備什麼</th></tr></thead>
+    <tbody>
+      <tr><td>工作人員</td><td>可上網的筆電或平板（開後台）、行動熱點、查詢健保雲端系統的設備、貼好的 QR code 海報</td></tr>
+      <tr><td>民眾</td><td>健保卡、自己的手機</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 流程 -->
+<section class="chapter" id="flow">
+  <h2><span class="no no--soft">流</span>整個流程只有 4 步</h2>
+  <ol class="flow">
+    <li>
+      <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="8.5" cy="11" r="2"/><path d="M5.8 16c.6-1.5 1.6-2.2 2.7-2.2s2.1.7 2.7 2.2M14 10h4.5M14 13.5h3"/></svg></span>
+      <span class="who">工作人員</span>
+      <b>1 報名查詢</b>
+      <p>用民眾的健保卡查詢健保雲端系統，告訴民眾要填哪幾張表單（民眾也可以自己選）</p>
+    </li>
+    <li>
+      <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg></span>
+      <span class="who">民眾</span>
+      <b>2 民眾填寫</b>
+      <p>民眾用手機掃描 QR code，填寫、簽名，按<span class="k k--go">確認送出</span></p>
+    </li>
+    <li>
+      <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4M8 10l2.5 2.5L16 7.5"/></svg></span>
+      <span class="who">工作人員</span>
+      <b>3 協同完成</b>
+      <p>民眾出示「已完成送出」畫面，工作人員在後台填寫院所資料，按<span class="k k--staff">確認送出</span></p>
+    </li>
+    <li>
+      <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
+      <span class="who">完成</span>
+      <b>4 結束</b>
+      <p>表單鎖定完成；需要紙本時再列印</p>
+    </li>
+  </ol>
+</section>
+
+<!-- 活動前準備 -->
+<section class="chapter chapter--staff" id="setup">
+  <h2><span class="no">前</span>活動前準備</h2>
+
+  <div class="step">
+    <div>
+      <h3><span class="sub">①</span>登入後台</h3>
+      <ol class="do">
+        <li>打開後台網址，按<span class="k">使用 Google 登入</span>。</li>
+        <li>新人員第一次登入後，需要管理者在<span class="menu">「使用者管理」</span>核准，才能使用。</li>
+      </ol>
+    </div>
+    <figure class="shot shot--screen">
+      <div class="shot__img">
+        <img src="img/admin-login.webp" width="476" height="522" alt="後台登入頁" loading="lazy">
+        <span class="mark" style="left:10.71%;top:43.73%;width:78.57%;height:11.11%"></span>
+      </div>
+      <figcaption>後台登入頁</figcaption>
+    </figure>
+  </div>
+
+  <div class="step step--wide">
+    <div>
+      <h3><span class="sub">②</span>開放活動當天要用的表單</h3>
+      <ol class="do">
+        <li>在<span class="menu">「表單管理」</span>點要開放的表單（下圖以糞便潛血檢查為例）。</li>
+        <li>打開<span class="k">開放填寫</span>，開始時間、結束時間設為活動當天。</li>
+        <li>按<span class="k k--go">儲存設定</span>。每張要用的表單都要設定一次。</li>
+      </ol>
+      <div class="shots">
+        <figure class="shot shot--screen">
+          <div class="shot__img">
+            <img src="img/a-forms-fit.webp" width="1180" height="820" alt="「表單管理」：點要開放的表單" loading="lazy">
+            <span class="mark" style="left:34.21%;top:64.00%;width:31.58%;height:32.45%"></span>
+          </div>
+          <figcaption>「表單管理」：點要開放的表單</figcaption>
+        </figure>
+        <figure class="shot shot--screen shot--narrow">
+          <div class="shot__img">
+            <img src="img/a-settings.webp" width="592" height="416" alt="開放設定：打開開關、設定時間、儲存" loading="lazy">
+            <span class="mark" style="left:6.76%;top:18.32%;width:22.30%;height:8.64%"></span>
+            <span class="mark" style="left:6.76%;top:42.52%;width:42.91%;height:13.35%"></span>
+            <span class="mark" style="left:50.34%;top:42.52%;width:42.91%;height:13.35%"></span>
+            <span class="mark" style="left:6.76%;top:66.43%;width:18.92%;height:12.00%"></span>
+          </div>
+          <figcaption>開放設定：打開開關、設定時間、儲存</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+
+  <div class="step step--wide">
+    <div>
+      <h3><span class="sub">③</span>列印 QR code 海報</h3>
+      <ol class="do">
+        <li>同一頁的「填寫 QR code」，按<span class="k">列印海報</span>，印出 A4 海報（也可以按<span class="k k--go">下載 PNG</span>自己排版）。</li>
+        <li>把每張表單的海報貼在場地，讓民眾容易找到。</li>
+      </ol>
+      <div class="shots">
+        <figure class="shot shot--screen shot--narrow">
+          <div class="shot__img">
+            <img src="img/a-qr.webp" width="592" height="540" alt="填寫 QR code：列印海報或下載" loading="lazy">
+            <span class="mark" style="left:6.76%;top:83.71%;width:19.89%;height:9.25%"></span>
+            <span class="mark" style="left:45.36%;top:83.71%;width:18.92%;height:9.25%"></span>
+          </div>
+          <figcaption>填寫 QR code：列印海報或下載</figcaption>
+        </figure>
+        <figure class="shot shot--screen shot--poster">
+          <div class="shot__img">
+            <img src="img/a-poster.webp" width="794" height="1123" alt="印出來的 A4 海報（示意）" loading="lazy">
+          </div>
+          <figcaption>印出來的 A4 海報（示意）</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+
+  <div class="tip">
+    <b>場地沒有院內網路</b>
+    <ul>
+      <li>筆電、平板請連行動熱點。</li>
+      <li>用平板或手機開後台時，可以「加入主畫面」，之後從圖示開啟：iPad 用 Safari、Android 用 Chrome，按分享 →「加入主畫面」。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 第 1 步 -->
+<section class="chapter chapter--staff" id="step1">
+  <h2><span class="no">1</span>報名查詢：民眾可以填哪些表單？</h2>
+  <div class="step step--wide">
+    <div>
+      <ol class="do">
+        <li>請民眾拿出健保卡。</li>
+        <li>查詢「健保醫療資訊雲端查詢系統」，確認民眾今天可以做哪幾項檢查。</li>
+        <li>告訴民眾要掃哪幾張海報；民眾想自己選也可以。</li>
+      </ol>
+      <div class="shots">
+        <figure class="shot shot--screen">
+          <div class="shot__img">
+            <img src="img/a-forms.webp" width="1180" height="820" alt="共有 6 張表單（後台「表單管理」畫面）" loading="lazy">
+          </div>
+          <figcaption>共有 6 張表單（後台「表單管理」畫面）</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 第 2 步 -->
+<section class="chapter" id="step2">
+  <h2><span class="no">2</span>引導民眾用手機填寫</h2>
+  <p class="chapter__lead">以下是民眾手機上會看到的畫面（以糞便潛血檢查為例，其他表單操作方式相同）。長輩不熟悉手機時，請照順序帶著操作。</p>
+
+  <div class="step">
+    <div>
+      <h3><span class="sub">①</span>掃描 QR code</h3>
+      <ol class="do">
+        <li>請民眾打開手機的「相機」，對準海報上的 QR code。</li>
+        <li>畫面跳出網址時，點一下，就會打開表單。</li>
+      </ol>
+      <div class="tip">
+        <b>小提醒</b>
+        <ul>
+          <li>也可以用 LINE 的「掃描行動條碼」。</li>
+          <li>請民眾用手機自己的網路（4G／5G）或場地的 Wi-Fi。</li>
+          <li>海報下方印有網址，掃不到時可以直接輸入。</li>
+        </ul>
+      </div>
+    </div>
+    <figure class="shot shot--screen">
+      <div class="shot__img">
+        <img src="img/a-poster-qr.webp" width="794" height="1123" alt="對準海報上的 QR code" loading="lazy">
+        <span class="mark" style="left:20.29%;top:26.38%;width:59.41%;height:42.01%"></span>
+      </div>
+      <figcaption>對準海報上的 QR code</figcaption>
+    </figure>
+  </div>
+
+  <div class="step">
+    <div>
+      <h3><span class="sub">②</span>字太小？先把字放大</h3>
+      <p>點畫面右上角的「A」，越右邊的 A 字越大。</p>
+    </div>
+    <figure class="shot shot--phone">
+      <div class="shot__img">
+        <img src="img/m-intro.webp" width="390" height="844" alt="右上角的「A」可以放大字" loading="lazy">
+        <span class="mark" style="left:63.34%;top:0.36%;width:34.87%;height:5.92%"></span>
+      </div>
+      <figcaption>右上角的「A」可以放大字</figcaption>
+    </figure>
+  </div>
+
+  <div class="step">
+    <div>
+      <h3><span class="sub">③</span>輸入身分證號</h3>
+      <ol class="do">
+        <li>在框框裡輸入民眾的身分證號（共 10 碼）。</li>
+        <li>按<span class="k k--go">開始填寫</span>。</li>
+      </ol>
+      <div class="tip">為了保護個資，要輸入同一個身分證號，才會帶出這支手機上先前填過的內容。</div>
+    </div>
+    <figure class="shot shot--phone">
+      <div class="shot__img">
+        <img src="img/m-gate.webp" width="390" height="844" alt="輸入身分證號，按「開始填寫」" loading="lazy">
+        <span class="mark" style="left:6.41%;top:58.31%;width:87.18%;height:7.02%"></span>
+        <span class="mark" style="left:6.41%;top:72.31%;width:87.18%;height:8.03%"></span>
+      </div>
+      <figcaption>輸入身分證號，按「開始填寫」</figcaption>
+    </figure>
+  </div>
+
+  <div class="step">
+    <div>
+      <h3><span class="sub">④</span>照順序往下填</h3>
+      <ul class="dots">
+        <li>表單分成幾個步驟，例如：基本資料 → 其他個人資料 → 吸菸、家族病史與症狀 → 同意與簽名。</li>
+        <li>沒有寫「選填」的，都要填。</li>
+        <li>畫面最上方的綠色長條，是完成的進度。</li>
+      </ul>
+    </div>
+    <figure class="shot shot--phone">
+      <div class="shot__img">
+        <img src="img/m-profile.webp" width="390" height="844" alt="上方綠色長條是進度；標「選填」的可以不填" loading="lazy">
+        <span class="mark" style="left:0.00%;top:6.02%;width:100.00%;height:1.60%"></span>
+        <span class="mark" style="left:6.41%;top:69.87%;width:87.18%;height:4.10%"></span>
+      </div>
+      <figcaption>上方綠色長條是進度；標「選填」的可以不填</figcaption>
+    </figure>
+  </div>
+
+  <div class="step step--pair">
+    <div>
+      <h3><span class="sub">⑤</span>簽名</h3>
+      <ol class="do">
+        <li>點「點此簽名」。</li>
+        <li>請民眾用手指在框裡寫名字。</li>
+        <li>寫好按<span class="k k--go">完成簽名</span>；寫不好可以按<span class="k">清除重寫</span>。</li>
+      </ol>
+    </div>
+    <figure class="shot shot--phone">
+      <div class="shot__img">
+        <img src="img/m-sign.webp" width="390" height="844" alt="點「點此簽名」" loading="lazy">
+        <span class="mark" style="left:6.41%;top:49.96%;width:87.18%;height:13.27%"></span>
+      </div>
+      <figcaption>點「點此簽名」</figcaption>
+    </figure>
+    <figure class="shot shot--phone">
+      <div class="shot__img">
+        <img src="img/m-pad.webp" width="390" height="844" alt="用手指簽名，按「完成簽名」" loading="lazy">
+        <span class="mark" style="left:39.79%;top:91.55%;width:57.13%;height:7.02%"></span>
+      </div>
+      <figcaption>用手指簽名，按「完成簽名」</figcaption>
+    </figure>
+  </div>
+
+  <div class="step step--pair">
+    <div>
+      <h3><span class="sub">⑥</span>按「確認送出」</h3>
+      <p>填完後，滑到最下面，按綠色的<span class="k k--go">確認送出</span>。</p>
+      <div class="warn">
+        <b>出現「還有 2 個欄位需要填寫或確認」？</b>
+        畫面會自動跳到要補的地方（紅字標示），補好再按一次<span class="k k--go">確認送出</span>。
+      </div>
+    </div>
+    <figure class="shot shot--phone">
+      <div class="shot__img">
+        <img src="img/m-submit.webp" width="390" height="844" alt="最下面的「確認送出」" loading="lazy">
+        <span class="mark" style="left:2.67%;top:88.68%;width:94.67%;height:8.03%"></span>
+      </div>
+      <figcaption>最下面的「確認送出」</figcaption>
+    </figure>
+    <figure class="shot shot--phone">
+      <div class="shot__img">
+        <img src="img/m-missing.webp" width="390" height="844" alt="漏填時，紅字標出要補的地方" loading="lazy">
+        <span class="mark" style="left:6.41%;top:44.02%;width:87.18%;height:23.07%"></span>
+        <span class="mark" style="left:18.12%;top:91.28%;width:63.76%;height:6.90%"></span>
+      </div>
+      <figcaption>漏填時，紅字標出要補的地方</figcaption>
+    </figure>
+  </div>
+
+  <div class="step">
+    <div>
+      <h3><span class="sub">⑦</span>看到「已完成送出」</h3>
+      <p>看到「已完成送出」，就是送出成功了。</p>
+      <p>請民眾把這個畫面拿給工作人員，進入<a href="#step3">第 3 步</a>。</p>
+    </div>
+    <figure class="shot shot--phone">
+      <div class="shot__img">
+        <img src="img/m-done.webp" width="390" height="844" alt="「已完成送出」畫面" loading="lazy">
+        <span class="mark" style="left:41.74%;top:43.80%;width:16.51%;height:7.62%"></span>
+        <span class="mark" style="left:6.41%;top:60.93%;width:87.18%;height:19.63%"></span>
+      </div>
+      <figcaption>「已完成送出」畫面</figcaption>
+    </figure>
+  </div>
+
+  <div class="step">
+    <div>
+      <h3><span class="sub">⑧</span>還要填下一張表單</h3>
+      <p>請民眾回到海報，掃描下一張表單的 QR code，輸入<b>同一個身分證號</b>。</p>
+      <p>姓名、生日、電話、地址會自動帶入，請民眾看一下有沒有錯，再往下填。</p>
+    </div>
+    <figure class="shot shot--phone">
+      <div class="shot__img">
+        <img src="img/m-prefill.webp" width="390" height="844" alt="基本資料已自動帶入" loading="lazy">
+        <span class="mark" style="left:6.41%;top:23.98%;width:87.18%;height:9.26%"></span>
+        <span class="mark" style="left:6.41%;top:38.30%;width:87.18%;height:7.02%"></span>
+      </div>
+      <figcaption>基本資料已自動帶入</figcaption>
+    </figure>
+  </div>
+
+  <div class="planb" id="planb">
+    <div>
+      <h3><span class="planb__tag">備案</span>民眾沒有手機</h3>
+      <p>院方沒有平板可借。請民眾借用同行家人的手機，或現場其他可借用的手機來填。</p>
+      <p><b>同一支手機要換下一位填寫時：</b></p>
+      <ol class="do">
+        <li>先確認前一位要填的表單<b>都已送出</b>（都看過「已完成送出」）。</li>
+        <li>滑到頁面最下方，按<span class="k">清除此裝置上的暫存資料</span>，再按「確定」。</li>
+        <li>畫面回到輸入身分證號，請下一位輸入自己的身分證號。</li>
+      </ol>
+      <div class="warn">清除後，前一位就不能再從這支手機「退回修改」。前一位需要修改時，請他重新填一份，再到後台把舊的那筆「作廢」。</div>
+    </div>
+    <figure class="shot shot--phone">
+      <div class="shot__img">
+        <img src="img/m-clear.webp" width="390" height="844" alt="頁面最下方的清除按鈕" loading="lazy">
+        <span class="mark" style="left:24.60%;top:90.90%;width:50.80%;height:5.61%"></span>
+      </div>
+      <figcaption>頁面最下方的清除按鈕</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- 第 3 步 -->
+<section class="chapter chapter--staff" id="step3">
+  <h2><span class="no">3</span>協同完成（後台）</h2>
+
+  <div class="step step--wide">
+    <div>
+      <h3><span class="sub">①</span>找到民眾的表單</h3>
+      <ol class="do">
+        <li>民眾出示「已完成送出」畫面。</li>
+        <li>後台點<span class="menu">「協同完成」</span>，輸入民眾的身分證號（輸入部分號碼也可以），按<span class="k k--go">篩選</span>。</li>
+        <li>在要處理的那一列按<span class="k">開啟</span>。</li>
+      </ol>
+      <div class="shots">
+        <figure class="shot shot--screen">
+          <div class="shot__img">
+            <img src="img/a-list.webp" width="1180" height="820" alt="輸入身分證號 → 篩選 → 開啟" loading="lazy">
+            <span class="mark" style="left:9.83%;top:26.50%;width:17.12%;height:5.61%"></span>
+            <span class="mark" style="left:80.17%;top:38.20%;width:6.78%;height:6.10%"></span>
+            <span class="mark" style="left:76.40%;top:67.47%;width:5.77%;height:5.12%"></span>
+          </div>
+          <figcaption>輸入身分證號 → 篩選 → 開啟</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+
+  <div class="step step--wide">
+    <div>
+      <h3><span class="sub">②</span>核對民眾填寫的內容</h3>
+      <ul class="dots">
+        <li>最上面的黃色提示框，會說明現在要做什麼。</li>
+        <li>需要核對時，按「民眾填寫內容」右邊的<span class="k">展開</span>。民眾填的內容只能看，不能改。</li>
+      </ul>
+      <div class="shots">
+        <figure class="shot shot--screen">
+          <div class="shot__img">
+            <img src="img/a-open.webp" width="1180" height="820" alt="提示框與「民眾填寫內容」" loading="lazy">
+            <span class="mark" style="left:1.95%;top:26.34%;width:96.10%;height:7.32%"></span>
+            <span class="mark" style="left:3.56%;top:35.00%;width:92.88%;height:8.44%"></span>
+          </div>
+          <figcaption>提示框與「民眾填寫內容」</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+
+  <div class="step step--wide">
+    <div>
+      <h3><span class="sub">③</span>填寫「院所填寫區」</h3>
+      <ul class="dots">
+        <li>往下填寫「院所填寫區」。內容會自動儲存，不用另外按儲存。</li>
+        <li>「成人預防保健」的同意簽名在院所填寫區，請民眾在工作人員的裝置上簽名。</li>
+      </ul>
+      <div class="tip">以糞便潛血檢查為例：院外活動時，「篩檢地點」請改選「① 社區或職場設站篩檢」（系統預設是門診）。</div>
+      <div class="shots">
+        <figure class="shot shot--screen">
+          <div class="shot__img">
+            <img src="img/a-staff.webp" width="776" height="342" alt="院所填寫區（以糞便潛血檢查為例）" loading="lazy">
+            <span class="mark" style="left:4.33%;top:74.65%;width:29.17%;height:15.07%"></span>
+          </div>
+          <figcaption>院所填寫區（以糞便潛血檢查為例）</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+
+  <div class="step step--wide">
+    <div>
+      <h3><span class="sub">④</span>按「確認送出」</h3>
+      <ul class="dots">
+        <li>院所填寫區最下面，左邊會顯示「已自動儲存」與時間。</li>
+        <li>確認無誤後，按<span class="k k--staff">確認送出</span>。</li>
+        <li>有標＊的欄位還沒填時，系統會列出來並詢問是否仍要送出。</li>
+      </ul>
+      <div class="shots">
+        <figure class="shot shot--screen shot--strip">
+          <div class="shot__img">
+            <img src="img/a-confirm.webp" width="784" height="96" alt="左邊顯示儲存時間，右邊是「確認送出」" loading="lazy">
+            <span class="mark" style="left:2.11%;top:42.51%;width:15.07%;height:33.65%"></span>
+            <span class="mark" style="left:83.70%;top:30.06%;width:14.19%;height:58.55%"></span>
+          </div>
+          <figcaption>左邊顯示儲存時間，右邊是「確認送出」</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 第 4 步 -->
+<section class="chapter chapter--staff" id="step4">
+  <h2><span class="no">4</span>結束</h2>
+  <div class="step step--wide">
+    <div>
+      <h3><span class="sub">①</span>表單鎖定，流程結束</h3>
+      <p>確認送出後，最上面的提示框會變成「已完成，資料已鎖定」。</p>
+      <div class="shots">
+        <figure class="shot shot--screen">
+          <div class="shot__img">
+            <img src="img/a-completed.webp" width="1180" height="820" alt="後台顯示「已完成，資料已鎖定」" loading="lazy">
+            <span class="mark" style="left:1.95%;top:26.34%;width:96.10%;height:7.32%"></span>
+          </div>
+          <figcaption>後台顯示「已完成，資料已鎖定」</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+
+  <div class="step step--wide">
+    <div>
+      <h3><span class="sub">②</span>需要紙本時再列印</h3>
+      <p>院所填寫區最下面，按<span class="k k--staff">列印 / 另存原樣 PDF</span>。需要修改時，按<span class="k">取消送出</span>。</p>
+      <div class="shots">
+        <figure class="shot shot--screen shot--strip">
+          <div class="shot__img">
+            <img src="img/a-print.webp" width="784" height="96" alt="右邊是列印，左邊是取消送出" loading="lazy">
+            <span class="mark" style="left:73.43%;top:30.06%;width:24.46%;height:58.55%"></span>
+            <span class="mark" style="left:59.30%;top:30.06%;width:14.19%;height:58.55%"></span>
+          </div>
+          <figcaption>右邊是列印，左邊是取消送出</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div>
+      <h3><span class="sub">③</span>民眾的手機也會更新</h3>
+      <p>民眾手機上會顯示「院所已完成填寫，資料已鎖定」，「退回修改」也會停用。</p>
+    </div>
+    <figure class="shot shot--phone">
+      <div class="shot__img">
+        <img src="img/m-locked.webp" width="390" height="844" alt="民眾手機：已鎖定，不能再退回修改" loading="lazy">
+        <span class="mark" style="left:6.41%;top:52.16%;width:87.18%;height:9.26%"></span>
+        <span class="mark" style="left:49.81%;top:82.72%;width:43.78%;height:7.02%"></span>
+      </div>
+      <figcaption>民眾手機：已鎖定，不能再退回修改</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- 民眾填錯了怎麼辦 -->
+<section class="chapter" id="fix">
+  <h2><span class="no no--soft">改</span>民眾填錯了怎麼辦？</h2>
+  <div class="step">
+    <div>
+      <table class="simple">
+        <thead><tr><th>情況</th><th>怎麼做</th></tr></thead>
+        <tbody>
+          <tr><td>還沒按「確認送出」</td><td>直接改就好。</td></tr>
+          <tr><td>已經送出，工作人員還沒確認送出</td><td>請民眾在「已完成送出」畫面按<span class="k">退回修改</span>，改好後<b>重新簽名</b>，再按<span class="k k--go">確認送出</span>。</td></tr>
+          <tr><td>工作人員已經確認送出</td><td>在後台按<span class="k">取消送出</span>，民眾的「退回修改」就會恢復可用，再照上一列處理。</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <figure class="shot shot--phone">
+      <div class="shot__img">
+        <img src="img/m-return.webp" width="390" height="844" alt="民眾手機上的「退回修改」" loading="lazy">
+        <span class="mark" style="left:49.81%;top:81.39%;width:43.78%;height:7.02%"></span>
+      </div>
+      <figcaption>民眾手機上的「退回修改」</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- 特殊情況與常見問題 -->
+<section class="chapter" id="faq">
+  <h2><span class="no no--soft">問</span>特殊情況與常見問題</h2>
+
+  <h3 style="font-size:24px;margin:6px 0 10px">後台的特殊情況</h3>
+  <table class="simple">
+    <thead><tr><th>狀況</th><th>處理</th></tr></thead>
+    <tbody>
+      <tr><td>狀態「民眾修改中」</td><td>民眾按了退回修改，要等民眾重新送出後才能確認送出；院所填寫區可以先填。</td></tr>
+      <tr><td>列表標示「可能重複」</td><td>同一人同一張表單送出兩次，把多的那筆<span class="k">作廢</span>（之後可以「復原」）。</td></tr>
+    </tbody>
+  </table>
+
+  <h3 style="font-size:24px;margin:32px 0 0">常見問題</h3>
+  <dl class="qa">
+    <dt>民眾不小心把畫面關掉了，要重寫嗎？</dt>
+    <dd>不用。12 小時內用同一支手機重新掃描 QR code，輸入相同的身分證號，剛才填的內容都還在。</dd>
+
+    <dt>民眾的手機畫面寫「目前未開放填寫」？</dt>
+    <dd>到後台<span class="menu">「表單管理」</span>確認這張表單有打開「開放填寫」，開放期間包含現在。</dd>
+
+    <dt>按「確認送出」後，出現「網路連線不穩定」？</dt>
+    <dd>等一下再按一次「確認送出」。已經填的內容會留在手機上，不會不見。</dd>
+
+    <dt>後台找不到民眾的資料？</dt>
+    <dd>先確認民眾的手機上有「已完成送出」畫面；再改用部分身分證號搜尋，可能是號碼輸入錯誤。</dd>
+
+    <dt>民眾問資料安不安全？</dt>
+    <dd>按「確認送出」後，資料才會傳到醫院。手機上暫存的資料 12 小時後會自動刪除；想馬上刪除，可以按頁面最下方的「清除此裝置上的暫存資料」。</dd>
+  </dl>
+</section>
+
+<p class="foot">烏日澄清醫院｜預防保健服務<br>手冊更新日期：2026/10/25　截圖中的姓名、身分證號皆為示範資料</p>
+
+</div>
+</body>
+</html>

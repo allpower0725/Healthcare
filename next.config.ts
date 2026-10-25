@@ -12,6 +12,8 @@ const nextConfig: NextConfig = {
     return [
       { source: "/", destination: "/admin/forms", permanent: false },
       { source: "/admin", destination: "/admin/forms", permanent: false },
+      // 操作手冊是 public/manual/ 的靜態網頁，系統畫面不連結
+      { source: "/manual", destination: "/manual/index.html", permanent: false },
     ];
   },
 };

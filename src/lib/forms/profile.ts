@@ -1,4 +1,4 @@
-// 6 張表單共用的基本資料欄位（名稱以 profile. 開頭，同一裝置填過會自動帶入其他表單）
+// 表單共用的基本資料欄位（名稱以 profile. 開頭，同一裝置填過會自動帶入其他表單）
 import type { FormValues } from '@/db/schema';
 import type { FieldSpec, Rule } from './engine';
 import { splitPhone, splitSuffix } from './format';

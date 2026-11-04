@@ -311,7 +311,7 @@ export function FormApp({
         requestIdRef.current = null;
         setShowPublic(false);
         setPhase(editingAgain ? 'filling' : 'done');
-        showToast(editingAgain ? '表單已再次退回修改，請確認內容並重新簽名後送出。' : '已送出，謝謝您的填寫');
+        showToast(editingAgain ? `表單已再次退回修改，請確認內容${imageKeys.length > 0 ? '並重新簽名' : ''}後送出。` : '已送出，謝謝您的填寫');
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else if (result.reason === 'invalid' && result.errors) {
         form.setErrors(result.errors);
@@ -522,7 +522,7 @@ export function FormApp({
             </h2>
             <p className="done__text">請將此畫面出示給櫃台醫護人員。</p>
             {locked && (
-              <p className="notice notice--warn">院所已完成填寫，資料已鎖定；如需修改，請洽櫃台醫護人員。</p>
+              <p className="notice notice--warn">院所已完成{formId === 'labor' ? '確認' : '填寫'}，資料已鎖定；如需修改，請洽櫃台醫護人員。</p>
             )}
             <dl className="done__summary">
               <dt>姓名</dt>
@@ -587,7 +587,7 @@ export function FormApp({
               >
                 {busy ? '送出中…' : '確認送出'}
               </button>
-              <p className="submitbar__note">送出後，將由醫護人員接續填寫院所資料。</p>
+              <p className="submitbar__note">{formId === 'labor' ? '送出後，將由醫護人員核對問卷內容。' : '送出後，將由醫護人員接續填寫院所資料。'}</p>
             </div>
           </>
         )}

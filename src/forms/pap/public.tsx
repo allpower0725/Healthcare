@@ -1,6 +1,6 @@
 'use client';
 
-import { Choices, Field, RocDateInputs, ShowIf, TextInput } from '@/components/forms/fields';
+import { Choices, Field, RocDateInputs, RocYearInput, ShowIf } from '@/components/forms/fields';
 import { ProfileSection, RegisteredRegionStep, StepCard } from '@/components/forms/sections';
 import { SignatureField } from '@/components/forms/signature';
 import { PAP_QUESTIONS } from '@/lib/forms/defs/pap';
@@ -11,13 +11,9 @@ function Question({ q }: { q: (typeof PAP_QUESTIONS)[number] }) {
       <Choices name={q.key} options={q.options} />
       {q.key === 'pap.q15' && (
         <ShowIf when="pap.q15=1">
-          <div className="inline-fields">
-            <span className="affix">
-              <span className="affix__text">接種年份 民國</span>
-              <TextInput name="pap.q15Year" maxLength={3} digits ariaLabel="HPV 疫苗接種年份（民國年，選填）" />
-              <span className="affix__text">年（選填）</span>
-            </span>
-          </div>
+          <Field rule="pap.q15Year" label="接種年份（選填）" role="group">
+            <RocYearInput name="pap.q15Year" label="HPV 疫苗接種年份（民國年，選填）" />
+          </Field>
         </ShowIf>
       )}
     </Field>

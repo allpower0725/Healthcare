@@ -4,6 +4,7 @@ import {
   checkTwId,
   clampDay,
   clampMonth,
+  normalizeIntegerInput,
   rocToIso,
   splitPhone,
   splitSuffix,
@@ -55,6 +56,14 @@ describe('民國日期', () => {
 });
 
 describe('日期輸入上限', () => {
+  it('輸入、貼上皆只保留設定的數字位數；年資沿用 120 年／11 月上限', () => {
+    expect(normalizeIntegerInput('民國12345年', 3)).toBe('123');
+    expect(normalizeIntegerInput('43', 2, 11)).toBe('11');
+    expect(normalizeIntegerInput('999', 3, 120)).toBe('120');
+    expect(normalizeIntegerInput('0', 2, 11)).toBe('0');
+    expect(normalizeIntegerInput('', 3, 120)).toBe('');
+    expect(clampMonth(normalizeIntegerInput('43', 2))).toBe('12');
+  });
   it('月份超過 12 固定為 12；00 改為 01；輸入中的 0、1 保留', () => {
     expect(clampMonth('13')).toBe('12');
     expect(clampMonth('99')).toBe('12');

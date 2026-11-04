@@ -43,6 +43,13 @@
       "when": 1792856015842,
       "tag": "0005_enable_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793760883168,
+      "tag": "0006_add_labor_form",
+      "breakpoints": true
     }
   ]
 }

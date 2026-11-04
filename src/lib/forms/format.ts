@@ -27,6 +27,12 @@ export function isTaiwanCitizenId(id: string) {
 
 const pad = (n: number) => String(n).padStart(2, '0');
 
+/** 整數欄位輸入：數字、位數與既有上限；允許空白及輸入中的 0。 */
+export function normalizeIntegerInput(raw: string, maxLength: number, maxValue?: number) {
+  const value = raw.replace(/\D/g, '').slice(0, maxLength);
+  return value && maxValue != null && Number(value) > maxValue ? String(maxValue) : value;
+}
+
 /** 民國年月日轉成西元 ISO 日期（YYYY-MM-DD）；日期不存在或格式錯誤回傳 null */
 export function rocToIso(y: string, m: string, d: string): string | null {
   if (!/^\d{1,3}$/.test(y) || !/^\d{1,2}$/.test(m) || !/^\d{1,2}$/.test(d) || Number(y) < 1) return null;

@@ -6,8 +6,9 @@ import { hpDef } from './hp';
 import { hpvDef } from './hpv';
 import { oralDef } from './oral';
 import { papDef } from './pap';
+import { laborDef } from './labor';
 
-/** 已完成電子化的表單（6 張） */
+/** 已完成電子化的表單（7 張） */
 const FORM_DEFS: Partial<Record<FormId, FormDef>> = {
   hpv: hpvDef,
   pap: papDef,
@@ -15,6 +16,7 @@ const FORM_DEFS: Partial<Record<FormId, FormDef>> = {
   hp: hpDef,
   fit: fitDef,
   adult: adultDef,
+  labor: laborDef,
 };
 
 export function getFormDef(formId: FormId) {

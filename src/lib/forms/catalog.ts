@@ -1,6 +1,6 @@
-// 6 種預防保健表單；代號沿用原電子表單的檔名，也用在民眾端網址 /f/{代號}
+// 表單代號也用在民眾端網址 /f/{代號}
 
-export const FORM_IDS = ['hpv', 'pap', 'oral', 'hp', 'fit', 'adult'] as const;
+export const FORM_IDS = ['hpv', 'pap', 'oral', 'hp', 'fit', 'adult', 'labor'] as const;
 export type FormId = (typeof FORM_IDS)[number];
 
 export type FormInfo = {
@@ -23,6 +23,16 @@ export type FormInfo = {
 };
 
 export const FORMS: Record<FormId, FormInfo> = {
+  labor: {
+    id: 'labor',
+    name: '勞工健康檢查',
+    shortName: '勞工健康檢查',
+    officialTitle: '勞工一般體格及健康檢查紀錄',
+    color: '#986122',
+    tint: '#ffe1a1',
+    minutes: 5,
+    steps: 5,
+  },
   hpv: {
     id: 'hpv',
     name: '人類乳突病毒（HPV）檢測',

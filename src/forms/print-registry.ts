@@ -7,8 +7,9 @@ import { HpPrint } from './hp/print';
 import { HpvPrint } from './hpv/print';
 import { OralPrint } from './oral/print';
 import { PapPrint } from './pap/print';
+import { LaborPrint } from './labor/print';
 
-/** 原樣紙本（6 張） */
+/** 原樣紙本（7 張） */
 const FORM_PRINTS: Partial<Record<FormId, ComponentType<{ data: PrintData }>>> = {
   hpv: HpvPrint,
   pap: PapPrint,
@@ -16,6 +17,7 @@ const FORM_PRINTS: Partial<Record<FormId, ComponentType<{ data: PrintData }>>> =
   hp: HpPrint,
   fit: FitPrint,
   adult: AdultPrint,
+  labor: LaborPrint,
 };
 
 export function getFormPrint(formId: FormId) {

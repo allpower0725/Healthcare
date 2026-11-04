@@ -51,7 +51,7 @@ describe('開放狀態', () => {
 describe('開放設定', () => {
   beforeEach(resetDb);
 
-  it('依表單順序列出 6 筆，預設關閉', async () => {
+  it('依表單順序列出 7 筆，預設關閉', async () => {
     const list = await listFormSettings();
     expect(list.map((s) => s.formId)).toEqual([...FORM_IDS]);
     expect(list.every((s) => !s.isOpen && s.opensAt === null && s.closesAt === null)).toBe(true);

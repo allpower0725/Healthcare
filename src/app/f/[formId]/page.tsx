@@ -14,7 +14,7 @@ import { FormApp } from './form-app';
 
 type Props = PageProps<'/f/[formId]'>;
 
-// 6 張表單的頁面可預先產生，開放狀態在請求時才讀取
+// 各表單頁面可預先產生，開放狀態在請求時才讀取
 export function generateStaticParams() {
   return FORM_IDS.map((formId) => ({ formId }));
 }

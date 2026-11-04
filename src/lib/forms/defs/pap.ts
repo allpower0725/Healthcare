@@ -245,12 +245,14 @@ const publicRules: Rule[] = [
   REGISTERED_REGION_RULE,
   ...PAP_QUESTIONS.map((q): Rule => ({ id: q.key, type: 'choice', keys: [q.key], required: true })),
   { id: 'pap.q11', type: 'rocdate', keys: dateKeys('pap.q11'), range: 'past', showIf: NOT_MENOPAUSE },
+  { id: 'pap.q15Year', type: 'number', keys: ['pap.q15Year'], integer: true, min: 1, max: 999, showIf: 'pap.q15=1' },
   { id: 'pap.sigConsent', type: 'signature', keys: ['pap.sigConsent'], required: true },
 ];
 
 const staffRules: Rule[] = [
   { id: 'pap.collect', type: 'rocdate', keys: dateKeys('pap.collect') },
   { id: 'pap.recv', type: 'rocdate', keys: dateKeys('pap.recv') },
+  { id: 'pap.cpDate', type: 'monthday', keys: ['pap.cpM', 'pap.cpD'] },
 ];
 
 export const papDef: FormDef = {

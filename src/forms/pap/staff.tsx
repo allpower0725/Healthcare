@@ -1,6 +1,6 @@
 'use client';
 
-import { Checks, Choices, Field, ShowIf, TextArea, TextInput } from '@/components/forms/fields';
+import { Checks, Choices, Field, RocDateInputs, ShowIf, TextArea, TextInput } from '@/components/forms/fields';
 import { DateField, Req, StaffCard } from '@/components/forms/sections';
 import { SignatureField } from '@/components/forms/signature';
 import { PAP_DX, PAP_STAFF_OPTIONS as O } from '@/lib/forms/defs/pap';
@@ -191,16 +191,9 @@ export function PapStaff() {
               <span className="affix__text">代碼</span>
               <TextInput name="pap.cpCode" maxLength={2} uppercase ariaLabel="Cytopathologist 代碼" />
             </span>
-            <span className="affix">
-              <span className="affix__text">
-                <Req />
-                確診日期
-              </span>
-              <TextInput name="pap.cpM" maxLength={2} digits ariaLabel="確診日期（月）" />
-              <span className="affix__text">月</span>
-              <TextInput name="pap.cpD" maxLength={2} digits ariaLabel="確診日期（日）" />
-              <span className="affix__text">日</span>
-            </span>
+            <Field rule="pap.cpDate" role="group" label={<><Req />確診日期</>}>
+              <RocDateInputs prefix="pap.cp" label="確診日期" precision="monthday" />
+            </Field>
           </div>
         </div>
       </StaffCard>

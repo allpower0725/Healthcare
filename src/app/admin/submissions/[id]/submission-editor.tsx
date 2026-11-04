@@ -136,7 +136,7 @@ export function SubmissionEditor(props: Props) {
   async function print() {
     setBusy(true);
     try {
-      if (editable) dirty.current = true;
+      if (editable && props.formId !== 'labor') dirty.current = true;
       if (!(await flush())) return;
       await printDocument(props.printHref);
     } catch (cause) {
@@ -221,8 +221,12 @@ export function SubmissionEditor(props: Props) {
         className={`notice ${props.status === 'completed' ? 'notice--info' : 'notice--warn'} ${styles.statusNotice}`}
         role="status"
       >
-        {props.status === 'submitted' && '民眾已送出。請填寫下方的「院所填寫區」，填完後按最下面的「確認送出」。'}
-        {props.status === 'returned' && '民眾正在修改，等民眾重新送出後才能確認送出；院所填寫區仍可先填寫。'}
+        {props.status === 'submitted' && (props.formId === 'labor'
+          ? '民眾已送出。請核對上方問卷內容，確認無誤後按「確認送出」。'
+          : '民眾已送出。請填寫下方的「院所填寫區」，填完後按最下面的「確認送出」。')}
+        {props.status === 'returned' && (props.formId === 'labor'
+          ? '民眾正在修改，等民眾重新送出後才能確認送出。'
+          : '民眾正在修改，等民眾重新送出後才能確認送出；院所填寫區仍可先填寫。')}
         {props.status === 'completed' &&
           `${props.completedNote ?? '已完成，資料已鎖定。'}需要修改時，按最下面的「取消送出」。`}
         {props.status === 'voided' && '這筆資料已作廢，列表預設不顯示（勾選狀態「已作廢」才看得到）。需要時可按最下面的「復原」。'}
@@ -255,14 +259,14 @@ export function SubmissionEditor(props: Props) {
             </span>
             <div>
               <h2 className="staff__title" id="staff-title">
-                院所填寫區
+                {props.formId === 'labor' ? '院所確認' : '院所填寫區'}
               </h2>
-              <p className="staff__desc">{editable ? '由醫療院所及檢驗單位填寫；內容會自動儲存。' : '已鎖定，無法修改。'}</p>
+              <p className="staff__desc">{props.formId === 'labor' ? '由院所人員核對民眾填寫內容。' : editable ? '由醫療院所及檢驗單位填寫；內容會自動儲存。' : '已鎖定，無法修改。'}</p>
             </div>
           </header>
           <FormContext.Provider value={staff.ctx}>
             <fieldset disabled={!editable} className={styles.staffFields}>
-              <legend className="sr-only">院所填寫區</legend>
+              <legend className="sr-only">{props.formId === 'labor' ? '院所確認' : '院所填寫區'}</legend>
               <ui.Staff publicData={props.publicData} />
             </fieldset>
           </FormContext.Provider>
@@ -280,7 +284,7 @@ export function SubmissionEditor(props: Props) {
           {/* 填完院所區就在這裡送出 */}
           <div className="staff__actions">
             <div className="staff__buttons">
-              {editable && (
+              {editable && props.formId !== 'labor' && (
                 <span className="staff__save" aria-live="polite">
                   {saveNote}
                 </span>

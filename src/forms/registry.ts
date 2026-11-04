@@ -17,6 +17,8 @@ import { OralPublic } from './oral/public';
 import { OralStaff } from './oral/staff';
 import { PapPublic } from './pap/public';
 import { PapStaff } from './pap/staff';
+import { LaborPublic } from './labor/public';
+import { LaborStaff } from './labor/staff';
 
 export type FormUi = {
   Public: ComponentType<{ prefilled: boolean }>;
@@ -26,7 +28,7 @@ export type FormUi = {
   onSet?: (key: string, value: string | string[], set: (key: string, value: string | string[]) => void) => void;
 };
 
-/** 已完成電子化的表單畫面（6 張） */
+/** 已完成電子化的表單畫面（7 張） */
 const FORM_UI: Partial<Record<FormId, FormUi>> = {
   hpv: { Public: HpvPublic, Staff: HpvStaff, onSet: hpvOnSet },
   pap: { Public: PapPublic, Staff: PapStaff },
@@ -34,6 +36,7 @@ const FORM_UI: Partial<Record<FormId, FormUi>> = {
   hp: { Public: HpPublic, Staff: HpStaff, onSet: hpOnSet },
   fit: { Public: FitPublic, Staff: FitStaff },
   adult: { Public: AdultPublic, Staff: AdultStaff, onSet: adultOnSet },
+  labor: { Public: LaborPublic, Staff: LaborStaff },
 };
 
 export function getFormUi(formId: FormId) {

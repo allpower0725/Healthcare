@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { Checks, Choices, Field, Flag, ShowIf, TextInput } from '@/components/forms/fields';
+import { Checks, Choices, Field, Flag, RocYearInput, ShowIf, TextInput } from '@/components/forms/fields';
 import { MobileField, ProfileSection, StepCard } from '@/components/forms/sections';
 import { SignatureField } from '@/components/forms/signature';
 import { HP_FAMILY, HP_LIFESTYLE, HP_OPTIONS as O, PMH_DISEASE } from '@/lib/forms/defs/hp';
@@ -27,17 +27,12 @@ function Extra({ when, name, max, placeholder, label }: { when: string; name: st
 function YearOrUnknown({ when, caption, name, aria }: { when: string; caption: string; name: string; aria: string }) {
   return (
     <ShowIf when={when}>
-      <div className="inline-fields" role="group" aria-label={`${caption}（選填）`}>
-        <span className="field__hint" style={{ margin: 0 }}>
-          {caption}（選填）
-        </span>
-        <span className="affix">
-          <span className="affix__text">民國</span>
-          <TextInput name={name} maxLength={3} digits ariaLabel={aria} />
-          <span className="affix__text">年</span>
-        </span>
-        <Flag name={`${name}U`}>不詳</Flag>
-      </div>
+      <Field rule={name} role="group" label={`${caption}（選填）`}>
+        <div className="inline-fields">
+          <RocYearInput name={name} label={aria} />
+          <Flag name={`${name}U`}>不詳</Flag>
+        </div>
+      </Field>
     </ShowIf>
   );
 }

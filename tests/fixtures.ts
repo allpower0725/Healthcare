@@ -1,3 +1,15 @@
+/** 最小完整的勞工健檢問卷，日期與工時明細可留空。 */
+export function laborPublicSample(): Record<string, string | string[]> {
+  return {
+    'profile.idNo': 'A234567893', 'profile.name': '測試勞工',
+    'profile.birthY': '72', 'profile.birthM': '5', 'profile.birthD': '18', 'profile.sex': 'F',
+    'profile.email': 'labor@example.com', 'labor.company': '測試事業單位',
+    'labor.currentHas': 'N', 'labor.previousHas': 'N', 'labor.reason': 'new',
+    'labor.diseases': ['none'], 'labor.symptoms': ['none'],
+    'labor.smoke': 'never', 'labor.betel': 'never', 'labor.drink': 'never',
+  };
+}
+
 /** 一份填寫完整、通過驗證的 HPV 民眾區 */
 export function hpvPublicSample(): Record<string, string> {
   return {

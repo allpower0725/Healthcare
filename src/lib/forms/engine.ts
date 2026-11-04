@@ -34,6 +34,10 @@ export type RuleType =
   | 'choice'
   | 'multi'
   | 'rocdate'
+  | 'monthday'
+  | 'monthrange'
+  | 'duration'
+  | 'number'
   | 'twid'
   | 'phone'
   | 'email'
@@ -53,6 +57,9 @@ export type Rule = {
   range?: 'birth' | 'past';
   msg?: string;
   showIf?: Condition;
+  min?: number;
+  max?: number;
+  integer?: boolean;
 };
 
 export type FormDef = {
@@ -172,6 +179,37 @@ function ruleError(rule: Rule, values: FormValues, today: string): string | null
   const [k0, k1, k2, k3, k4] = rule.keys;
 
   switch (rule.type) {
+    case 'monthday': {
+      const [m, d] = [text(k0), text(k1)];
+      if (!m && !d) return rule.required ? '請填寫月、日' : null;
+      if (!m || !d) return '請完整填寫月、日';
+      // 原表未指定年份，二月保留 29 日的可能性。
+      return rocToIso('113', m, d) ? null : '日期不存在，請再確認';
+    }
+    case 'number': {
+      const v = text(k0);
+      if (!v) return rule.required ? '請填寫此欄位' : null;
+      if (!/^\d+(?:\.\d+)?$/.test(v) || !Number.isFinite(Number(v))) return '請輸入有效的非負數字';
+      const n = Number(v);
+      if (rule.integer && !Number.isInteger(n)) return '請填寫整數';
+      if (rule.min != null && n < rule.min) return `請填寫不小於 ${rule.min} 的數值`;
+      if (rule.max != null && n > rule.max) return `請填寫不大於 ${rule.max} 的數值`;
+      return null;
+    }
+    case 'duration': {
+      const [y, m] = [text(k0), text(k1)];
+      if (!y && !m && !rule.required) return null;
+      if (!y || !m) return '請完整填寫年數及月數，不足一年或沒有剩餘月數請填 0';
+      return /^\d{1,3}$/.test(y) && /^\d{1,2}$/.test(m) && Number(y) <= 120 && Number(m) <= 11
+        ? null : '年數須為 0–120，月數須為 0–11 的整數';
+    }
+    case 'monthrange': {
+      const [sy, sm, ey, em] = [text(k0), text(k1), text(k2), text(k3)];
+      const start = sy || sm ? rocToIso(sy, sm, '1') : null;
+      const end = ey || em ? rocToIso(ey, em, '1') : null;
+      if (((sy || sm) && !start) || ((ey || em) && !end)) return '請完整填寫有效的民國年、月';
+      return start && end && start > end ? '截止年月不可早於起始年月' : null;
+    }
     case 'rocdate': {
       const [y, m, d] = [text(k0), text(k1), text(k2)];
       if (!y && !m && !d) return rule.required ? (rule.msg ?? '請填寫日期') : null;

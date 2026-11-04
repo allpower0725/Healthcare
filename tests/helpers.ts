@@ -5,7 +5,7 @@ import { FORM_IDS } from '@/lib/forms/catalog';
 
 export async function resetDb() {
   await db.execute(sql`truncate table heal_submission_events, heal_submissions, heal_sessions, heal_users, heal_form_settings cascade`);
-  // 與 migration 相同：6 張表單各一筆，預設關閉
+  // 與 migration 相同：每張表單各一筆，預設關閉
   await db.insert(formSettings).values(FORM_IDS.map((formId) => ({ formId })));
 }
 

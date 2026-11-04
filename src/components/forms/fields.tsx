@@ -2,7 +2,7 @@
 
 import { type ReactNode, useId, useRef } from 'react';
 import type { Condition } from '@/lib/forms/engine';
-import { clampDay, clampMonth, codeOf, todayRoc } from '@/lib/forms/format';
+import { clampDay, clampMonth, codeOf, normalizeIntegerInput, todayRoc } from '@/lib/forms/format';
 import type { Option } from '@/lib/forms/profile';
 import { TW_COUNTIES, TW_DISTRICTS } from '@/lib/forms/tw-districts';
 import { useFormContext, useText } from './context';
@@ -78,6 +78,8 @@ type TextInputProps = {
   id?: string;
   maxLength: number;
   digits?: boolean;
+  /** 整數輸入的既有上限，與 digits 一起使用。 */
+  maxValue?: number;
   /** 只留數字與小數點 */
   decimal?: boolean;
   uppercase?: boolean;
@@ -101,7 +103,7 @@ export function TextInput(props: TextInputProps) {
 
   const normalize = (raw: string) => {
     let v = raw;
-    if (props.digits) v = v.replace(/\D/g, '');
+    if (props.digits) v = normalizeIntegerInput(v, props.maxLength, props.maxValue);
     if (props.decimal) v = v.replace(/[^\d.]/g, '');
     if (props.uppercase) v = v.toUpperCase().replace(/\s+/g, '');
     return v;
@@ -139,8 +141,20 @@ export function TextInput(props: TextInputProps) {
   );
 }
 
-/** 民國年月日；年、月填滿後自動跳到下一格 */
-export function RocDateInputs({ prefix, label }: { prefix: string; label: string }) {
+/** 輸入框與單位視為一組，窄螢幕換行時不拆開。 */
+function DatePart({ unit, year = false, children }: { unit: string; year?: boolean; children: ReactNode }) {
+  return <span className={`date-part${year ? ' date-part--year' : ''}`}>
+    {children}<span className="rocdate__unit">{unit}</span>
+  </span>;
+}
+
+/** 民國日期、年月或原表僅有的月日；共用位數、月份及當月天數檢查。 */
+export function RocDateInputs({ prefix, label, precision = 'day', leadingLabel }: {
+  prefix: string;
+  label: string;
+  precision?: 'day' | 'month' | 'monthday';
+  leadingLabel?: string;
+}) {
   const month = useRef<HTMLInputElement>(null);
   const day = useRef<HTMLInputElement>(null);
   const { set, readOnly } = useFormContext();
@@ -148,7 +162,10 @@ export function RocDateInputs({ prefix, label }: { prefix: string; label: string
   const m = useText(`${prefix}M`);
   const d = useText(`${prefix}D`);
 
+  const hasYear = precision !== 'monthday';
+  const hasDay = precision !== 'month';
   const part = (key: string, value: string, max: number, aria: string, next?: React.RefObject<HTMLInputElement | null>, full?: (v: string) => boolean) => (
+    <DatePart unit={key === 'Y' ? '年' : key === 'M' ? '月' : '日'} year={key === 'Y'}>
     <input
       ref={key === 'M' ? month : key === 'D' ? day : undefined}
       className="input"
@@ -161,33 +178,52 @@ export function RocDateInputs({ prefix, label }: { prefix: string; label: string
       aria-label={aria}
       disabled={readOnly}
       onChange={(e) => {
-        let v = e.target.value.replace(/\D/g, '');
+        let v = normalizeIntegerInput(e.target.value, max);
         // 輸入當下就把月、日固定在最大值（月 12、日依該月天數）
         if (key === 'M') v = clampMonth(v);
-        if (key === 'D') v = clampDay(v, y, m);
+        if (key === 'D') v = clampDay(v, hasYear ? y : '', m);
         set(`${prefix}${key}`, v);
         // 改了年或月之後，已填的日超過新的天數時一併調整（例：3 月 31 日改成 2 月）
-        if (key !== 'D' && d) {
-          const fixed = clampDay(d, key === 'Y' ? v : y, key === 'M' ? v : m);
+        if (hasDay && key !== 'D' && d) {
+          const nextYear = hasYear ? (key === 'Y' ? v : y) : '';
+          const fixed = clampDay(d, nextYear, key === 'M' ? v : m);
           if (fixed !== d) set(`${prefix}D`, fixed);
         }
         const deleting = (e.nativeEvent as InputEvent).inputType?.startsWith('delete');
         if (!deleting && next?.current && full?.(v)) next.current.focus();
       }}
+      onBlur={(e) => {
+        // 0 可暫留供輸入 01；離開欄位後月、日不能維持為 0。
+        if (key !== 'Y' && e.currentTarget.value === '0') set(`${prefix}${key}`, '01');
+      }}
     />
+    </DatePart>
   );
 
   return (
     <div className="rocdate">
-      <span className="rocdate__unit">民國</span>
-      {part('Y', y, 3, `${label}（民國年）`, month, (v) => v.length >= 3 || (v.length === 2 && v[0] !== '1'))}
-      <span className="rocdate__unit">年</span>
-      {part('M', m, 2, `${label}（月）`, day, (v) => v.length >= 2 || (v.length === 1 && v > '1'))}
-      <span className="rocdate__unit">月</span>
-      {part('D', d, 2, `${label}（日）`)}
-      <span className="rocdate__unit">日</span>
+      {(hasYear || leadingLabel) && <span className="rocdate__unit">{leadingLabel}{hasYear ? '民國' : ''}</span>}
+      {hasYear && part('Y', y, 3, `${label}（民國年）`, month, (v) => v.length >= 3 || (v.length === 2 && v[0] !== '1'))}
+      {part('M', m, 2, `${label}（月）`, hasDay ? day : undefined, (v) => v.length >= 2 || (v.length === 1 && v > '1'))}
+      {hasDay && part('D', d, 2, `${label}（日）`)}
     </div>
   );
+}
+
+/** 年資／期間：年 0–120、剩餘月 0–11，與日曆月份的 1–12 分開。 */
+export function DurationInputs({ yearsName, monthsName, label }: { yearsName: string; monthsName: string; label: string }) {
+  return <div className="rocdate">
+    <DatePart unit="年" year><TextInput name={yearsName} digits maxLength={3} maxValue={120} ariaLabel={`${label}（年數）`} /></DatePart>
+    <DatePart unit="月"><TextInput name={monthsName} digits maxLength={2} maxValue={11} ariaLabel={`${label}（月數）`} /></DatePart>
+  </div>;
+}
+
+/** 只有民國年份的選填題，沿用相同的三位數欄寬。 */
+export function RocYearInput({ name, label }: { name: string; label: string }) {
+  return <div className="rocdate">
+    <span className="rocdate__unit">民國</span>
+    <DatePart unit="年" year><TextInput name={name} digits maxLength={3} ariaLabel={label} /></DatePart>
+  </div>;
 }
 
 /** 「今天」按鈕：帶入台灣時間的今天 */

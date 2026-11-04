@@ -29,7 +29,7 @@ function closedSetting(formId: FormId): FormSetting {
   return { formId, isOpen: false, opensAt: null, closesAt: null, updatedBy: null, updatedAt: new Date(0) };
 }
 
-/** 6 張表單的開放設定，依表單順序；資料列遺失時視為關閉 */
+/** 各表單的開放設定，依表單順序；資料列遺失時視為關閉 */
 export async function listFormSettings() {
   const rows = await db.select().from(formSettings);
   return FORM_IDS.map((id) => rows.find((row) => row.formId === id) ?? closedSetting(id));

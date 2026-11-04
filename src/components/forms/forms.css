@@ -44,10 +44,10 @@ html:has(.ppf-page)[data-font-size="xl"] { font-size: 137.5%; }
   justify-content: space-between;
   gap: 12px;
 }
-.ppf .brand { display: block; flex: none; line-height: 0; }
-.ppf .brand img { height: 30px; width: auto; }
+.ppf .brand { display: block; flex: 0 1 auto; min-width: 0; line-height: 0; }
+.ppf .brand img { height: 30px; width: auto; max-width: 100%; object-fit: contain; }
 
-.ppf .fontsize { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.ppf .fontsize { display: flex; flex: none; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
 .ppf .fontsize__btns { display: inline-flex; padding: 2px; border: 1px solid var(--line-strong); border-radius: 999px; background: #fff; }
 .ppf .fontsize__btns button {
   width: 40px;
@@ -268,16 +268,19 @@ html[data-font-size="xl"] .ppf .intro__art { width: clamp(88px, 24vw, 168px); }
 .ppf .input[readonly] { background: #f5f8f7; }
 .ppf textarea.input { min-height: 5.2rem; resize: vertical; }
 
-/* 民國年月日 */
+/* 日期／年月／年資：固定數字欄寬，單位與輸入框一起換行。 */
 .ppf .rocdate {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1.25fr) auto minmax(0, 1fr) auto minmax(0, 1fr) auto;
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: .4rem;
-  max-width: 24rem;
+  gap: .55rem .6rem;
+  max-width: 100%;
 }
-.ppf .rocdate .input { text-align: center; padding-left: .25rem; padding-right: .25rem; }
-.ppf .rocdate__unit { color: var(--muted); }
+.ppf .date-part { display: inline-flex; flex: none; align-items: center; gap: .35rem; white-space: nowrap; }
+.ppf .date-part > .input { flex: none; width: 3.1em; min-width: 0; text-align: center; padding-left: .25rem; padding-right: .25rem; }
+.ppf .date-part--year > .input { width: 3.8em; }
+.ppf .rocdate__unit { flex: none; white-space: nowrap; color: var(--muted); }
+.ppf .date-rows { display: grid; gap: .7rem; }
 
 /* 單選／複選 */
 .ppf .choices { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 8.2em), 1fr)); gap: .5rem; }

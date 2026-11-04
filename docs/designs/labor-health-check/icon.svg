@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-labelledby="labor-health-title">
+  <title id="labor-health-title">勞工健康檢查：安全帽與健檢報告</title>
+  <defs>
+    <clipPath id="labor-health-board"><rect x="108" y="52" width="98" height="160" rx="10"/></clipPath>
+    <clipPath id="labor-health-paper"><rect x="119" y="67" width="76" height="134" rx="4"/></clipPath>
+    <clipPath id="labor-health-clip"><rect x="135" y="47" width="44" height="18" rx="6"/></clipPath>
+    <clipPath id="labor-health-heart"><path d="M166 115C145 101 141 88 148 81C155 74 163 77 166 85C169 77 177 74 184 81C191 88 187 101 166 115Z"/></clipPath>
+    <clipPath id="labor-health-helmet"><path d="M28 137C28 100 48 74 84 74C120 74 140 100 140 137Z"/></clipPath>
+    <clipPath id="labor-health-ridge"><path d="M74 132V74Q74 65 84 65Q94 65 94 74V132Z"/></clipPath>
+    <clipPath id="labor-health-brim"><rect x="18" y="133" width="134" height="21" rx="8"/></clipPath>
+  </defs>
+  <circle cx="120" cy="126" r="102" fill="#dff0ea"/>
+  <circle cx="197" cy="55" r="27" fill="#fff0cf"/>
+  <circle cx="22" cy="100" r="4" fill="#a9bede"/>
+  <circle cx="218" cy="171" r="5" fill="#f7bccb"/>
+  <g stroke="#1f3d3a" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M201 20Q203.5 30.5 214 33Q203.5 35.5 201 46Q198.5 35.5 188 33Q198.5 30.5 201 20Z" fill="#ffd36e" stroke-width="3"/>
+    <path d="M221 55Q222.3 60.7 228 62Q222.3 63.3 221 69Q219.7 63.3 214 62Q219.7 60.7 221 55Z" fill="#ffd36e" stroke-width="2.5"/>
+    <path d="M28.5 35.5h7v7h7v7h-7v7h-7v-7h-7v-7h7Z" fill="#6cc3ad" stroke-width="3"/>
+    <ellipse cx="121" cy="217" rx="82" ry="5" fill="#bfdcd3" stroke="none"/>
+
+    <!-- 健檢報告：沿用既有圖示的藍色板夾、白紙與分塊陰影。 -->
+    <g transform="rotate(7 157 132)">
+      <rect x="108" y="52" width="98" height="160" rx="10" fill="#5c88c7" stroke="none"/>
+      <g clip-path="url(#labor-health-board)" stroke="none">
+        <rect x="196" y="48" width="14" height="170" fill="#3f66a3"/>
+        <rect x="104" y="204" width="106" height="12" fill="#3f66a3"/>
+      </g>
+      <path d="M113.5 69V133" fill="none" stroke="#b8cff0" stroke-width="3.5"/>
+      <rect x="108" y="52" width="98" height="160" rx="10" fill="none" stroke-width="4"/>
+      <rect x="119" y="67" width="76" height="134" rx="4" fill="#fff" stroke="none"/>
+      <g clip-path="url(#labor-health-paper)" stroke="none">
+        <rect x="188" y="63" width="11" height="142" fill="#e3ebf3"/>
+      </g>
+      <rect x="119" y="67" width="76" height="134" rx="4" fill="none" stroke-width="3"/>
+      <rect x="146" y="35" width="22" height="17" rx="7" fill="#2f8f7f" stroke-width="3.5"/>
+      <ellipse cx="157" cy="41.5" rx="5" ry="2.8" fill="#dff0ea" stroke-width="2.5"/>
+      <rect x="135" y="47" width="44" height="18" rx="6" fill="#2f8f7f" stroke="none"/>
+      <g clip-path="url(#labor-health-clip)" stroke="none">
+        <rect x="131" y="58" width="52" height="10" fill="#1f6b5f"/>
+      </g>
+      <path d="M142 52H162" fill="none" stroke="#9fe0cf" stroke-width="3"/>
+      <rect x="135" y="47" width="44" height="18" rx="6" fill="none" stroke-width="3.5"/>
+
+      <path d="M166 115C145 101 141 88 148 81C155 74 163 77 166 85C169 77 177 74 184 81C191 88 187 101 166 115Z" fill="#ef6b73" stroke="none"/>
+      <g clip-path="url(#labor-health-heart)" stroke="none">
+        <path d="M180 77C194 91 181 106 166 115L157 108C174 100 180 87 180 77Z" fill="#d24b57"/>
+      </g>
+      <ellipse cx="153" cy="86" rx="4.3" ry="2.7" transform="rotate(-35 153 86)" fill="#fff" stroke="none" opacity=".9"/>
+      <path d="M166 115C145 101 141 88 148 81C155 74 163 77 166 85C169 77 177 74 184 81C191 88 187 101 166 115Z" fill="none" stroke-width="3.5"/>
+      <path d="M131 130H149L155 121L162 140L169 124L174 130H188" fill="none" stroke="#ef6b73" stroke-width="3.5"/>
+      <rect x="133" y="160" width="13" height="13" rx="3" fill="#e8f4f0" stroke-width="2.5"/>
+      <path d="M136 166L139 169L144 163" fill="none" stroke="#23786a" stroke-width="2.8"/>
+      <path d="M154 166.5H183" fill="none" stroke="#c3d1e2" stroke-width="4"/>
+      <rect x="133" y="177" width="13" height="13" rx="3" fill="#e8f4f0" stroke-width="2.5"/>
+      <path d="M136 183L139 186L144 180" fill="none" stroke="#23786a" stroke-width="2.8"/>
+      <path d="M154 183.5H176" fill="none" stroke="#c3d1e2" stroke-width="4"/>
+    </g>
+
+    <!-- 安全帽：金黃主體、橙色暗面與白色高光，作為新表單的主要識別。 -->
+    <ellipse cx="85" cy="156" rx="58" ry="5" fill="#1f3d3a" stroke="none" opacity=".10"/>
+    <path d="M28 137C28 100 48 74 84 74C120 74 140 100 140 137Z" fill="#ffd36e" stroke="none"/>
+    <g clip-path="url(#labor-health-helmet)" stroke="none">
+      <path d="M110 78C128 106 122 126 103 142H147V82Z" fill="#eda94a"/>
+      <path d="M24 125H145V143H24Z" fill="#f3b64f"/>
+    </g>
+    <path d="M28 137C28 100 48 74 84 74C120 74 140 100 140 137Z" fill="none" stroke-width="4.5"/>
+    <path d="M41 116C44 101 51 91 62 87" fill="none" stroke="#fff" stroke-width="4.5" opacity=".95"/>
+    <circle cx="39.5" cy="125" r="2.2" fill="#fff" stroke="none" opacity=".95"/>
+    <path d="M74 132V74Q74 65 84 65Q94 65 94 74V132Z" fill="#ffe395" stroke="none"/>
+    <g clip-path="url(#labor-health-ridge)" stroke="none">
+      <path d="M87 63H98V135H87Z" fill="#eda94a"/>
+    </g>
+    <path d="M79 77V119" fill="none" stroke="#fff5d5" stroke-width="3.5"/>
+    <path d="M74 132V74Q74 65 84 65Q94 65 94 74V132Z" fill="none" stroke-width="3.5"/>
+    <path d="M54 114V129M114 114V129" fill="none" stroke="#bc7b32" stroke-width="3"/>
+    <rect x="18" y="133" width="134" height="21" rx="8" fill="#ffd36e" stroke="none"/>
+    <g clip-path="url(#labor-health-brim)" stroke="none">
+      <rect x="14" y="145" width="142" height="13" fill="#dc953c"/>
+      <rect x="133" y="131" width="24" height="26" fill="#eda94a"/>
+    </g>
+    <path d="M28 138.5H64" fill="none" stroke="#fff5d5" stroke-width="3.5"/>
+    <rect x="18" y="133" width="134" height="21" rx="8" fill="none" stroke-width="4"/>
+  </g>
+</svg>

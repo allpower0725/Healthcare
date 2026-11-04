@@ -261,6 +261,8 @@ const publicRules: Rule[] = [
   { id: 'hp.pmh', type: 'multi', keys: ['hp.pmh'], required: true, msg: '請至少選擇一項；沒有請選「無」' },
   required('hp.eradicate'),
   required('hp.endoscopy'),
+  { id: 'hp.pmhYear', type: 'number', keys: ['hp.pmhYear'], integer: true, min: 1, max: 999, showIf: PMH_DISEASE },
+  { id: 'hp.endoYear', type: 'number', keys: ['hp.endoYear'], integer: true, min: 1, max: 999, showIf: 'hp.endoscopy=Y' },
   required('hp.ppi'),
   required('hp.allergy'),
   ...HP_FAMILY.flatMap((f) => [

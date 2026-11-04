@@ -78,7 +78,7 @@ export const sessions = pgTable(
   ],
 ).enableRLS();
 
-/** 每張表單的開放設定；6 筆由 migration 建立，預設關閉 */
+/** 每張表單的開放設定；7 筆由 migration 建立，預設關閉 */
 export const formSettings = pgTable(
   'heal_form_settings',
   {
@@ -96,7 +96,7 @@ export const formSettings = pgTable(
       .$onUpdate(() => new Date()),
   },
   (t) => [
-    check('heal_form_settings_form_id_check', sql`${t.formId} in ('hpv', 'pap', 'oral', 'hp', 'fit', 'adult')`),
+    check('heal_form_settings_form_id_check', sql`${t.formId} in ('hpv', 'pap', 'oral', 'hp', 'fit', 'adult', 'labor')`),
     check(
       'heal_form_settings_period_check',
       sql`${t.opensAt} is null or ${t.closesAt} is null or ${t.opensAt} < ${t.closesAt}`,
@@ -122,7 +122,7 @@ export type SubmissionAction = (typeof SUBMISSION_ACTIONS)[number];
 export type FormValues = Record<string, string | string[]>;
 
 /**
- * 民眾送出的表單；每次送出都是新的一筆。
+ * 民眾送出的表單；同一案件退回修改後更新原筆，新次服務使用新編號。
  * submitted 民眾已送出／returned 民眾修改中／completed 院所已送出（鎖定）／voided 已作廢
  */
 export const submissions = pgTable(
@@ -156,7 +156,7 @@ export const submissions = pgTable(
       .$onUpdate(() => new Date()),
   },
   (t) => [
-    check('heal_submissions_form_id_check', sql`${t.formId} in ('hpv', 'pap', 'oral', 'hp', 'fit', 'adult')`),
+    check('heal_submissions_form_id_check', sql`${t.formId} in ('hpv', 'pap', 'oral', 'hp', 'fit', 'adult', 'labor')`),
     check('heal_submissions_status_check', sql`${t.status} in ('submitted', 'returned', 'completed', 'voided')`),
     index('heal_submissions_id_no_idx').on(t.idNo),
     index('heal_submissions_form_status_idx').on(t.formId, t.status),

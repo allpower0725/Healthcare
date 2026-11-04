@@ -34,7 +34,7 @@ export default function SubmissionsPage({ searchParams }: PageProps<'/admin/subm
       <div className={adminStyles.pageHead}>
         <h1>協同完成</h1>
         <p>
-          民眾送出的表單由院所人員接續填寫院所區，各狀態皆可列印。勾選表單種類與狀態後按「篩選」，兩組都至少要勾一項；可輸入姓名或部分身分證號查詢，輸入查詢內容時自動全選，清空後恢復原本勾選。點欄位標題排序。
+          民眾送出的表單由院所人員核對，並依表單填寫院所區，各狀態皆可列印。勾選表單種類與狀態後按「篩選」，兩組都至少要勾一項；可輸入姓名或部分身分證號查詢，輸入查詢內容時自動全選，清空後恢復原本勾選。點欄位標題排序。
         </p>
       </div>
       <Suspense fallback={<LoadingOverlay message="載入中，請稍候…" />}>

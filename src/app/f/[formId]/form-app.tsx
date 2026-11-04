@@ -2,6 +2,7 @@
 
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FormContext } from '@/components/forms/context';
+import { PrintDocumentButton } from '@/components/forms/print-document-button';
 import { useFormState } from '@/components/forms/use-form-state';
 import type { FormValues, SubmissionStatus } from '@/db/schema';
 import type { FormId } from '@/lib/forms/catalog';
@@ -9,8 +10,9 @@ import { getFormDef } from '@/lib/forms/defs';
 import { validateRules } from '@/lib/forms/engine';
 import { checkTwId, isTaiwanCitizenId, maskIdNo } from '@/lib/forms/format';
 import { toTaipeiInput } from '@/lib/time';
+import { newSubmissionRequestId } from '@/lib/submissions/request-id';
 import { getFormUi } from '@/forms/registry';
-import { forgetDevice, loadDeviceSubmission, resubmitForm, returnForm, submitForm } from './actions';
+import { forgetDevice, loadDeviceSubmission, recoverDeviceSubmission, resubmitForm, returnForm, submitForm } from './actions';
 import { ClosedCard, PublicChrome } from './chrome';
 import { type Loaded, localStore } from './local-store';
 
@@ -84,6 +86,9 @@ export function FormApp({
   const token = useRef<string | null>(null);
   const ownerRef = useRef<string | null>(null);
   const sentRef = useRef<Sent | null>(null);
+  const requestIdRef = useRef<string | null>(null);
+  const submitting = useRef(false);
+  const statusGeneration = useRef(0);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -107,7 +112,7 @@ export function FormApp({
       const profile: FormValues = {};
       const own: FormValues = {};
       for (const [k, v] of Object.entries(values)) (k.startsWith('profile.') ? profile : own)[k] = v;
-      void localStore.save(who, formId, { values: own, submissionId: sentRef.current?.id }, profile);
+      void localStore.save(who, formId, { values: own, submissionId: sentRef.current?.id, requestId: requestIdRef.current ?? undefined }, profile);
     },
     [formId],
   );
@@ -157,22 +162,26 @@ export function FormApp({
       ownerRef.current = who;
       setOwner(who);
       const own = saved.form;
-
-      if (own?.submissionId) {
-        const remote = await loadDeviceSubmission(own.submissionId);
-        if (remote) {
-          setSentState({ id: own.submissionId, status: remote.status, submittedAt: remote.submittedAt });
-          if (remote.status === 'returned') {
-            // 退回修改中：以裝置上正在修改的內容為主
-            const editing = Object.keys(own.values ?? {}).length > 0;
-            replace({ ...withoutImages(remote.publicData), ...(editing ? own.values : {}), 'profile.idNo': who });
-            setPhase('filling');
-          } else {
-            replace(remote.publicData);
-            setPhase('done');
-          }
-          return;
+      requestIdRef.current = own?.requestId ?? null;
+      const knownId = own?.submissionId ?? own?.requestId;
+      const known = knownId ? await loadDeviceSubmission(knownId, formId) : null;
+      const remote = known ?? await recoverDeviceSubmission(formId, who);
+      if (remote) {
+        setSentState({ id: remote.id, status: remote.status, submittedAt: remote.submittedAt });
+        if (remote.status === 'returned') {
+          // 退回修改中：以裝置上正在修改的內容為主
+          const editing = Object.keys(own?.values ?? {}).length > 0;
+          replace({ ...withoutImages(remote.publicData), ...(editing ? own?.values : {}), 'profile.idNo': who });
+          setPhase('filling');
+        } else {
+          replace(remote.publicData);
+          setPhase('done');
         }
+        await localStore.save(who, formId, {
+          values: remote.status === 'returned' ? latest.current : {}, submissionId: remote.id,
+        }, null);
+        requestIdRef.current = null;
+        return;
       }
 
       setSentState(null);
@@ -188,7 +197,7 @@ export function FormApp({
       replace({ ...profile, ...draft, 'profile.idNo': who });
       setPhase('filling');
     },
-    [acceptingNew, replace, withoutImages],
+    [acceptingNew, formId, latest, replace, withoutImages],
   );
 
   // 同一分頁重新整理：憑證有效就直接續填
@@ -238,6 +247,7 @@ export function FormApp({
 
   // 更換身分證號：畫面清空回到關卡，資料仍保留在裝置上，輸入不同號碼時才會清除
   function toGate() {
+    statusGeneration.current += 1;
     flush();
     void localStore.release(token.current);
     session.remove(RESUME_KEY);
@@ -245,6 +255,7 @@ export function FormApp({
     ownerRef.current = null;
     setOwner(null);
     setSentState(null);
+    requestIdRef.current = null;
     setShowPublic(false);
     setIdInput('');
     replace({});
@@ -263,6 +274,7 @@ export function FormApp({
   /* ---------- 送出、退回修改 ---------- */
 
   async function submit() {
+    if (submitting.current) return;
     const errors = form.validateAll();
     const bad = Object.keys(errors);
     if (bad.length > 0) {
@@ -270,21 +282,36 @@ export function FormApp({
       scrollToId(`field-${bad[0]}`);
       return;
     }
+    submitting.current = true;
+    statusGeneration.current += 1;
     setBusy(true);
     try {
       const values = latest.current;
-      const result =
-        sent?.status === 'returned' ? await resubmitForm(sent.id, values) : await submitForm(formId, values);
+      const original = sentRef.current;
+      const profile = Object.fromEntries(Object.entries(values).filter(([key]) => key.startsWith('profile.')));
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+      saveTimer.current = null;
+      if (!original) requestIdRef.current ??= newSubmissionRequestId();
+      // 寫入前先保存案件／請求編號，回應遺失、重新整理後也能重試同一份。
+      await localStore.save(owner!, formId, {
+        values, submissionId: original?.id, requestId: requestIdRef.current ?? undefined,
+      }, profile);
+      const result = original
+        ? await resubmitForm(original.id, values, original.submittedAt)
+        : await submitForm(formId, values, requestIdRef.current!);
       if (result.ok) {
-        setSentState({ id: result.id, status: 'submitted', submittedAt: result.submittedAt });
+        setSentState({ id: result.id, status: result.status, submittedAt: result.submittedAt });
         if (saveTimer.current) clearTimeout(saveTimer.current);
         saveTimer.current = null;
         // 裝置上只記下送出紀錄與基本資料；表單內容以伺服器為準
-        const profile = Object.fromEntries(Object.entries(values).filter(([k]) => k.startsWith('profile.')));
-        void localStore.save(owner!, formId, { values: {}, submissionId: result.id }, profile);
+        const editingAgain = result.status === 'returned';
+        const draft = editingAgain ? withoutImages(values) : {};
+        if (editingAgain) replace(draft);
+        await localStore.save(owner!, formId, { values: draft, submissionId: result.id }, profile);
+        requestIdRef.current = null;
         setShowPublic(false);
-        setPhase('done');
-        showToast('已送出，謝謝您的填寫');
+        setPhase(editingAgain ? 'filling' : 'done');
+        showToast(editingAgain ? '表單已再次退回修改，請確認內容並重新簽名後送出。' : '已送出，謝謝您的填寫');
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else if (result.reason === 'invalid' && result.errors) {
         form.setErrors(result.errors);
@@ -293,20 +320,28 @@ export function FormApp({
         scrollToId(`field-${keys[0]}`);
       } else if (result.reason === 'not_open') {
         showToast('此表單目前未開放填寫，請洽櫃台醫護人員。');
+      } else if (result.reason === 'ambiguous') {
+        showToast('目前有多份尚未完成的相同表單，請洽櫃台人員確認；系統不會自動覆蓋。');
+      } else if (result.reason === 'not_returned') {
+        showToast('這份資料已送出或由院所鎖定；請重新整理後，從原表單「退回修改」。');
+      } else if (result.reason === 'conflict') {
+        showToast('這份表單已再次更新，請重新整理後確認最新內容；目前填寫內容已暫存。');
       } else {
         showToast('無法更新先前送出的資料，請重新整理頁面後再試。');
       }
     } catch {
       showToast('網路連線不穩定，請稍後再按一次「確認送出」。');
     } finally {
+      submitting.current = false;
       setBusy(false);
     }
   }
 
   async function unlock() {
-    if (!sent) return;
+    if (!sent || submitting.current) return;
     const question = imageKeys.length > 0 ? '退回修改後，需要重新簽名才能再次送出。確定要修改嗎？' : '確定要退回修改嗎？';
     if (!window.confirm(question)) return;
+    statusGeneration.current += 1;
     setBusy(true);
     try {
       const result = await returnForm(sent.id);
@@ -335,16 +370,19 @@ export function FormApp({
   const sentId = sent?.id;
   useEffect(() => {
     if (phase !== 'done' || !sentId) return;
+    let cancelled = false;
     const refresh = async () => {
-      const remote = await loadDeviceSubmission(sentId).catch(() => undefined);
+      const generation = statusGeneration.current;
+      const remote = await loadDeviceSubmission(sentId, formId).catch(() => undefined);
+      if (cancelled || generation !== statusGeneration.current || sentRef.current?.id !== sentId) return;
       if (remote === undefined) return;
       if (remote === null) return;
       setSentState({ id: sentId, status: remote.status, submittedAt: remote.submittedAt });
     };
     void refresh();
     window.addEventListener('focus', refresh);
-    return () => window.removeEventListener('focus', refresh);
-  }, [phase, sentId]);
+    return () => { cancelled = true; window.removeEventListener('focus', refresh); };
+  }, [phase, sentId, formId]);
 
   /* ---------- 畫面 ---------- */
 
@@ -501,6 +539,9 @@ export function FormApp({
               <dd>{rocDateTime(sent.submittedAt)}</dd>
             </dl>
             <div className="done__actions">
+              <PrintDocumentButton className="btn btn--primary done__print" href={`/f/${formId}/print/${sent.id}`}>
+                列印 / 另存 PDF
+              </PrintDocumentButton>
               <button
                 type="button"
                 className="btn btn--ghost"
@@ -530,7 +571,7 @@ export function FormApp({
                 退回修改中：修改完成後{imageKeys.length > 0 ? '請重新簽名，' : ''}再按「確認送出」。
               </p>
             )}
-            <fieldset className="public">
+            <fieldset className="public" disabled={busy}>
               <legend className="sr-only">民眾填寫</legend>
               <ui.Public prefilled={prefilled} />
             </fieldset>

@@ -455,6 +455,7 @@ html[data-font-size="xl"] .ppf .intro__art { width: clamp(88px, 24vw, 168px); }
 .ppf .done__summary dt { color: var(--muted); }
 .ppf .done__summary dd { margin: 0; font-weight: 700; word-break: break-all; }
 .ppf .done__actions { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+.ppf .done__print { grid-column: 1 / -1; min-height: 48px; }
 .ppf .done .notice { text-align: left; margin: 0 0 1rem; }
 
 /* ---------- 院所填寫區 ---------- */

@@ -96,11 +96,11 @@ describe('民眾送出', () => {
     expect(await events(id)).toEqual([{ action: 'submitted', actorId: null }]);
   });
 
-  it('同一人可以送出多次，每次一筆', async () => {
+  it('同一裝置的相同內容重送沿用未完成案件', async () => {
     await openForm();
     await submitSample();
     await submitSample();
-    expect(await db.select().from(submissions)).toHaveLength(2);
+    expect(await db.select().from(submissions)).toHaveLength(1);
   });
 });
 
@@ -218,7 +218,7 @@ describe('列表與重複提示', () => {
   it('同一人同表單有兩筆以上未完成時標示重複；已完成、已作廢的不算', async () => {
     const staff = await createUser();
     const a = await submitSample();
-    const b = await submitSample();
+    const b = await submitSample({}, OTHER_DEVICE);
     const other = await submitSample({ 'profile.idNo': 'B123456780' });
 
     let list = await listSubmissions();

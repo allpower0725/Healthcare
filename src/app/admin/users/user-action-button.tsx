@@ -2,6 +2,7 @@
 
 import { useFormStatus } from 'react-dom';
 import { updateUser } from './actions';
+import { FormPending } from '../pending-ui';
 
 type Props = {
   userId: string;
@@ -14,6 +15,7 @@ type Props = {
 export function UserActionButton({ userId, action, label, variant, confirmText }: Props) {
   return (
     <form action={updateUser}>
+      <FormPending />
       <input type="hidden" name="userId" value={userId} />
       <input type="hidden" name="action" value={action} />
       <SubmitButton label={label} variant={variant} confirmText={confirmText} />

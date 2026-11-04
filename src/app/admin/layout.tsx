@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import { AdminLink as Link } from '@/app/admin/pending-ui';
 import { Suspense } from 'react';
 import { ADMIN_APP_METADATA } from '@/lib/admin-app';
 import { logout } from '@/lib/auth/actions';
@@ -8,6 +8,7 @@ import { countPendingUsers } from '@/lib/users/service';
 import styles from './admin.module.css';
 import { Avatar, ROLE_LABELS } from './ui';
 import { NavLinks } from './nav-links';
+import { FormPending } from './pending-ui';
 
 export const metadata: Metadata = ADMIN_APP_METADATA;
 
@@ -67,6 +68,7 @@ async function UserMenu() {
       </div>
       <Avatar name={user.name} src={user.avatarUrl} />
       <form action={logout}>
+        <FormPending />
         <button type="submit" className="btn btn--ghost btn--sm">
           登出
         </button>

@@ -10,7 +10,7 @@ const STORE = 'records';
 const TTL_MS = 12 * 60 * 60 * 1000;
 const MAX_TOKENS = 20;
 
-export type FormRecord = { values: FormValues; submissionId?: string };
+export type FormRecord = { values: FormValues; submissionId?: string; requestId?: string };
 type Rec = {
   key: string;
   owner?: string;

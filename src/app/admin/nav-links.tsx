@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { AdminLink as Link } from '@/app/admin/pending-ui';
 import { usePathname } from 'next/navigation';
 import styles from './admin.module.css';
 

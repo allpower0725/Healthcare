@@ -1,9 +1,12 @@
 import { createHash } from 'node:crypto';
-import { type AnyColumn, and, asc, count, desc, eq, inArray, like, ne, sql } from 'drizzle-orm';
+import { isDeepStrictEqual } from 'node:util';
+import { type AnyColumn, and, asc, count, desc, eq, gt, ilike, inArray, like, ne, sql } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import { db } from '@/db';
 import {
   type FormValues,
+  type Submission,
+  formSettings,
   SUBMISSION_STATUSES,
   type SubmissionAction,
   type SubmissionStatus,
@@ -15,7 +18,7 @@ import { FORM_IDS, type FormId } from '@/lib/forms/catalog';
 import { getFormDef } from '@/lib/forms/defs';
 import { sanitize, validateRules } from '@/lib/forms/engine';
 import { rocToIso } from '@/lib/forms/format';
-import { formStatus, getFormSetting } from '@/lib/forms/settings';
+import { formStatus } from '@/lib/forms/settings';
 import { PAGE_SIZE, type SubmissionQuery } from './query';
 
 /** 民眾裝置自送出起 12 小時內可查看、退回修改（同原電子表單的暫存期限） */
@@ -49,28 +52,93 @@ async function logEvent(tx: Tx, submissionId: string, action: SubmissionAction, 
 
 export type PublicSubmitResult =
   | { ok: true; id: string }
-  | { ok: false; reason: 'not_supported' | 'not_open' }
+  | { ok: false; reason: 'not_supported' | 'not_open' | 'not_found' | 'not_returned' | 'ambiguous' }
   | { ok: false; reason: 'invalid'; errors: Record<string, string> };
 
-/** 民眾送出：表單須在開放中，資料依欄位定義清理與驗證 */
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function ownsSubmission(row: Submission, deviceToken: string, now: Date) {
+  return row.deviceTokenHash === hashDeviceToken(deviceToken)
+    && row.deviceExpiresAt != null && row.deviceExpiresAt > now && row.status !== 'voided';
+}
+
+function samePublicData(row: Submission, values: FormValues) {
+  return isDeepStrictEqual(sanitize(getFormDef(row.formId)!, 'public', row.publicData), values);
+}
+
+/** 更新同一案件；只清除不再適用的院所欄位，其餘內容及填寫人資訊保留。呼叫前須鎖住原列。 */
+async function updateReturned(tx: Tx, row: Submission, values: FormValues, now: Date) {
+  // 即使兩次送出落在同一毫秒，仍讓修改批次的識別時間前進。
+  const submittedAt = new Date(Math.max(now.getTime(), row.publicSubmittedAt.getTime() + 1));
+  await tx.update(submissions).set({
+    status: 'submitted',
+    ...indexFields(values),
+    publicData: values,
+    staffData: Object.keys(row.staffData).length ? sanitize(getFormDef(row.formId)!, 'staff', row.staffData, values) : row.staffData,
+    publicSubmittedAt: submittedAt,
+    deviceExpiresAt: new Date(now.getTime() + DEVICE_TTL_MS),
+    version: row.version + 1,
+  }).where(eq(submissions.id, row.id));
+  await logEvent(tx, row.id, 'resubmitted');
+}
+
+/** 新填寫與遺失編號的重試：原裝置的未完成案件優先續用，已完成案件不覆蓋。 */
 export async function createPublicSubmission(
   formId: FormId,
   raw: unknown,
   deviceToken: string,
   now = new Date(),
+  requestId?: string,
 ): Promise<PublicSubmitResult> {
   const def = getFormDef(formId);
   if (!def) return { ok: false, reason: 'not_supported' };
-  if (formStatus(await getFormSetting(formId), now) !== 'open') return { ok: false, reason: 'not_open' };
+  if (requestId != null && !UUID.test(requestId)) return { ok: false, reason: 'not_found' };
 
   const values = sanitize(def, 'public', raw);
   const errors = validateRules(def.publicRules, values, now);
   if (Object.keys(errors).length > 0) return { ok: false, reason: 'invalid', errors };
 
   return db.transaction(async (tx) => {
+    // 第一筆尚未存在時也須序列化相同案件的請求；交易結束自動釋放，適用交易模式連線池。
+    const lockKey = createHash('sha256').update(JSON.stringify(['public-submit', hashDeviceToken(deviceToken), formId, indexFields(values).idNo]))
+      .digest().readBigInt64BE(0).toString();
+    await tx.execute(sql`select pg_advisory_xact_lock(${lockKey}::bigint)`);
+
+    // 首次送出的 UUID 在請求前就保存在裝置上；回應遺失後重試也不會建立另一筆。
+    if (requestId) {
+      const known = await lockRow(tx, requestId);
+      if (known) {
+        if (!ownsSubmission(known, deviceToken, now) || known.formId !== formId || known.idNo !== indexFields(values).idNo) {
+          return { ok: false, reason: 'not_found' } as const;
+        }
+        if (known.status !== 'returned' && samePublicData(known, values)) return { ok: true, id: known.id } as const;
+        return { ok: false, reason: 'not_returned' } as const;
+      }
+    }
+
+    const existing = await tx.select().from(submissions).where(and(
+      eq(submissions.formId, formId), eq(submissions.idNo, indexFields(values).idNo),
+      eq(submissions.deviceTokenHash, hashDeviceToken(deviceToken)), gt(submissions.deviceExpiresAt, now),
+      inArray(submissions.status, ['submitted', 'returned']),
+    )).limit(2).for('update');
+    // 歷史重複案件需由人員比對，不任選一筆覆蓋或自動合併。
+    if (existing.length > 1) return { ok: false, reason: 'ambiguous' } as const;
+    const current = existing[0];
+    if (current) {
+      if (current.status === 'returned') {
+        await updateReturned(tx, current, values, now);
+        return { ok: true, id: current.id } as const;
+      }
+      if (samePublicData(current, values)) return { ok: true, id: current.id } as const;
+      return { ok: false, reason: 'not_returned' } as const;
+    }
+
+    const [setting] = await tx.select().from(formSettings).where(eq(formSettings.formId, formId));
+    if (!setting || formStatus(setting, now) !== 'open') return { ok: false, reason: 'not_open' } as const;
     const [row] = await tx
       .insert(submissions)
       .values({
+        id: requestId,
         formId,
         status: 'submitted',
         ...indexFields(values),
@@ -79,10 +147,23 @@ export async function createPublicSubmission(
         deviceExpiresAt: new Date(now.getTime() + DEVICE_TTL_MS),
         publicSubmittedAt: now,
       })
+      .onConflictDoNothing({ target: submissions.id })
       .returning({ id: submissions.id });
+    // 其他裝置占用相同 UUID 時不洩漏資料，也不另建一筆。
+    if (!row) return { ok: false, reason: 'not_found' } as const;
     await logEvent(tx, row.id, 'submitted');
     return { ok: true, id: row.id } as const;
   });
+}
+
+/** 暫存編號遺失時，只恢復這個有效裝置唯一一份相同身分、同種類的未完成案件。 */
+export async function findRecoverableSubmission(formId: FormId, idNo: string, deviceToken: string, now = new Date()) {
+  const rows = await db.select().from(submissions).where(and(
+    eq(submissions.formId, formId), eq(submissions.idNo, idNo.toUpperCase().replace(/\s+/g, '')),
+    eq(submissions.deviceTokenHash, hashDeviceToken(deviceToken)), gt(submissions.deviceExpiresAt, now),
+    inArray(submissions.status, ['submitted', 'returned']),
+  )).limit(2);
+  return rows.length === 1 ? rows[0] : null;
 }
 
 /** 持有憑證的裝置、12 小時內才看得到；已作廢的視同沒有 */
@@ -117,7 +198,7 @@ export async function findDeviceSubmissions(formId: FormId, deviceToken: string,
   return rows.filter((row) => row.deviceExpiresAt && row.deviceExpiresAt > now);
 }
 
-export type DeviceActionResult = { ok: true } | { ok: false; reason: 'not_found' | 'locked' | 'not_returned' };
+export type DeviceActionResult = { ok: true } | { ok: false; reason: 'not_found' | 'locked' | 'not_returned' | 'conflict' };
 
 /** 民眾按「退回修改」：只有「民眾已送出」能退回；院所已確認送出時鎖定 */
 export async function returnToPublic(id: string, deviceToken: string, now = new Date()): Promise<DeviceActionResult> {
@@ -144,33 +225,28 @@ export async function resubmitPublic(
   deviceToken: string,
   raw: unknown,
   now = new Date(),
+  previousSubmittedAt?: string,
 ): Promise<DeviceActionResult | (PublicSubmitResult & { ok: false })> {
-  const current = await getDeviceSubmission(id, deviceToken, now);
-  if (!current) return { ok: false, reason: 'not_found' };
-  if (current.status !== 'returned') return { ok: false, reason: 'not_returned' };
-  const def = getFormDef(current.formId);
-  if (!def) return { ok: false, reason: 'not_supported' };
-
-  const idNo = text(current.publicData, 'profile.idNo');
-  const values = { ...sanitize(def, 'public', raw), 'profile.idNo': idNo };
-  const errors = validateRules(def.publicRules, values, now);
-  if (Object.keys(errors).length > 0) return { ok: false, reason: 'invalid', errors };
-
   return db.transaction(async (tx) => {
-    const updated = await tx
-      .update(submissions)
-      .set({
-        status: 'submitted',
-        ...indexFields(values),
-        publicData: values,
-        publicSubmittedAt: now,
-        deviceExpiresAt: new Date(now.getTime() + DEVICE_TTL_MS),
-        version: sql`${submissions.version} + 1`,
-      })
-      .where(and(eq(submissions.id, id), eq(submissions.status, 'returned')))
-      .returning({ id: submissions.id });
-    if (updated.length === 0) return { ok: false, reason: 'not_returned' } as const;
-    await logEvent(tx, id, 'resubmitted');
+    const current = await lockRow(tx, id);
+    if (!current || !ownsSubmission(current, deviceToken, now)) return { ok: false, reason: 'not_found' } as const;
+    const def = getFormDef(current.formId);
+    if (!def) return { ok: false, reason: 'not_supported' } as const;
+    const values = { ...sanitize(def, 'public', raw), 'profile.idNo': current.idNo };
+    const errors = validateRules(def.publicRules, values, now);
+    if (Object.keys(errors).length > 0) return { ok: false, reason: 'invalid', errors } as const;
+
+    if (current.status !== 'returned') {
+      // 僅將已成功處理的相同內容視為重試，不讓晚到的請求覆蓋已提交／已完成的資料。
+      if (previousSubmittedAt && previousSubmittedAt !== current.publicSubmittedAt.toISOString() && samePublicData(current, values)) {
+        return { ok: true } as const;
+      }
+      return { ok: false, reason: 'not_returned' } as const;
+    }
+    if (previousSubmittedAt && previousSubmittedAt !== current.publicSubmittedAt.toISOString()) {
+      return { ok: false, reason: 'conflict' } as const;
+    }
+    await updateReturned(tx, current, values, now);
     return { ok: true } as const;
   });
 }
@@ -359,7 +435,7 @@ const orderOf = (values: readonly string[], column: AnyColumn) =>
   sql`array_position(array[${sql.raw(values.map((v) => `'${v}'`).join(', '))}]::text[], ${column})`;
 
 /**
- * 協同完成列表：篩選（身分證號部分比對、表單、狀態；條件同時成立）、排序、分頁。
+ * 協同完成列表：篩選（姓名／身分證號部分比對、表單、狀態；條件同時成立）、排序、分頁。
  * 表單與狀態只列出勾選的，任一組全不勾就沒有資料。
  * duplicates 為同一人同表單其他未完成的筆數。
  */
@@ -370,7 +446,11 @@ export async function searchSubmissions(q: SubmissionQuery) {
       ? and(
           q.forms.length < FORM_IDS.length ? inArray(submissions.formId, q.forms) : undefined,
           q.statuses.length < SUBMISSION_STATUSES.length ? inArray(submissions.status, q.statuses) : undefined,
-          q.idNo ? like(submissions.idNo, `%${escapeLike(q.idNo)}%`) : undefined,
+          q.idNo
+            ? /\d/.test(q.idNo)
+              ? like(submissions.idNo, `%${escapeLike(q.idNo)}%`)
+              : ilike(submissions.name, `%${escapeLike(q.idNo)}%`)
+            : undefined,
         )
       : sql`false`;
 

@@ -3,6 +3,7 @@
 import { startTransition, useActionState, useState } from 'react';
 import styles from '../forms.module.css';
 import { saveFormSetting } from './actions';
+import { LoadingOverlay } from '../../loading-overlay';
 
 type Props = {
   formId: string;
@@ -29,6 +30,7 @@ export function SettingsForm({ formId, ...initial }: Props) {
         startTransition(() => action(data));
       }}
     >
+      {pending && <LoadingOverlay message="儲存設定中…" />}
       <label className={styles.switch}>
         <input type="checkbox" name="isOpen" checked={isOpen} onChange={(e) => setIsOpen(e.target.checked)} />
         開放填寫

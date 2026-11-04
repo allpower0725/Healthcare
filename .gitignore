@@ -7,6 +7,9 @@
 # testing
 /coverage
 
+# local database backups and maintenance artifacts
+/.local/
+
 # next.js
 /.next/
 /out/

@@ -2,7 +2,7 @@ import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 
 const TEST_DATABASE_URL =
-  process.env.TEST_DATABASE_URL ?? 'postgres://healthcare:healthcare@localhost:5433/healthcare_test';
+  process.env.TEST_DATABASE_URL ?? 'postgres://healthcare:healthcare@localhost:5433/wjcch_test';
 
 export default defineConfig({
   resolve: {

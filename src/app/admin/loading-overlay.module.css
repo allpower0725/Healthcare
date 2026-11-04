@@ -1,0 +1,17 @@
+/* 齒輪配色與旋轉構圖參考 https://codepen.io/jcoulterdesign/pen/bNxeKY */
+.overlay { position: fixed; inset: 0; width: 100vw; max-width: none; height: 100dvh; max-height: none; margin: 0; padding: 0; border: 0; background: transparent; color: #38566b; }
+.overlay::backdrop { background: rgb(247 250 252 / 84%); backdrop-filter: blur(2px); }
+.content { display: grid; place-content: center; justify-items: center; height: 100%; gap: 28px; font-weight: 600; }
+.content p { margin: 0; }
+.cogs { position: relative; width: 164px; height: 142px; }
+.gear { position: absolute; width: var(--size); height: var(--size); animation: rotate 9s linear infinite; }
+.gear i { position: absolute; inset: 0; background: var(--color); border-radius: 12%; }
+.gear i:nth-child(2) { transform: rotate(30deg); }
+.gear i:nth-child(3) { transform: rotate(60deg); }
+.gear b { position: absolute; inset: 26%; border-radius: 50%; background: #f7fafc; }
+.pink { --size: 76px; --color: #f98db9; top: 0; left: 48px; }
+.blue { --size: 60px; --color: #97ddff; top: 72px; left: 4px; animation-direction: reverse; }
+.yellow { --size: 48px; --color: #ffcd66; top: 85px; left: 104px; animation-duration: 7s; }
+@keyframes rotate { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .gear { animation: none; } }
+@media print { .overlay { display: none; } }

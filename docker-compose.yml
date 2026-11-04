@@ -7,10 +7,11 @@ services:
     environment:
       POSTGRES_USER: healthcare
       POSTGRES_PASSWORD: healthcare
-      POSTGRES_DB: healthcare
+      POSTGRES_DB: wjcch
     ports:
       - "127.0.0.1:5433:5432"
     volumes:
+      # 沿用既有資料卷；資料庫更名不需要更換或清除 volume
       - healthcare-db:/var/lib/postgresql/data
       - ./docker/init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql:ro
 

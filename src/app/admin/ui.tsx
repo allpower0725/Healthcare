@@ -20,7 +20,7 @@ export function FormStatusBadge({ status }: { status: FormStatus }) {
 }
 
 export const SUBMISSION_STATUS_LABELS: Record<SubmissionStatus, string> = {
-  submitted: '待院所填寫',
+  submitted: '待院所確認',
   returned: '民眾修改中',
   completed: '已完成',
   voided: '已作廢',

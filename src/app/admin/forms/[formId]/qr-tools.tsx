@@ -1,7 +1,8 @@
 'use client';
 
-import Link from 'next/link';
+import { AdminLink as Link } from '@/app/admin/pending-ui';
 import { useState } from 'react';
+import { LoadingOverlay } from '../../loading-overlay';
 import styles from '../forms.module.css';
 
 type Props = {
@@ -57,6 +58,7 @@ export function QrTools({ url, svg, fileName, posterHref }: Props) {
 
   return (
     <>
+      {busy && <LoadingOverlay message="產生 QR code 圖檔中…" />}
       <div className={styles.url}>
         <code title={url}>{url}</code>
         <button type="button" className="btn btn--ghost btn--sm" onClick={copyUrl}>

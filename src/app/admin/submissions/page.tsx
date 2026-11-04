@@ -1,8 +1,10 @@
+import { LoadingOverlay } from '@/app/admin/loading-overlay';
 import type { Metadata } from 'next';
 import Form from 'next/form';
-import Link from 'next/link';
+import { AdminLink as Link } from '@/app/admin/pending-ui';
 import { type ReactNode, Suspense } from 'react';
 import { SUBMISSION_STATUSES } from '@/db/schema';
+import { PrintDocumentButton } from '@/components/forms/print-document-button';
 import { requireUser } from '@/lib/auth/dal';
 import { FORM_IDS, FORMS } from '@/lib/forms/catalog';
 import {
@@ -19,6 +21,9 @@ import { formatDateTime } from '@/lib/time';
 import adminStyles from '../admin.module.css';
 import { SUBMISSION_STATUS_LABELS, SubmissionStatusBadge } from '../ui';
 import { FilterToggle } from './filter-toggle';
+import { FormPending } from '../pending-ui';
+import { SubmissionDetail } from './submission-detail';
+import { SubmissionModal } from './submission-modal';
 import styles from './submissions.module.css';
 
 export const metadata: Metadata = { title: '協同完成' };
@@ -29,10 +34,10 @@ export default function SubmissionsPage({ searchParams }: PageProps<'/admin/subm
       <div className={adminStyles.pageHead}>
         <h1>協同完成</h1>
         <p>
-          民眾送出的表單由院所人員接續填寫院所區、確認送出後列印。勾選要查看的表單種類與狀態後按「篩選」，兩組都至少要勾一項才有資料；輸入身分證號時自動全選，清空號碼則恢復原本的勾選。點欄位標題排序。
+          民眾送出的表單由院所人員接續填寫院所區，各狀態皆可列印。勾選表單種類與狀態後按「篩選」，兩組都至少要勾一項；可輸入姓名或部分身分證號查詢，輸入查詢內容時自動全選，清空後恢復原本勾選。點欄位標題排序。
         </p>
       </div>
-      <Suspense fallback={<div className={adminStyles.skeleton} aria-label="載入中" />}>
+      <Suspense fallback={<LoadingOverlay message="載入中，請稍候…" />}>
         <SubmissionList searchParams={searchParams} />
       </Suspense>
     </>
@@ -44,17 +49,19 @@ function Filters({ q }: { q: SubmissionQuery }) {
   return (
     // key：條件改變時重建，讓欄位顯示目前套用的條件
     <Form key={queryString(q)} action={LIST_PATH} className={styles.filters}>
+      <input type="hidden" name="filtered" value="1" />
+      <FormPending />
       <div className={styles.filterGroup}>
         <label className={styles.groupLabel} htmlFor="filter-id">
-          身分證號
+          姓名／身分證號
         </label>
         <input
           id="filter-id"
           className={`input ${styles.idInput}`}
           name="id"
           defaultValue={q.idNo}
-          maxLength={20}
-          placeholder="可只輸入部分號碼"
+          maxLength={80}
+          placeholder="姓名或部分身分證號"
           autoComplete="off"
         />
       </div>
@@ -121,7 +128,10 @@ function SortButton({ q, sort, children }: { q: SubmissionQuery; sort: SortKey; 
 
 async function SubmissionList({ searchParams }: { searchParams: PageProps<'/admin/submissions'>['searchParams'] }) {
   await requireUser();
-  const q = parseQuery(await searchParams);
+  const raw = await searchParams;
+  const q = parseQuery(raw);
+  const openId = typeof raw.open === 'string' ? raw.open : null;
+  const returnHref = `${LIST_PATH}${queryString(q)}`;
   const { rows, total, pages } = await searchSubmissions(q);
   // 任一組全不勾就沒有資料：提示要勾哪一組，免得誤以為查無此人
   const unchecked = [!q.forms.length && '表單種類', !q.statuses.length && '狀態'].filter(Boolean);
@@ -215,21 +225,12 @@ async function SubmissionList({ searchParams }: { searchParams: PageProps<'/admi
                   </td>
                   <td className={styles.actionsCell}>
                     <div className={styles.rowActions}>
-                      <Link className="btn btn--ghost btn--sm" href={`/admin/submissions/${row.id}`}>
+                      <Link className="btn btn--ghost btn--sm" href={`${returnHref}&open=${row.id}`} scroll={false}>
                         開啟
                       </Link>
-                      {row.status === 'completed' ? (
-                        <Link className="btn btn--primary btn--sm" href={`/admin/submissions/${row.id}/print`}>
-                          列印 / 另存原樣 PDF
-                        </Link>
-                      ) : (
-                        // 停用的按鈕不會觸發滑鼠事件，說明放在外層
-                        <span title="院所確認送出後才能列印">
-                          <button type="button" className="btn btn--primary btn--sm" disabled>
-                            列印 / 另存原樣 PDF
-                          </button>
-                        </span>
-                      )}
+                      <PrintDocumentButton className="btn btn--primary btn--sm" href={`/admin/submissions/${row.id}/print`}>
+                        列印 / 另存原樣 PDF
+                      </PrintDocumentButton>
                     </div>
                   </td>
                 </tr>
@@ -238,6 +239,14 @@ async function SubmissionList({ searchParams }: { searchParams: PageProps<'/admi
           </table>
         )}
       </div>
+
+      {openId && (
+        <SubmissionModal key={openId} returnHref={returnHref}>
+          <Suspense fallback={<LoadingOverlay message="載入表單中…" />}>
+            <SubmissionDetail params={Promise.resolve({ id: openId })} />
+          </Suspense>
+        </SubmissionModal>
+      )}
 
       {pages > 1 && (
         <nav className={styles.pager} aria-label="分頁">

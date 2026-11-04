@@ -1,5 +1,6 @@
+import { LoadingOverlay } from '@/app/admin/loading-overlay';
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import { AdminLink as Link } from '@/app/admin/pending-ui';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { requireUser } from '@/lib/auth/dal';
@@ -23,7 +24,7 @@ export default function FormDetailPage({ params }: PageProps<'/admin/forms/[form
       <Link className={`btn btn--ghost btn--sm ${styles.back}`} href="/admin/forms">
         ← 表單管理
       </Link>
-      <Suspense fallback={<div className={adminStyles.skeleton} aria-label="載入中" />}>
+      <Suspense fallback={<LoadingOverlay message="載入中，請稍候…" />}>
         <FormDetail params={params} />
       </Suspense>
     </>

@@ -10,11 +10,11 @@ import { resetDb } from './helpers';
 const ALL = { form: [...FORM_IDS], status: [...SUBMISSION_STATUSES] };
 
 describe('網址參數', () => {
-  it('沒有參數時用預設值：條件全不勾、依送出時間新到舊、第 1 頁', () => {
+  it('首次進入預設所有表單、待院所確認、依送出時間新到舊、第 1 頁', () => {
     expect(parseQuery({})).toEqual({
       idNo: '',
-      forms: [],
-      statuses: [],
+      forms: [...FORM_IDS],
+      statuses: ['submitted'],
       sort: 'submitted',
       dir: 'desc',
       page: 1,
@@ -42,11 +42,24 @@ describe('網址參數', () => {
   });
 
   it('組回網址時省略預設值；換排序回到第 1 頁', () => {
-    expect(queryString(parseQuery({}))).toBe('');
+    expect(queryString(parseQuery({}))).toBe(`?${FORM_IDS.map(f => `form=${f}`).join('&')}&status=submitted`);
     const q = parseQuery({ id: 'a1', form: 'hpv', sort: 'name', dir: 'asc', page: '3' });
-    expect(queryString(q)).toBe('?id=A1&form=hpv&sort=name&dir=asc&page=3');
-    expect(sortHref(q, 'name')).toBe('/admin/submissions?id=A1&form=hpv&sort=name&dir=desc');
-    expect(sortHref(q, 'submitted')).toBe('/admin/submissions?id=A1&form=hpv');
+    expect(queryString(q)).toBe('?id=A1&form=hpv&filtered=1&sort=name&dir=asc&page=3');
+    expect(sortHref(q, 'name')).toBe('/admin/submissions?id=A1&form=hpv&filtered=1&sort=name&dir=desc');
+    expect(sortHref(q, 'submitted')).toBe('/admin/submissions?id=A1&form=hpv&filtered=1');
+  });
+
+  it('明確清空篩選後仍是空條件，重新整理與排序不會套回預設', () => {
+    const empty = parseQuery({ filtered: '1' });
+    expect(empty).toMatchObject({ forms: [], statuses: [] });
+    expect(queryString(empty)).toBe('?filtered=1');
+    expect(parseQuery({ form: '', status: '', sort: 'name' })).toMatchObject({ forms: [], statuses: [] });
+  });
+
+  it('姓名保留大小寫與中間空白，身分證號維持正規化', () => {
+    expect(parseQuery({ id: '  王 小明  ' }).idNo).toBe('王 小明');
+    expect(parseQuery({ id: 'Amy Chen' }).idNo).toBe('Amy Chen');
+    expect(parseQuery({ id: ' a12 3 ' }).idNo).toBe('A123');
   });
 
   it('從其他頁連到列表時表單全選，再加上指定的狀態', () => {
@@ -103,8 +116,8 @@ describe('篩選、排序、分頁', () => {
     await insert({ formId: 'hpv', idNo: 'A100000002' });
     await insert({ formId: 'fit', idNo: 'C100000003' });
     expect((await searchSubmissions(parseQuery({ ...ALL, form: 'pap' }))).rows.map((r) => r.id)).toEqual([pap]);
-    expect((await searchSubmissions(parseQuery({ ...ALL, form: ['pap', 'hpv'], id: 'A' }))).total).toBe(2);
-    expect((await searchSubmissions(parseQuery({ ...ALL, form: 'fit', id: 'A' }))).total).toBe(0);
+    expect((await searchSubmissions(parseQuery({ ...ALL, form: ['pap', 'hpv'], id: 'A1' }))).total).toBe(2);
+    expect((await searchSubmissions(parseQuery({ ...ALL, form: 'fit', id: 'A1' }))).total).toBe(0);
   });
 
   it('只列出勾選的表單與狀態；任一組全不勾就沒有資料', async () => {
@@ -113,13 +126,27 @@ describe('篩選、排序、分頁', () => {
     const voided = await insert({ status: 'voided' });
     const ids = async (raw: Record<string, string | string[]>) =>
       (await searchSubmissions(parseQuery(raw))).rows.map((r) => r.id).sort();
-    expect(await searchSubmissions(parseQuery({}))).toEqual({ rows: [], total: 0, pages: 1 });
+    expect((await searchSubmissions(parseQuery({}))).rows.map(r => r.id)).toEqual([pap]);
+    expect(await searchSubmissions(parseQuery({ filtered: '1' }))).toEqual({ rows: [], total: 0, pages: 1 });
     expect(await ids({ form: ALL.form, id: 'B' })).toEqual([]);
     expect(await ids({ status: ALL.status })).toEqual([]);
     expect(await ids({ ...ALL, status: 'voided' })).toEqual([voided]);
     expect(await ids({ ...ALL, form: 'fit' })).toEqual([fit]);
     // 條件全選：連已作廢一起列出
     expect(await ids(ALL)).toEqual([pap, fit, voided].sort());
+  });
+
+  it('無數字以姓名部分比對、含數字仍以身分證查詢，特殊字元當成文字', async () => {
+    const wang = await insert({ name: '王小明', idNo: 'A123456789' });
+    const amy = await insert({ name: 'Amy Chen', idNo: 'B123456789' });
+    const literal = await insert({ name: '姓名%_測試', idNo: 'C123456789' });
+    await insert({ name: '王先生123', idNo: 'D987654321' });
+    const ids = async (id: string) => (await searchSubmissions(parseQuery({ ...ALL, id }))).rows.map(r => r.id);
+    expect(await ids('小明')).toEqual([wang]);
+    expect(await ids('amy ch')).toEqual([amy]);
+    expect(await ids('%_')).toEqual([literal]);
+    expect(await ids('A123')).toEqual([wang]);
+    expect(await ids('王先生123')).toEqual([]);
   });
 
   it('依姓名、狀態、表單、完成時間排序', async () => {

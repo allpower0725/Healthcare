@@ -1,0 +1,5 @@
+.page { max-width: 1000px; margin: 0 auto; padding: 20px 16px; }
+.page :global(.ps-toolbar) { position: sticky; top: 0; z-index: 2; padding: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-sm); }
+.page :global(.ps-frame) { max-width: 100%; }
+@media (max-width: 600px) { .page { padding: 12px 8px; } .page :global(.ps-toolbar) { gap: 10px; } .page :global(.ps-toolbar) button { min-height: 44px; } }
+@media print { .page { max-width: none; padding: 0; margin: 0; } }

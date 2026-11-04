@@ -9,7 +9,7 @@ export type SortKey = (typeof SORT_KEYS)[number];
 export type SortDir = 'asc' | 'desc';
 
 export type SubmissionQuery = {
-  /** 身分證號（部分比對） */
+  /** 姓名或身分證號（部分比對；含數字時查身分證號） */
   idNo: string;
   /** 勾選的表單；全不勾時沒有資料 */
   forms: FormId[];
@@ -27,15 +27,18 @@ const list = (v: string | string[] | undefined) => (v == null ? [] : Array.isArr
 const defaultDir = (sort: SortKey): SortDir => (sort === 'submitted' || sort === 'completed' ? 'desc' : 'asc');
 
 export function parseQuery(raw: Raw): SubmissionQuery {
-  const forms = FORM_IDS.filter((id) => list(raw.form).includes(id));
-  const statuses = SUBMISSION_STATUSES.filter((s) => list(raw.status).includes(s));
+  // 沒帶篩選條件才套用首次進入的預設值；空字串代表使用者明確取消勾選。
+  const defaults = raw.form == null && raw.status == null && raw.filtered == null;
+  const forms = defaults ? [...FORM_IDS] : FORM_IDS.filter((id) => list(raw.form).includes(id));
+  const statuses = defaults ? ['submitted' as const] : SUBMISSION_STATUSES.filter((s) => list(raw.status).includes(s));
+  const search = (list(raw.id)[0] ?? '').trim().slice(0, 80);
   const sortRaw = list(raw.sort)[0];
   const sort = (SORT_KEYS as readonly string[]).includes(sortRaw ?? '') ? (sortRaw as SortKey) : 'submitted';
   const dirRaw = list(raw.dir)[0];
   const page = Math.floor(Number(list(raw.page)[0]));
 
   return {
-    idNo: (list(raw.id)[0] ?? '').toUpperCase().replace(/\s+/g, '').slice(0, 20),
+    idNo: /\d/.test(search) ? search.toUpperCase().replace(/\s+/g, '').slice(0, 20) : search,
     forms,
     statuses,
     sort,
@@ -51,6 +54,7 @@ export function queryString(q: SubmissionQuery, patch: Partial<SubmissionQuery> 
   if (next.idNo) params.set('id', next.idNo);
   next.forms.forEach((f) => params.append('form', f));
   next.statuses.forEach((s) => params.append('status', s));
+  if (!next.forms.length || !next.statuses.length) params.set('filtered', '1');
   if (next.sort !== 'submitted' || next.dir !== 'desc') {
     params.set('sort', next.sort);
     params.set('dir', next.dir);

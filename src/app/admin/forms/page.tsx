@@ -1,5 +1,6 @@
+import { LoadingOverlay } from '@/app/admin/loading-overlay';
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import { AdminLink as Link } from '@/app/admin/pending-ui';
 import { Suspense } from 'react';
 import { requireUser } from '@/lib/auth/dal';
 import { artSvg } from '@/lib/forms/art';
@@ -24,14 +25,14 @@ export default function FormsPage() {
       <Suspense fallback={null}>
         <Reminders />
       </Suspense>
-      <Suspense fallback={<div className={adminStyles.skeleton} aria-label="載入中" />}>
+      <Suspense fallback={<LoadingOverlay message="載入中，請稍候…" />}>
         <FormCards />
       </Suspense>
     </>
   );
 }
 
-/** 後台首頁的待辦提醒：待院所填寫的表單、待審核的使用申請（管理者才看得到） */
+/** 後台首頁的待辦提醒：待院所確認的表單、待審核的使用申請（管理者才看得到） */
 async function Reminders() {
   const user = await requireUser();
   const [counts, pendingUsers] = await Promise.all([
@@ -44,7 +45,7 @@ async function Reminders() {
     <div className={styles.reminders}>
       {counts.submitted > 0 && (
         <p className={`notice notice--warn ${styles.reminder}`} role="status">
-          <span>有 {counts.submitted} 份民眾已送出的表單等待院所填寫。</span>
+          <span>有 {counts.submitted} 份民眾已送出的表單等待院所確認。</span>
           <Link className="btn btn--ghost btn--sm" href={listHref({ statuses: ['submitted'] })}>
             前往協同完成
           </Link>

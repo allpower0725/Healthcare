@@ -1,8 +1,9 @@
 'use client';
 
-import Link from 'next/link';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { LoadingOverlay } from '@/app/admin/loading-overlay';
 import { FormContext, type FormContextValue } from '@/components/forms/context';
+import { printDocument } from '@/components/forms/print-document';
 import { useFormState } from '@/components/forms/use-form-state';
 import type { FormValues, SubmissionStatus } from '@/db/schema';
 import type { FormId } from '@/lib/forms/catalog';
@@ -12,6 +13,7 @@ import type { StaffActionResult } from '@/lib/submissions/service';
 import { getFormUi } from '@/forms/registry';
 import styles from '../submissions.module.css';
 import { completeAction, reopenAction, restoreAction, saveStaff, voidAction } from './actions';
+import { BeforeLeaveContext } from '../submission-modal';
 
 type Props = {
   id: string;
@@ -44,7 +46,9 @@ export function SubmissionEditor(props: Props) {
   const version = useRef(props.version);
   const dirty = useRef(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const inFlight = useRef<Promise<unknown>>(Promise.resolve());
+  const inFlight = useRef<Promise<boolean>>(Promise.resolve(true));
+  const blocked = useRef(false);
+  const beforeLeave = useContext(BeforeLeaveContext);
   const [saveState, setSaveState] = useState<SaveState>('idle');
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -82,27 +86,64 @@ export function SubmissionEditor(props: Props) {
 
   /** 依序送出暫存，避免兩個請求帶著同一個版本號 */
   function save() {
-    if (!dirty.current || error) return inFlight.current;
+    if (blocked.current) return Promise.resolve(false);
+    if (!dirty.current) return inFlight.current;
     dirty.current = false;
+    const values = staff.latest.current;
     const run = async () => {
+      if (blocked.current) return false;
       setSaveState('saving');
       try {
-        const result = await saveStaff(props.id, version.current, staff.latest.current);
+        const result = await saveStaff(props.id, version.current, values);
         if (result.ok) {
           version.current = result.version;
+          setError(null);
           setSaveState('saved');
           setSavedAt(new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false }));
+          return true;
         } else {
+          blocked.current = true;
+          dirty.current = true;
           setSaveState('failed');
           showResult(result);
+          return false;
         }
       } catch {
         setSaveState('failed');
         dirty.current = true;
+        setError('儲存失敗，請檢查連線後再試一次；目前填寫內容仍保留在此畫面。');
+        return false;
       }
     };
     inFlight.current = inFlight.current.then(run, run);
     return inFlight.current;
+  }
+
+  async function flush() {
+    if (timer.current) clearTimeout(timer.current);
+    await inFlight.current;
+    if (blocked.current) return false;
+    if (dirty.current) return save();
+    return true;
+  }
+
+  useEffect(() => {
+    if (!beforeLeave) return;
+    beforeLeave.current = flush;
+    return () => { beforeLeave.current = null; };
+  });
+
+  async function print() {
+    setBusy(true);
+    try {
+      if (editable) dirty.current = true;
+      if (!(await flush())) return;
+      await printDocument(props.printHref);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : '列印沒有完成，請再試一次。');
+    } finally {
+      setBusy(false);
+    }
   }
 
   // 離開頁面前把尚未暫存的內容送出
@@ -139,8 +180,12 @@ export function SubmissionEditor(props: Props) {
 
     setBusy(true);
     setError(null);
+    dirty.current = false;
     try {
-      showResult(await completeAction(props.id, version.current, staff.latest.current));
+      if (!showResult(await completeAction(props.id, version.current, staff.latest.current))) dirty.current = true;
+    } catch {
+      dirty.current = true;
+      setError('操作失敗，請檢查連線後再試一次。');
     } finally {
       setBusy(false);
     }
@@ -151,7 +196,10 @@ export function SubmissionEditor(props: Props) {
     setBusy(true);
     setError(null);
     try {
+      if (!(await flush())) return;
       showResult(await action(props.id));
+    } catch {
+      setError('操作失敗，請檢查連線後再試一次。');
     } finally {
       setBusy(false);
     }
@@ -168,6 +216,7 @@ export function SubmissionEditor(props: Props) {
 
   return (
     <>
+      {busy && <LoadingOverlay />}
       <div
         className={`notice ${props.status === 'completed' ? 'notice--info' : 'notice--warn'} ${styles.statusNotice}`}
         role="status"
@@ -180,7 +229,7 @@ export function SubmissionEditor(props: Props) {
       </div>
 
       <div className={`ppf ${styles.formArea}`}>
-        <details className={styles.publicPart}>
+        <details className={styles.publicPart} open>
           <summary>
             <span>民眾填寫內容</span>
             <span className={`btn btn--ghost btn--mini ${styles.toggle}`} aria-hidden="true">
@@ -271,9 +320,6 @@ export function SubmissionEditor(props: Props) {
                   >
                     取消送出
                   </button>
-                  <Link className="btn btn--primary" href={props.printHref}>
-                    列印 / 另存原樣 PDF
-                  </Link>
                 </>
               )}
               {props.status === 'voided' && (
@@ -286,6 +332,9 @@ export function SubmissionEditor(props: Props) {
                   復原
                 </button>
               )}
+              <button type="button" className="btn btn--primary" disabled={busy} onClick={() => void print()}>
+                列印 / 另存原樣 PDF
+              </button>
             </div>
           </div>
         </section>

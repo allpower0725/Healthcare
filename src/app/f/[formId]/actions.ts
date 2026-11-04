@@ -6,6 +6,7 @@ import { clearDeviceToken, ensureDeviceToken, readDeviceToken } from '@/lib/subm
 import {
   createPublicSubmission,
   getDeviceSubmission,
+  findRecoverableSubmission,
   resubmitPublic,
   returnToPublic,
 } from '@/lib/submissions/service';
@@ -15,24 +16,31 @@ import {
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export type SubmitFormResult =
-  | { ok: true; id: string; submittedAt: string }
+  | { ok: true; id: string; status: SubmissionStatus; submittedAt: string }
   | { ok: false; reason: string; errors?: Record<string, string> };
 
-export async function submitForm(formId: string, values: FormValues): Promise<SubmitFormResult> {
-  if (!isFormId(formId)) return { ok: false, reason: 'not_supported' };
-  const token = await ensureDeviceToken();
-  const result = await createPublicSubmission(formId, values, token);
-  if (!result.ok) return result;
-  return { ok: true, id: result.id, submittedAt: new Date().toISOString() };
+async function submittedResult(id: string, token: string): Promise<SubmitFormResult> {
+  const row = await getDeviceSubmission(id, token);
+  if (!row) return { ok: false, reason: 'not_found' };
+  return { ok: true, id, status: row.status, submittedAt: row.publicSubmittedAt.toISOString() };
 }
 
-export async function resubmitForm(submissionId: string, values: FormValues): Promise<SubmitFormResult> {
+export async function submitForm(formId: string, values: FormValues, requestId?: string): Promise<SubmitFormResult> {
+  if (!isFormId(formId)) return { ok: false, reason: 'not_supported' };
+  if (requestId != null && !UUID.test(requestId)) return { ok: false, reason: 'not_found' };
+  const token = await ensureDeviceToken();
+  const result = await createPublicSubmission(formId, values, token, new Date(), requestId);
+  if (!result.ok) return result;
+  return submittedResult(result.id, token);
+}
+
+export async function resubmitForm(submissionId: string, values: FormValues, previousSubmittedAt?: string): Promise<SubmitFormResult> {
   const token = await readDeviceToken();
   if (!token || !UUID.test(submissionId)) return { ok: false, reason: 'not_found' };
-  const result = await resubmitPublic(submissionId, token, values);
+  const result = await resubmitPublic(submissionId, token, values, new Date(), previousSubmittedAt);
   if (!result.ok) return result;
   await ensureDeviceToken();
-  return { ok: true, id: submissionId, submittedAt: new Date().toISOString() };
+  return submittedResult(submissionId, token);
 }
 
 export async function returnForm(submissionId: string) {
@@ -41,15 +49,26 @@ export async function returnForm(submissionId: string) {
   return returnToPublic(submissionId, token);
 }
 
-export type DeviceSubmission = { status: SubmissionStatus; publicData: FormValues; submittedAt: string } | null;
+export type DeviceSubmission = { id: string; status: SubmissionStatus; publicData: FormValues; submittedAt: string } | null;
+
+function deviceView(row: Awaited<ReturnType<typeof getDeviceSubmission>>): DeviceSubmission {
+  return row ? { id: row.id, status: row.status, publicData: row.publicData, submittedAt: row.publicSubmittedAt.toISOString() } : null;
+}
 
 /** 這個裝置送出的表單目前狀態（院所是否已確認送出） */
-export async function loadDeviceSubmission(submissionId: string): Promise<DeviceSubmission> {
+export async function loadDeviceSubmission(submissionId: string, formId?: string): Promise<DeviceSubmission> {
   const token = await readDeviceToken();
   if (!token || !UUID.test(submissionId)) return null;
   const row = await getDeviceSubmission(submissionId, token);
-  if (!row) return null;
-  return { status: row.status, publicData: row.publicData, submittedAt: row.publicSubmittedAt.toISOString() };
+  if (!row || (formId != null && row.formId !== formId)) return null;
+  return deviceView(row);
+}
+
+/** 暫存遺失也不憑身分證號接管案件；必須同時持有原裝置憑證，且只有一份未完成資料。 */
+export async function recoverDeviceSubmission(formId: string, idNo: string): Promise<DeviceSubmission> {
+  const token = await readDeviceToken();
+  if (!token || !isFormId(formId) || typeof idNo !== 'string' || idNo.length > 20) return null;
+  return deviceView(await findRecoverableSubmission(formId, idNo, token));
 }
 
 /** 換另一位填寫者：這個裝置不再能存取先前送出的表單 */

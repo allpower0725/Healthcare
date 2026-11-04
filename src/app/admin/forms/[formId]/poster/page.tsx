@@ -1,12 +1,12 @@
+import { LoadingOverlay } from '@/app/admin/loading-overlay';
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import { AdminLink as Link } from '@/app/admin/pending-ui';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { requireUser } from '@/lib/auth/dal';
 import { FORMS, isFormId } from '@/lib/forms/catalog';
 import { formUrl, renderFormQrSvg } from '@/lib/forms/qr';
 import { describePeriod, getFormSetting } from '@/lib/forms/settings';
-import adminStyles from '../../../admin.module.css';
 import styles from './poster.module.css';
 import { PrintButton } from './print-button';
 
@@ -16,7 +16,7 @@ type Params = PageProps<'/admin/forms/[formId]/poster'>['params'];
 
 export default function PosterPage({ params }: PageProps<'/admin/forms/[formId]/poster'>) {
   return (
-    <Suspense fallback={<div className={adminStyles.skeleton} aria-label="載入中" />}>
+    <Suspense fallback={<LoadingOverlay message="載入中，請稍候…" />}>
       <Poster params={params} />
     </Suspense>
   );

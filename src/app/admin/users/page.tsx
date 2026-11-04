@@ -1,3 +1,4 @@
+import { LoadingOverlay } from '@/app/admin/loading-overlay';
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import type { UserStatus } from '@/db/schema';
@@ -43,7 +44,7 @@ export default function UsersPage() {
           人員用 Google 登入後會出現在「待審核」，核准後即可使用後台。最高管理者可以把人員設為管理者，管理者也能審核申請。
         </p>
       </div>
-      <Suspense fallback={<div className={adminStyles.skeleton} aria-label="載入中" />}>
+      <Suspense fallback={<LoadingOverlay message="載入中，請稍候…" />}>
         <UserSections />
       </Suspense>
     </>

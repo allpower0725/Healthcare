@@ -17,7 +17,7 @@
 ## 整體技術
 
 - Next.js 16（App Router、TypeScript），專案根目錄即 repo 根目錄。
-- PostgreSQL：本機以 Docker 執行（`docker-compose.yml`，對外 port 5433，避開已占用的 5432）；上線改連 Supabase，只換 `DATABASE_URL`。
+- PostgreSQL：本機以 Docker 執行（`docker-compose.yml`，主資料庫 `wjcch`，對外 port 5433，避開已占用的 5432）；上線改連 Supabase，只換 `DATABASE_URL`。
 - Drizzle ORM + postgres.js（`prepare: false`，相容 Supabase 交易模式連線池）；migration 由 drizzle-kit 產生於 `drizzle/`。
 - 樣式：純 CSS + CSS 變數，參考表單色票（主色 `#23786a`、院所區 `#8a5300`、圓角卡片、同一組字型）在後台自己的樣式檔重新定義，不引用 `預防保健表單電子檔/`。
 - `預防保健表單電子檔/` 不進 Git（`.gitignore`）；需要的圖檔（院徽、主題插圖）複製到 `public/`。
@@ -97,5 +97,5 @@ Google OAuth 用戶端由院方在 Google Cloud Console 建立，重新導向 UR
 ## 測試
 
 - 單元測試（Vitest）：密碼雜湊與驗證、session token。
-- 整合測試（Vitest + 本機測試資料庫 `healthcare_test`）：帳密登入、Google 身分處理（新申請、已核准登入、綁定、綁定衝突）、session 驗證與過期、審核權限規則。
+- 整合測試（Vitest + 本機測試資料庫 `wjcch_test`）：帳密登入、Google 身分處理（新申請、已核准登入、綁定、綁定衝突）、session 驗證與過期、審核權限規則。
 - 瀏覽器實測：登入頁、帳密登入 → 綁定頁、未登入導向、使用者管理頁；Google 實際授權待取得 Client ID 後測試。

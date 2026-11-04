@@ -1,13 +1,13 @@
+import { LoadingOverlay } from '@/app/admin/loading-overlay';
 import '@/components/forms/print.css';
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import { AdminLink as Link } from '@/app/admin/pending-ui';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { requireUser } from '@/lib/auth/dal';
 import { deriveProfile } from '@/lib/forms/profile';
 import { getSubmission } from '@/lib/submissions/service';
 import { getFormPrint } from '@/forms/print-registry';
-import adminStyles from '../../../admin.module.css';
 import { PrintButton } from '../../../forms/[formId]/poster/print-button';
 
 export const metadata: Metadata = { title: '列印表單' };
@@ -16,7 +16,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export default function PrintPage({ params }: PageProps<'/admin/submissions/[id]/print'>) {
   return (
-    <Suspense fallback={<div className={adminStyles.skeleton} aria-label="載入中" />}>
+    <Suspense fallback={<LoadingOverlay message="載入中，請稍候…" />}>
       <PrintView params={params} />
     </Suspense>
   );
@@ -37,16 +37,6 @@ async function PrintView({ params }: { params: PageProps<'/admin/submissions/[id
       ← 回這份表單
     </Link>
   );
-
-  // 院所確認送出（鎖定）後才提供列印
-  if (submission.status !== 'completed') {
-    return (
-      <>
-        <div className="ps-toolbar">{back}</div>
-        <p className="notice notice--warn">這份表單尚未確認送出，確認送出後才能列印。</p>
-      </>
-    );
-  }
 
   // 資料在存入時已依條件清理（被隱藏的欄位為空），直接合併並加上紙本格式的衍生值
   const data = { ...submission.publicData, ...submission.staffData };

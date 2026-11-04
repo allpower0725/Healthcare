@@ -10,17 +10,36 @@
 
 ```bash
 npm install
-docker compose up -d db        # PostgreSQL 17，對外 port 5433（另建測試用資料庫 healthcare_test）
+docker compose up -d db        # PostgreSQL 17，對外 port 5433（主庫 wjcch、測試庫 wjcch_test）
 cp .env.example .env           # 填入各項設定，見下方
 npm run db:migrate             # 建立資料表
 npm run dev                    # http://localhost:3000
 ```
 
+### 本機資料庫命名
+
+- 主資料庫：`wjcch`；自動測試資料庫：`wjcch_test`。
+- Schema 維持 `public`，五張應用資料表維持 `heal_` 前綴，與 Supabase 相同。
+- Supabase 專案名稱是 `wjcch`，雲端實際資料庫名稱仍為 `postgres`；部署時使用雲端提供的連線字串。
+- 本機連線為 `localhost:5433`，帳號與密碼沿用 `healthcare`。Docker 容器 `healthcare-db` 及既有資料卷沿用原設定。
+- DBeaver 的資料庫欄位填 `wjcch`，展開 `public` 即可查看資料表。
+
+本機已於 2026-11-04 將 `healthcare`、`healthcare_test` 原地更名，保留資料與 migration 紀錄。更名前的完整備份與資料核對清單在 `.local/db-backups/2026-11-04-database-rename/`，不納入 Git。
+
+其他電腦若沿用舊資料卷，需先備份兩個資料庫、關閉應用程式與資料庫管理工具的連線，再執行一次：
+
+```bash
+docker exec healthcare-db psql -U healthcare -d postgres -X -v ON_ERROR_STOP=1 --single-transaction -c "ALTER DATABASE healthcare RENAME TO wjcch; ALTER DATABASE healthcare_test RENAME TO wjcch_test;"
+```
+
+接著將該電腦 `.env` 的 `DATABASE_URL` 資料庫路徑改為 `/wjcch`，若另設 `TEST_DATABASE_URL` 則改為 `/wjcch_test`，執行 `docker compose up -d db` 並重新啟動應用程式。`POSTGRES_DB` 與初始化 SQL 只在空資料卷首次建立時生效，單改設定不會替既有資料庫更名；保留原資料卷即可沿用資料。
+
 ### .env
 
 | 變數 | 說明 |
 |---|---|
-| `DATABASE_URL` | 本機用 `.env.example` 的預設值；上線改填 Supabase 連線字串 |
+| `DATABASE_URL` | 本機連到 `wjcch`（見 `.env.example`）；上線改填 Supabase 連線字串 |
+| `TEST_DATABASE_URL` | 測試指令的選用環境變數，預設連到本機 `wjcch_test`；覆寫時須指向專用測試庫 |
 | `APP_URL` | 後台網址，本機為 `http://localhost:3000` |
 | `ADMIN_USERNAME`、`ADMIN_PASSWORD_HASH` | 最高管理者首次登入用；雜湊以 `npm run hash-password` 產生 |
 | `GOOGLE_CLIENT_ID`、`GOOGLE_CLIENT_SECRET` | Google Cloud Console 的 OAuth 用戶端（網頁應用程式），重新導向 URI 填 `{APP_URL}/api/auth/google/callback` |
@@ -34,7 +53,11 @@ npm run dev                    # http://localhost:3000
 ## 表單填寫流程
 
 - 民眾掃描 QR code 開啟 `/f/{表單代號}`，先輸入身分證號再填寫；草稿只存在民眾裝置（12 小時），按「確認送出」才寫入資料庫。
-- 後台「協同完成」：列表可依身分證號（部分號碼即可）、表單種類、狀態篩選，點欄位標題排序；開啟後填寫院所區（自動儲存）→ 院所區最下方「確認送出」鎖定 →「列印 / 另存原樣 PDF」；「取消送出」後民眾才能再退回修改。重複送出的資料可作廢。
+- 「退回修改」後再送出沿用同一筆案件。相同有效裝置、同一身分與表單種類的未完成資料會優先續用；重複點擊、並行請求與回應遺失後重試不重複建檔。已完成紀錄保留，新次服務使用新編號；既有多份重複資料需人工比對，不自動合併。
+- 民眾成功送出後可「列印 / 另存 PDF」，直接開啟瀏覽器列印介面、不另開預覽分頁。沿用原樣 A4 版型，只包含民眾已送出的內容、院所欄位留白；原裝置憑證有效期間內才能存取。
+- 後台「協同完成」：首次進入預設六種表單全選、狀態勾選「待院所確認」。輸入不含數字時以姓名部分比對，含數字時依身分證號部分比對；可依表單種類、狀態篩選及點欄位標題排序。
+- 列表「開啟」使用 modal，民眾內容預設展開；關閉時保留篩選、排序、頁碼、捲動與未套用的勾選。院所區自動儲存，關閉或列印前等待儲存完成，失敗時保留內容。列表及 modal 皆可直接開啟瀏覽器列印介面，所有狀態均可列印；「確認送出」仍會鎖定資料，「取消送出」後民眾才能再退回修改，重複資料仍可作廢。
+- 後台載入、篩選、切頁、儲存設定及狀態操作會顯示齒輪 loading 遮罩；自動暫存只顯示局部提示。
 - 院內平板可把後台「加入主畫面」（iPad 用 Safari、Android 用 Chrome，按分享→加入主畫面），之後從圖示開啟就沒有網址列。設定在 `public/admin.webmanifest` 與 `src/lib/admin-app.ts`，圖示原檔為 `public/brand/app-icon.svg`；民眾表單頁不提供安裝。
 - 6 張表單（人類乳突病毒、子宮頸抹片、口腔黏膜檢查、胃幽門螺旋桿菌、糞便潛血、成人預防保健）皆已電子化。表單欄位定義在 `src/lib/forms/defs/`，畫面在 `src/forms/`，各表單的設計見 `docs/specs/2026-10-24-forms-5b-design.md`。
 - 成人預防保健的同意簽名在院所區由服務對象本人簽；年齡、BMI、LDL、eGFR 自動計算（只顯示與列印，不存入資料庫）。本院檢驗參考值目前留空，之後可在 `src/lib/forms/defs/adult.ts` 的 `staffDefaults` 加入。
@@ -49,7 +72,7 @@ npm run dev                    # http://localhost:3000
 
 | 指令 | 用途 |
 |---|---|
-| `npm test` | 自動測試（使用本機的 `healthcare_test` 資料庫） |
+| `npm test` | 自動測試（預設使用本機的 `wjcch_test` 資料庫） |
 | `npm run typecheck` | TypeScript 型別檢查 |
 | `npm run db:generate` | 修改 `src/db/schema.ts` 後產生 migration |
 | `npm run db:migrate` | 套用 migration |

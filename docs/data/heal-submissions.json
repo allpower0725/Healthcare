@@ -1,0 +1,2991 @@
+{
+  "columns": {
+    "id": "案件編號",
+    "form_id": "表單種類",
+    "status": "案件狀態",
+    "id_no": "身分證號／統一證號／護照號碼",
+    "name": "姓名",
+    "birth_date": "出生日期",
+    "public_data": "民眾填寫內容",
+    "staff_data": "院所填寫內容",
+    "device_token_hash": "民眾裝置憑證雜湊",
+    "device_expires_at": "民眾裝置存取到期時間",
+    "public_submitted_at": "民眾最後送出時間",
+    "staff_updated_by": "最後編輯院所人員",
+    "staff_updated_at": "院所最後儲存時間",
+    "completed_by": "確認完成人員",
+    "completed_at": "確認完成時間",
+    "version": "資料版本號",
+    "created_at": "建立時間",
+    "updated_at": "最後異動時間"
+  },
+  "form_id": {
+    "hpv": "人類乳突病毒（HPV）檢測",
+    "pap": "子宮頸抹片檢查",
+    "oral": "口腔黏膜檢查",
+    "hp": "胃幽門螺旋桿菌檢測",
+    "fit": "糞便潛血檢查（大腸癌篩檢）",
+    "adult": "成人預防保健",
+    "labor": "勞工健康檢查"
+  },
+  "status": {
+    "submitted": "待院所確認",
+    "returned": "民眾修改中",
+    "completed": "已完成",
+    "voided": "已作廢"
+  },
+  "forms": {
+    "hpv": {
+      "public_data": {
+        "profile.idNo": {
+          "label": "身分證號／統一證號／護照號碼"
+        },
+        "profile.name": {
+          "label": "姓名"
+        },
+        "profile.birthY": {
+          "label": "出生日期（民國年）"
+        },
+        "profile.birthM": {
+          "label": "出生日期（月）"
+        },
+        "profile.birthD": {
+          "label": "出生日期（日）"
+        },
+        "profile.phone": {
+          "label": "聯絡電話"
+        },
+        "profile.email": {
+          "label": "電子郵件"
+        },
+        "profile.edu": {
+          "label": "教育程度",
+          "options": {
+            "1": "無",
+            "2": "小學",
+            "3": "國（初）中",
+            "4": "高中（職）",
+            "5": "專科、大學",
+            "6": "研究所以上",
+            "7": "拒答"
+          }
+        },
+        "profile.addrCounty": {
+          "label": "現住址－縣市"
+        },
+        "profile.addrTown": {
+          "label": "現住址－鄉鎮市區"
+        },
+        "profile.addrVillage": {
+          "label": "現住址－村里"
+        },
+        "profile.addrLin": {
+          "label": "現住址－鄰"
+        },
+        "profile.addrRoad": {
+          "label": "現住址－路街"
+        },
+        "profile.addrSec": {
+          "label": "現住址－段"
+        },
+        "profile.addrLane": {
+          "label": "現住址－巷"
+        },
+        "profile.addrAlley": {
+          "label": "現住址－弄"
+        },
+        "profile.addrNo": {
+          "label": "現住址－門牌號"
+        },
+        "profile.addrFloor": {
+          "label": "現住址－樓"
+        },
+        "profile.regSame": {
+          "label": "戶籍地與現住址相同",
+          "options": {
+            "1": "勾選"
+          }
+        },
+        "profile.regCounty": {
+          "label": "戶籍地－縣市"
+        },
+        "profile.regTown": {
+          "label": "戶籍地－鄉鎮市區"
+        },
+        "hpv.q9": {
+          "label": "最近一年使用口服避孕藥達 6 個月以上",
+          "options": {
+            "1": "無",
+            "2": "有",
+            "3": "不知道/拒答"
+          }
+        },
+        "hpv.q10": {
+          "label": "最近一年因更年期症狀使用荷爾蒙補充療法達 6 個月以上",
+          "options": {
+            "1": "無",
+            "2": "有",
+            "3": "不知道/拒答"
+          }
+        },
+        "hpv.q11": {
+          "label": "請問您是否使用免疫抑制劑藥物（如類固醇、抗移植排斥藥物等）",
+          "options": {
+            "1": "無",
+            "2": "有",
+            "3": "不知道/拒答"
+          }
+        },
+        "hpv.q12": {
+          "label": "最近一年性行為時曾經使用保險套",
+          "options": {
+            "1": "無",
+            "2": "有",
+            "3": "最近一年無性行為",
+            "4": "不知道/拒答"
+          }
+        },
+        "hpv.q13": {
+          "label": "最近一年平均每個月陰道灌洗頻率",
+          "options": {
+            "1": "從未灌洗",
+            "2": "不到 1 次",
+            "3": "1 次",
+            "4": "2–4 次",
+            "5": "至少 5 次",
+            "6": "不知道/拒答"
+          }
+        },
+        "hpv.q14": {
+          "label": "最近一年吸菸習慣（持續吸菸 6 個月以上）",
+          "options": {
+            "1": "無",
+            "2": "已戒菸 6 個月以上",
+            "3": "有吸菸"
+          }
+        },
+        "hpv.q15": {
+          "label": "請問您接種的 HPV 疫苗是",
+          "options": {
+            "1": "未接種",
+            "2": "保蓓（2 價）",
+            "3": "嘉喜（4 價）",
+            "4": "嘉喜（9 價）",
+            "5": "不記得"
+          }
+        },
+        "hpv.q16": {
+          "label": "最近一次 HPV 檢測時間",
+          "options": {
+            "1": "1 年內",
+            "2": "1–2 年內",
+            "3": "2–3 年內",
+            "4": "3 年以上",
+            "5": "從未檢查過"
+          }
+        },
+        "hpv.q17": {
+          "label": "最近一次 HPV 檢測結果",
+          "options": {
+            "1": "未感染",
+            "2": "有感染",
+            "3": "不知道",
+            "4": "從未檢查過"
+          }
+        },
+        "hpv.sigConsent": {
+          "label": "受檢者同意簽名"
+        }
+      },
+      "staff_data": {
+        "hpv.nationality": {
+          "label": "國籍",
+          "options": {
+            "1": "本國",
+            "2": "外籍人士"
+          }
+        },
+        "hpv.van": {
+          "label": "抹片車或社區巡迴服務",
+          "options": {
+            "1": "否",
+            "2": "抹片車",
+            "3": "社區巡迴服務"
+          }
+        },
+        "hpv.pay": {
+          "label": "支付方式",
+          "options": {
+            "1": "預防保健",
+            "2": "健保醫療給付",
+            "3": "其他公務預算補助",
+            "4": "其他",
+            "6": "自費健康檢查"
+          }
+        },
+        "hpv.redo": {
+          "label": "無法判讀重做",
+          "options": {
+            "1": "是",
+            "2": "否"
+          }
+        },
+        "hpv.schedule": {
+          "label": "時程代碼"
+        },
+        "hpv.collectOrg": {
+          "label": "採檢醫療機構代碼"
+        },
+        "hpv.collectY": {
+          "label": "採檢體日期（民國年）"
+        },
+        "hpv.collectM": {
+          "label": "採檢體日期（月）"
+        },
+        "hpv.collectD": {
+          "label": "採檢體日期（日）"
+        },
+        "hpv.sigCollector": {
+          "label": "檢體取樣醫事人員簽名"
+        },
+        "hpv.collectorRole": {
+          "label": "檢體取樣醫事人員身分別",
+          "options": {
+            "1": "婦產科醫師",
+            "2": "家醫科醫師",
+            "3": "助產人員",
+            "4": "衛生所護理人員",
+            "5": "衛生所醫師（非屬①②）"
+          }
+        },
+        "hpv.withPap": {
+          "label": "本次是否同時進行抹片檢查",
+          "options": {
+            "1": "否",
+            "2": "是"
+          }
+        },
+        "hpv.purpose": {
+          "label": "做 HPV 檢查目的",
+          "options": {
+            "1": "篩檢",
+            "2": "追蹤",
+            "3": "其他"
+          }
+        },
+        "hpv.lab": {
+          "label": "檢驗實驗室機構代碼"
+        },
+        "hpv.specimenNo": {
+          "label": "檢體編號"
+        },
+        "hpv.recvY": {
+          "label": "檢體收到日期（民國年）"
+        },
+        "hpv.recvM": {
+          "label": "檢體收到日期（月）"
+        },
+        "hpv.recvD": {
+          "label": "檢體收到日期（日）"
+        },
+        "hpv.reportY": {
+          "label": "發報告日期（民國年）"
+        },
+        "hpv.reportM": {
+          "label": "發報告日期（月）"
+        },
+        "hpv.reportD": {
+          "label": "發報告日期（日）"
+        },
+        "hpv.reagent": {
+          "label": "檢驗試劑",
+          "options": {
+            "1": "Abbott RealTime HPV test",
+            "2": "BD Onclarity HPV Assay",
+            "3": "Roche Cobas HPV test",
+            "4": "CapitalBio HPV Genotyping Kit",
+            "5": "DR. HPV Genotyping IVD kit",
+            "6": "EASY CHIP HPV Blot",
+            "8": "Xpert HPV",
+            "9": "Alinity m HR HPV",
+            "12": "Aptima HPV 16 18/45 Genotype Assay",
+            "99": "Other"
+          }
+        },
+        "hpv.reagentOther": {
+          "label": "其他檢驗試劑名稱"
+        },
+        "hpv.judge": {
+          "label": "檢驗結果是否可判讀",
+          "options": {
+            "1": "可判讀",
+            "2": "無法判讀"
+          }
+        },
+        "hpv.hr": {
+          "label": "高風險 HPV 檢驗結果",
+          "options": {
+            "0": "陰性",
+            "1": "陽性"
+          }
+        },
+        "hpv.hrTypes": {
+          "label": "高風險 HPV 陽性型別",
+          "options": {
+            "n1618": "非 16、18 之不分型",
+            "n161845": "非 16、18/45 之不分型"
+          }
+        },
+        "hpv.lr": {
+          "label": "低風險 HPV 檢驗結果",
+          "options": {
+            "0": "陰性",
+            "1": "陽性",
+            "2": "未檢測"
+          }
+        },
+        "hpv.lrTypes": {
+          "label": "低風險 HPV 陽性型別",
+          "options": {
+            "nt": "不分型"
+          }
+        },
+        "hpv.ot": {
+          "label": "其他型別 HPV 檢驗結果",
+          "options": {
+            "0": "陰性",
+            "1": "陽性",
+            "2": "未檢測"
+          }
+        },
+        "hpv.ot1": {
+          "label": "其他 HPV 陽性型別第 1 項"
+        },
+        "hpv.ot2": {
+          "label": "其他 HPV 陽性型別第 2 項"
+        },
+        "hpv.ot3": {
+          "label": "其他 HPV 陽性型別第 3 項"
+        },
+        "hpv.ot4": {
+          "label": "其他 HPV 陽性型別第 4 項"
+        },
+        "hpv.ot5": {
+          "label": "其他 HPV 陽性型別第 5 項"
+        },
+        "hpv.ot6": {
+          "label": "其他 HPV 陽性型別第 6 項"
+        },
+        "hpv.sigLab": {
+          "label": "檢驗者簽名"
+        }
+      }
+    },
+    "pap": {
+      "public_data": {
+        "profile.idNo": {
+          "label": "身分證號／統一證號／護照號碼"
+        },
+        "profile.name": {
+          "label": "姓名"
+        },
+        "profile.birthY": {
+          "label": "出生日期（民國年）"
+        },
+        "profile.birthM": {
+          "label": "出生日期（月）"
+        },
+        "profile.birthD": {
+          "label": "出生日期（日）"
+        },
+        "profile.phone": {
+          "label": "聯絡電話"
+        },
+        "profile.email": {
+          "label": "電子郵件"
+        },
+        "profile.edu": {
+          "label": "教育程度",
+          "options": {
+            "1": "無",
+            "2": "小學",
+            "3": "國（初）中",
+            "4": "高中（職）",
+            "5": "專科、大學",
+            "6": "研究所以上",
+            "7": "拒答"
+          }
+        },
+        "profile.addrCounty": {
+          "label": "現住址－縣市"
+        },
+        "profile.addrTown": {
+          "label": "現住址－鄉鎮市區"
+        },
+        "profile.addrVillage": {
+          "label": "現住址－村里"
+        },
+        "profile.addrLin": {
+          "label": "現住址－鄰"
+        },
+        "profile.addrRoad": {
+          "label": "現住址－路街"
+        },
+        "profile.addrSec": {
+          "label": "現住址－段"
+        },
+        "profile.addrLane": {
+          "label": "現住址－巷"
+        },
+        "profile.addrAlley": {
+          "label": "現住址－弄"
+        },
+        "profile.addrNo": {
+          "label": "現住址－門牌號"
+        },
+        "profile.addrFloor": {
+          "label": "現住址－樓"
+        },
+        "profile.regSame": {
+          "label": "戶籍地與現住址相同",
+          "options": {
+            "1": "勾選"
+          }
+        },
+        "profile.regCounty": {
+          "label": "戶籍地－縣市"
+        },
+        "profile.regTown": {
+          "label": "戶籍地－鄉鎮市區"
+        },
+        "pap.q9": {
+          "label": "最近一次抹片檢查時間？",
+          "options": {
+            "1": "1 年內",
+            "2": "1 至 2 年內",
+            "3": "2 至 3 年內",
+            "4": "3 年以上",
+            "5": "從未檢查過"
+          }
+        },
+        "pap.q10": {
+          "label": "已停經？（一年無月經）",
+          "options": {
+            "1": "是",
+            "2": "否",
+            "3": "不知道"
+          }
+        },
+        "pap.q12": {
+          "label": "現在是否懷孕？",
+          "options": {
+            "1": "是",
+            "2": "否",
+            "3": "不知道"
+          }
+        },
+        "pap.q13": {
+          "label": "子宮是否切除？",
+          "options": {
+            "1": "是",
+            "2": "否",
+            "3": "不知道"
+          }
+        },
+        "pap.q14": {
+          "label": "子宮是否接受過放射線治療？",
+          "options": {
+            "1": "是",
+            "2": "否",
+            "3": "不知道"
+          }
+        },
+        "pap.q15": {
+          "label": "是否曾接種人類乳突病毒（HPV）疫苗？",
+          "options": {
+            "1": "是",
+            "2": "否",
+            "3": "不知道"
+          }
+        },
+        "pap.q11Y": {
+          "label": "最後一次月經日期（民國年）"
+        },
+        "pap.q11M": {
+          "label": "最後一次月經日期（月）"
+        },
+        "pap.q11D": {
+          "label": "最後一次月經日期（日）"
+        },
+        "pap.q15Year": {
+          "label": "HPV 疫苗接種年份（民國年）"
+        },
+        "pap.sigConsent": {
+          "label": "受檢者同意簽名"
+        }
+      },
+      "staff_data": {
+        "pap.nationality": {
+          "label": "國籍",
+          "options": {
+            "1": "本國",
+            "2": "外籍人士"
+          }
+        },
+        "pap.van": {
+          "label": "抹片車或社區巡迴服務",
+          "options": {
+            "1": "否",
+            "2": "抹片車",
+            "3": "社區巡迴服務篩檢"
+          }
+        },
+        "pap.pay": {
+          "label": "支付方式",
+          "options": {
+            "1": "預防保健",
+            "2": "健保醫療給付",
+            "3": "其他公務預算補助",
+            "4": "其他",
+            "6": "自費健康檢查"
+          }
+        },
+        "pap.redo": {
+          "label": "難判重做",
+          "options": {
+            "1": "是",
+            "2": "否"
+          }
+        },
+        "pap.schedule": {
+          "label": "時程代碼"
+        },
+        "pap.chartNo": {
+          "label": "病歷號"
+        },
+        "pap.doubleCervix": {
+          "label": "雙子宮頸",
+          "options": {
+            "1": "是",
+            "2": "否"
+          }
+        },
+        "pap.collectY": {
+          "label": "抹片檢體取樣日期（民國年）"
+        },
+        "pap.collectM": {
+          "label": "抹片檢體取樣日期（月）"
+        },
+        "pap.collectD": {
+          "label": "抹片檢體取樣日期（日）"
+        },
+        "pap.collectOrgName": {
+          "label": "抹片檢體取樣機構名稱"
+        },
+        "pap.collectOrgCode": {
+          "label": "抹片檢體取樣機構代碼"
+        },
+        "pap.sigCollector": {
+          "label": "抹片檢體取樣醫事人員簽名"
+        },
+        "pap.collectorRole": {
+          "label": "抹片檢體取樣人員身分別",
+          "options": {
+            "1": "婦產科醫師",
+            "2": "家醫科醫師",
+            "3": "助產人員",
+            "4": "衛生所護理人員",
+            "5": "衛生所醫師（非屬①②）"
+          }
+        },
+        "pap.withHpv": {
+          "label": "本次檢查是否合併 HPV 檢測服務",
+          "options": {
+            "1": "否",
+            "2": "是"
+          }
+        },
+        "pap.purpose": {
+          "label": "做抹片目的",
+          "options": {
+            "1": "篩檢",
+            "2": "懷疑癌症",
+            "3": "追蹤",
+            "4": "前次抹片難以判讀",
+            "5": "其他"
+          }
+        },
+        "pap.finding": {
+          "label": "臨床所見（含骨盆腔檢查結果）"
+        },
+        "pap.cytoNo": {
+          "label": "抹片細胞病理編號"
+        },
+        "pap.readOrgName": {
+          "label": "抹片判讀機構名稱"
+        },
+        "pap.readOrgCode": {
+          "label": "抹片判讀機構代碼"
+        },
+        "pap.recvY": {
+          "label": "抹片收到日期（民國年）"
+        },
+        "pap.recvM": {
+          "label": "抹片收到日期（月）"
+        },
+        "pap.recvD": {
+          "label": "抹片收到日期（日）"
+        },
+        "pap.specimenType": {
+          "label": "檢體種類",
+          "options": {
+            "1": "常規抹片",
+            "2": "液體標本"
+          }
+        },
+        "pap.readMethod": {
+          "label": "閱片方式",
+          "options": {
+            "1": "人工",
+            "2": "機械",
+            "3": "人工＋機械"
+          }
+        },
+        "pap.quality": {
+          "label": "抹片品質",
+          "options": {
+            "1": "良好",
+            "2": "尚可",
+            "3": "抹片難以判讀"
+          }
+        },
+        "pap.qualityReason": {
+          "label": "抹片尚可或難以判讀之原因",
+          "options": {
+            "1": "抹片固定或保存不良",
+            "2": "細胞太少",
+            "3": "太厚或太多血液",
+            "4": "沒有子宮內頸成份",
+            "5": "炎症細胞過多",
+            "6": "存在外來物（如潤滑劑）",
+            "7": "過多細胞溶解或自溶",
+            "8": "其他"
+          }
+        },
+        "pap.qualityReasonOther": {
+          "label": "其他抹片品質原因"
+        },
+        "pap.infection": {
+          "label": "可能的感染",
+          "options": {
+            "1": "Candida",
+            "2": "Trichomonas",
+            "3": "Herpes",
+            "6": "Others",
+            "7": "Shift in flora（bacterial vaginosis）",
+            "8": "Actinomyces"
+          }
+        },
+        "pap.infectionOther": {
+          "label": "其他感染說明"
+        },
+        "pap.dx": {
+          "label": "細胞病理診斷",
+          "options": {
+            "1": "Within normal limit",
+            "2": "Reactive changes：Inflammation, repair, radiation, and others",
+            "3": "Atrophy with inflammation",
+            "4": "Atypical squamous cells（ASC-US）",
+            "5": "Atypical glandular cells",
+            "6": "Mild dysplasia（CIN1）with koilocytes",
+            "7": "Mild dysplasia（CIN1）without koilocytes",
+            "8": "Moderate dysplasia（CIN2）",
+            "9": "Severe dysplasia（CIN3）",
+            "10": "Carcinoma in situ（CIN3）",
+            "11": "SQUAMOUS CELL CARCINOMA",
+            "12": "ADENOCARCINOMA",
+            "13": "OTHER MALIGNANT NEOPLASM",
+            "14": "OTHER",
+            "15": "Atypical glandular cells favor neoplasm",
+            "16": "Atypical squamous cells cannot exclude HSIL",
+            "17": "Dysplasia cannot exclude HSIL",
+            "18": "ENDOCERVICAL ADENOCARCINOMA IN SITU"
+          }
+        },
+        "pap.dxOther": {
+          "label": "其他細胞病理診斷"
+        },
+        "pap.endometrial": {
+          "label": "子宮內膜細胞出現於 40 歲以上婦女",
+          "options": {
+            "1": "是",
+            "2": "否"
+          }
+        },
+        "pap.advice": {
+          "label": "建議",
+          "options": {
+            "1": "因抹片難以判讀，請重做抹片檢查",
+            "2": "治療發炎，並於三個月後重做抹片檢查",
+            "3": "抹片結果異常，請再做進一步檢查",
+            "4": "其他建議"
+          }
+        },
+        "pap.adviceOther": {
+          "label": "其他建議"
+        },
+        "pap.sigCt": {
+          "label": "細胞檢驗師（Cytotechnologist）簽名"
+        },
+        "pap.ctCode": {
+          "label": "細胞檢驗師（Cytotechnologist）代碼"
+        },
+        "pap.sigCp": {
+          "label": "細胞病理醫師（Cytopathologist）簽名"
+        },
+        "pap.cpCode": {
+          "label": "細胞病理醫師（Cytopathologist）代碼"
+        },
+        "pap.cpM": {
+          "label": "確診日期（月）"
+        },
+        "pap.cpD": {
+          "label": "確診日期（日）"
+        }
+      }
+    },
+    "oral": {
+      "public_data": {
+        "profile.idNo": {
+          "label": "身分證號／統一證號／護照號碼"
+        },
+        "profile.name": {
+          "label": "姓名"
+        },
+        "profile.birthY": {
+          "label": "出生日期（民國年）"
+        },
+        "profile.birthM": {
+          "label": "出生日期（月）"
+        },
+        "profile.birthD": {
+          "label": "出生日期（日）"
+        },
+        "profile.phone": {
+          "label": "聯絡電話"
+        },
+        "profile.email": {
+          "label": "電子郵件"
+        },
+        "profile.edu": {
+          "label": "教育程度",
+          "options": {
+            "1": "無",
+            "2": "小學",
+            "3": "國（初）中",
+            "4": "高中（職）",
+            "5": "專科、大學",
+            "6": "研究所以上",
+            "7": "拒答"
+          }
+        },
+        "profile.addrCounty": {
+          "label": "現住址－縣市"
+        },
+        "profile.addrTown": {
+          "label": "現住址－鄉鎮市區"
+        },
+        "profile.addrVillage": {
+          "label": "現住址－村里"
+        },
+        "profile.addrLin": {
+          "label": "現住址－鄰"
+        },
+        "profile.addrRoad": {
+          "label": "現住址－路街"
+        },
+        "profile.addrSec": {
+          "label": "現住址－段"
+        },
+        "profile.addrLane": {
+          "label": "現住址－巷"
+        },
+        "profile.addrAlley": {
+          "label": "現住址－弄"
+        },
+        "profile.addrNo": {
+          "label": "現住址－門牌號"
+        },
+        "profile.addrFloor": {
+          "label": "現住址－樓"
+        },
+        "profile.sex": {
+          "label": "性別",
+          "options": {
+            "M": "男",
+            "F": "女"
+          }
+        },
+        "profile.aboriginal": {
+          "label": "是否為原住民",
+          "options": {
+            "Y": "是",
+            "N": "否"
+          }
+        },
+        "profile.mobile": {
+          "label": "手機號碼"
+        },
+        "oral.betel": {
+          "label": "嚼檳榔習慣",
+          "options": {
+            "0": "無",
+            "1": "已戒",
+            "2": "嚼 10 年以下，每天少於 20 顆",
+            "3": "嚼 10 年以下，每天 20 顆及以上",
+            "4": "嚼超過 10 年，每天少於 20 顆",
+            "5": "嚼超過 10 年，每天 20 顆及以上"
+          }
+        },
+        "oral.smoke": {
+          "label": "吸菸習慣",
+          "options": {
+            "0": "無",
+            "1": "已戒",
+            "2": "吸 10 年以下，每天少於 20 支",
+            "3": "吸 10 年以下，每天 20 支及以上",
+            "4": "吸超過 10 年，每天少於 20 支",
+            "5": "吸超過 10 年，每天 20 支及以上"
+          }
+        },
+        "oral.symptom": {
+          "label": "口腔症狀",
+          "options": {
+            "0": "無",
+            "1": "有"
+          }
+        },
+        "oral.sigConsent": {
+          "label": "受檢者同意簽名"
+        }
+      },
+      "staff_data": {
+        "oral.pay": {
+          "label": "支付方式",
+          "options": {
+            "1": "預防保健",
+            "3": "健保醫療給付",
+            "4": "其他公務預算補助",
+            "5": "自費健康檢查",
+            "9": "其他"
+          }
+        },
+        "oral.site": {
+          "label": "篩檢地點",
+          "options": {
+            "1": "社區或職場設站篩檢",
+            "2": "醫療院所"
+          }
+        },
+        "oral.dept": {
+          "label": "檢查醫師科別",
+          "options": {
+            "1": "牙科",
+            "2": "耳鼻喉科",
+            "3": "經衛生福利部核可之其他科別專科醫師／專案許可之西醫師"
+          }
+        },
+        "oral.clinic": {
+          "label": "檢查醫療院所名稱及代碼"
+        },
+        "oral.visitY": {
+          "label": "門診日期（民國年）"
+        },
+        "oral.visitM": {
+          "label": "門診日期（月）"
+        },
+        "oral.visitD": {
+          "label": "門診日期（日）"
+        },
+        "oral.result": {
+          "label": "初檢結果／轉介原因",
+          "options": {
+            "0": "未發現以下需轉介之異常",
+            "1": "疑似口腔癌",
+            "2": "口腔內外不明原因之持續性腫塊",
+            "3": "紅斑",
+            "4": "紅白斑",
+            "5": "疣狀增生",
+            "8": "約兩星期仍不癒之口腔潰瘍／糜爛",
+            "9": "扁平苔癬",
+            "10": "口腔黏膜不正常，但診斷未明",
+            "71": "非均質性白斑",
+            "72": "均質性厚白斑",
+            "73": "均質性薄白斑",
+            "76": "口腔黏膜下纖維化症（張口不易或舌頭活動困難）",
+            "99": "其他"
+          }
+        },
+        "oral.resultOther": {
+          "label": "其他轉介原因"
+        },
+        "oral.mapMarks": {
+          "label": "口腔黏膜初檢異常部位標示圖"
+        },
+        "oral.sigDoctor": {
+          "label": "檢查醫師簽名"
+        },
+        "oral.license": {
+          "label": "醫師執業執照號碼"
+        },
+        "oral.referHospital": {
+          "label": "轉診確診醫院"
+        },
+        "oral.referDoctor": {
+          "label": "轉診醫師"
+        },
+        "oral.referPhone": {
+          "label": "轉診聯絡電話"
+        },
+        "oral.followed": {
+          "label": "檢查後 2 個月內是否接受後續複檢（確診）",
+          "options": {
+            "0": "沒有",
+            "1": "有"
+          }
+        },
+        "oral.noReason": {
+          "label": "未接受複檢（確診）理由",
+          "options": {
+            "1": "無法聯繫",
+            "2": "出國",
+            "3": "搬家",
+            "4": "死亡",
+            "5": "拒做",
+            "6": "其他"
+          }
+        },
+        "oral.noReasonOther": {
+          "label": "其他未複檢理由"
+        },
+        "oral.confirmHospital": {
+          "label": "複檢（確診）醫院名稱及代碼"
+        },
+        "oral.confirmY": {
+          "label": "複檢（確診）日期（民國年）"
+        },
+        "oral.confirmM": {
+          "label": "複檢（確診）日期（月）"
+        },
+        "oral.confirmD": {
+          "label": "複檢（確診）日期（日）"
+        },
+        "oral.biopsy": {
+          "label": "是否做病理切片",
+          "options": {
+            "0": "無",
+            "1": "有"
+          }
+        },
+        "oral.clinDx": {
+          "label": "臨床診斷（複檢）口腔病變",
+          "options": {
+            "10": "均質性薄白斑",
+            "12": "紅斑",
+            "13": "紅白斑",
+            "14": "疣狀增生",
+            "15": "口腔黏膜下纖維化症",
+            "16": "扁平苔癬或類扁平苔癬反應",
+            "20": "疑似口腔癌",
+            "99": "其他",
+            "00": "無明顯異常",
+            "08": "非均質性白斑",
+            "09": "均質性厚白斑"
+          }
+        },
+        "oral.clinDxOther": {
+          "label": "其他臨床診斷"
+        },
+        "oral.pathDx": {
+          "label": "病理診斷（確診）",
+          "options": {
+            "21": "口腔癌",
+            "22": "上皮變異",
+            "99": "其他"
+          }
+        },
+        "oral.pathGrade": {
+          "label": "上皮變異程度",
+          "options": {
+            "23": "輕度",
+            "24": "中度",
+            "25": "重度"
+          }
+        },
+        "oral.pathDxOther": {
+          "label": "其他病理診斷"
+        },
+        "oral.treat": {
+          "label": "治療情形",
+          "options": {
+            "0": "無，個案僅需定期追蹤，目前無需治療，已給予衛教介入",
+            "1": "有做手術、放療、化療或其他治療",
+            "2": "個案拒絕治療",
+            "99": "其他"
+          }
+        },
+        "oral.treatHospital": {
+          "label": "治療醫院名稱及代碼"
+        },
+        "oral.refuseReason": {
+          "label": "拒絕治療原因"
+        },
+        "oral.treatOther": {
+          "label": "其他治療說明"
+        }
+      }
+    },
+    "hp": {
+      "public_data": {
+        "profile.idNo": {
+          "label": "身分證號／統一證號／護照號碼"
+        },
+        "profile.name": {
+          "label": "姓名"
+        },
+        "profile.birthY": {
+          "label": "出生日期（民國年）"
+        },
+        "profile.birthM": {
+          "label": "出生日期（月）"
+        },
+        "profile.birthD": {
+          "label": "出生日期（日）"
+        },
+        "profile.phone": {
+          "label": "聯絡電話"
+        },
+        "profile.email": {
+          "label": "電子郵件"
+        },
+        "profile.edu": {
+          "label": "教育程度",
+          "options": {
+            "1": "無",
+            "2": "小學",
+            "3": "國（初）中",
+            "4": "高中（職）",
+            "5": "專科、大學",
+            "6": "研究所以上",
+            "7": "拒答"
+          }
+        },
+        "profile.addrCounty": {
+          "label": "現住址－縣市"
+        },
+        "profile.addrTown": {
+          "label": "現住址－鄉鎮市區"
+        },
+        "profile.addrVillage": {
+          "label": "現住址－村里"
+        },
+        "profile.addrLin": {
+          "label": "現住址－鄰"
+        },
+        "profile.addrRoad": {
+          "label": "現住址－路街"
+        },
+        "profile.addrSec": {
+          "label": "現住址－段"
+        },
+        "profile.addrLane": {
+          "label": "現住址－巷"
+        },
+        "profile.addrAlley": {
+          "label": "現住址－弄"
+        },
+        "profile.addrNo": {
+          "label": "現住址－門牌號"
+        },
+        "profile.addrFloor": {
+          "label": "現住址－樓"
+        },
+        "profile.sex": {
+          "label": "性別",
+          "options": {
+            "M": "男",
+            "F": "女"
+          }
+        },
+        "profile.aboriginal": {
+          "label": "是否為原住民",
+          "options": {
+            "Y": "是",
+            "N": "否"
+          }
+        },
+        "profile.tribe": {
+          "label": "原住民族別"
+        },
+        "profile.mobile": {
+          "label": "手機號碼"
+        },
+        "hp.religion": {
+          "label": "宗教",
+          "options": {
+            "0": "無",
+            "1": "天主教",
+            "2": "基督教",
+            "3": "佛教",
+            "4": "道教",
+            "5": "一貫道",
+            "9": "其他"
+          }
+        },
+        "hp.religionOther": {
+          "label": "其他宗教"
+        },
+        "hp.job": {
+          "label": "是否有職業",
+          "options": {
+            "Y": "有",
+            "N": "無",
+            "R": "拒答"
+          }
+        },
+        "hp.jobName": {
+          "label": "職業名稱"
+        },
+        "hp.marital": {
+          "label": "婚姻狀況",
+          "options": {
+            "1": "未婚",
+            "2": "已婚",
+            "9": "其他"
+          }
+        },
+        "hp.pmh": {
+          "label": "曾罹患疾病",
+          "options": {
+            "none": "無",
+            "gastritis": "胃炎",
+            "gu": "胃潰瘍",
+            "du": "十二指腸潰瘍",
+            "gerd": "胃食道逆流",
+            "tumor": "胃腫瘤",
+            "gc": "胃癌",
+            "hp": "胃幽門桿菌感染",
+            "other": "其他"
+          }
+        },
+        "hp.pmhOther": {
+          "label": "其他疾病"
+        },
+        "hp.pmhYear": {
+          "label": "疾病發生年份（民國年）"
+        },
+        "hp.pmhYearU": {
+          "label": "疾病發生年份不詳",
+          "options": {
+            "1": "勾選"
+          }
+        },
+        "hp.eradicate": {
+          "label": "曾接受胃幽門桿菌除菌治療",
+          "options": {
+            "N": "無",
+            "Y": "有"
+          }
+        },
+        "hp.endoscopy": {
+          "label": "曾接受胃鏡檢查",
+          "options": {
+            "N": "無",
+            "Y": "有"
+          }
+        },
+        "hp.endoYear": {
+          "label": "胃鏡檢查年份（民國年）"
+        },
+        "hp.endoYearU": {
+          "label": "胃鏡檢查年份不詳",
+          "options": {
+            "1": "勾選"
+          }
+        },
+        "hp.ppi": {
+          "label": "近一個月內使用潰瘍／胃食道逆流特效藥",
+          "options": {
+            "N": "無",
+            "Y": "有"
+          }
+        },
+        "hp.allergy": {
+          "label": "藥物過敏",
+          "options": {
+            "N": "無",
+            "Y": "有"
+          }
+        },
+        "hp.allergyDrug": {
+          "label": "過敏藥物名稱"
+        },
+        "hp.famHp": {
+          "label": "幽門桿菌家族史",
+          "options": {
+            "U": "不詳",
+            "N": "無",
+            "Y": "有"
+          }
+        },
+        "hp.famHpRel": {
+          "label": "幽門桿菌家族史－親屬",
+          "options": {
+            "father": "父",
+            "mother": "母",
+            "spouse": "夫妻",
+            "sibling": "兄弟姊妹",
+            "child": "子女",
+            "other": "其他"
+          }
+        },
+        "hp.famHpSib": {
+          "label": "幽門桿菌家族史－兄弟姊妹人數"
+        },
+        "hp.famHpChild": {
+          "label": "幽門桿菌家族史－子女人數"
+        },
+        "hp.famHpOther": {
+          "label": "幽門桿菌家族史－其他家人稱謂"
+        },
+        "hp.famHpOtherN": {
+          "label": "幽門桿菌家族史－其他家人人數"
+        },
+        "hp.famPu": {
+          "label": "消化性潰瘍家族史（胃或十二指腸）",
+          "options": {
+            "U": "不詳",
+            "N": "無",
+            "Y": "有"
+          }
+        },
+        "hp.famPuRel": {
+          "label": "消化性潰瘍家族史（胃或十二指腸）－親屬",
+          "options": {
+            "father": "父",
+            "mother": "母",
+            "spouse": "夫妻",
+            "sibling": "兄弟姊妹",
+            "child": "子女",
+            "other": "其他"
+          }
+        },
+        "hp.famPuSib": {
+          "label": "消化性潰瘍家族史（胃或十二指腸）－兄弟姊妹人數"
+        },
+        "hp.famPuChild": {
+          "label": "消化性潰瘍家族史（胃或十二指腸）－子女人數"
+        },
+        "hp.famPuOther": {
+          "label": "消化性潰瘍家族史（胃或十二指腸）－其他家人稱謂"
+        },
+        "hp.famPuOtherN": {
+          "label": "消化性潰瘍家族史（胃或十二指腸）－其他家人人數"
+        },
+        "hp.famGc": {
+          "label": "胃癌家族史",
+          "options": {
+            "U": "不詳",
+            "N": "無",
+            "Y": "有"
+          }
+        },
+        "hp.famGcRel": {
+          "label": "胃癌家族史－親屬",
+          "options": {
+            "father": "父",
+            "mother": "母",
+            "spouse": "夫妻",
+            "sibling": "兄弟姊妹",
+            "child": "子女",
+            "other": "其他"
+          }
+        },
+        "hp.famGcSib": {
+          "label": "胃癌家族史－兄弟姊妹人數"
+        },
+        "hp.famGcChild": {
+          "label": "胃癌家族史－子女人數"
+        },
+        "hp.famGcOther": {
+          "label": "胃癌家族史－其他家人稱謂"
+        },
+        "hp.famGcOtherN": {
+          "label": "胃癌家族史－其他家人人數"
+        },
+        "hp.famGcSibU": {
+          "label": "胃癌家族史－兄弟姊妹人數不詳",
+          "options": {
+            "1": "勾選"
+          }
+        },
+        "hp.famGcChildU": {
+          "label": "胃癌家族史－子女人數不詳",
+          "options": {
+            "1": "勾選"
+          }
+        },
+        "hp.famGcOtherU": {
+          "label": "胃癌家族史－其他家人人數不詳",
+          "options": {
+            "1": "勾選"
+          }
+        },
+        "hp.meds": {
+          "label": "最近三個月是否服用指定藥物",
+          "options": {
+            "N": "無",
+            "Y": "有"
+          }
+        },
+        "hp.medList": {
+          "label": "服用藥物種類",
+          "options": {
+            "1": "止痛藥",
+            "2": "類固醇",
+            "3": "抗血小板藥物",
+            "4": "抗凝血劑",
+            "5": "糖尿病用藥",
+            "6": "使用鐵劑治療貧血"
+          }
+        },
+        "hp.antiplatelet": {
+          "label": "抗血小板藥物",
+          "options": {
+            "1": "阿斯匹靈（Aspirin）",
+            "2": "保栓通（Plavix）",
+            "3": "其他"
+          }
+        },
+        "hp.antiplateletOther": {
+          "label": "其他抗血小板藥物"
+        },
+        "hp.anticoag": {
+          "label": "抗凝血劑",
+          "options": {
+            "1": "可邁丁（Coumadin）",
+            "2": "其他"
+          }
+        },
+        "hp.anticoagOther": {
+          "label": "其他抗凝血劑"
+        },
+        "hp.dm": {
+          "label": "糖尿病用藥",
+          "options": {
+            "1": "口服型控制血糖",
+            "2": "注射型胰島素"
+          }
+        },
+        "hp.smoke": {
+          "label": "您有無吸菸習慣？",
+          "options": {
+            "0": "從不",
+            "1": "已戒",
+            "2": "目前有吸",
+            "3": "其他"
+          }
+        },
+        "hp.smokeOther": {
+          "label": "其他吸菸情形"
+        },
+        "hp.drink": {
+          "label": "您有無喝酒習慣？",
+          "options": {
+            "0": "從不",
+            "1": "已戒",
+            "2": "目前有喝",
+            "3": "其他"
+          }
+        },
+        "hp.drinkOther": {
+          "label": "其他喝酒情形"
+        },
+        "hp.betel": {
+          "label": "您有無嚼檳榔習慣？",
+          "options": {
+            "0": "從不",
+            "1": "已戒",
+            "2": "目前有嚼",
+            "3": "其他"
+          }
+        },
+        "hp.betelOther": {
+          "label": "其他嚼檳榔情形"
+        },
+        "hp.pickled": {
+          "label": "您是否常常食用醃漬食物，如鹹魚、醬瓜、豆瓣醬、酸菜等？",
+          "options": {
+            "0": "無",
+            "1": "有"
+          }
+        },
+        "hp.smoked": {
+          "label": "您是否常常食用煙燻、燒烤、高香料的肉類，如香腸、烤肉等？",
+          "options": {
+            "0": "無",
+            "1": "有"
+          }
+        },
+        "hp.raw": {
+          "label": "您是否常常食用生食，如生肉、生魚等？",
+          "options": {
+            "0": "無",
+            "1": "有"
+          }
+        },
+        "hp.sigConsent": {
+          "label": "受檢者同意簽名"
+        }
+      },
+      "staff_data": {
+        "hp.pay": {
+          "label": "支付方式",
+          "options": {
+            "1": "預防保健",
+            "2": "健保醫療給付",
+            "3": "其他公務預算補助",
+            "4": "自費健康檢查",
+            "5": "其他"
+          }
+        },
+        "hp.unit": {
+          "label": "採檢單位名稱"
+        },
+        "hp.unitCode": {
+          "label": "採檢醫事機構代碼"
+        },
+        "hp.visitY": {
+          "label": "門診日期（民國年）"
+        },
+        "hp.visitM": {
+          "label": "門診日期（月）"
+        },
+        "hp.visitD": {
+          "label": "門診日期（日）"
+        },
+        "hp.visit2Y": {
+          "label": "第二次門診日期（民國年）"
+        },
+        "hp.visit2M": {
+          "label": "第二次門診日期（月）"
+        },
+        "hp.visit2D": {
+          "label": "第二次門診日期（日）"
+        }
+      }
+    },
+    "fit": {
+      "public_data": {
+        "profile.idNo": {
+          "label": "身分證號／統一證號／護照號碼"
+        },
+        "profile.name": {
+          "label": "姓名"
+        },
+        "profile.birthY": {
+          "label": "出生日期（民國年）"
+        },
+        "profile.birthM": {
+          "label": "出生日期（月）"
+        },
+        "profile.birthD": {
+          "label": "出生日期（日）"
+        },
+        "profile.phone": {
+          "label": "聯絡電話"
+        },
+        "profile.email": {
+          "label": "電子郵件"
+        },
+        "profile.edu": {
+          "label": "教育程度",
+          "options": {
+            "1": "無",
+            "2": "小學",
+            "3": "國（初）中",
+            "4": "高中（職）",
+            "5": "專科、大學",
+            "6": "研究所以上",
+            "7": "拒答"
+          }
+        },
+        "profile.addrCounty": {
+          "label": "現住址－縣市"
+        },
+        "profile.addrTown": {
+          "label": "現住址－鄉鎮市區"
+        },
+        "profile.addrVillage": {
+          "label": "現住址－村里"
+        },
+        "profile.addrLin": {
+          "label": "現住址－鄰"
+        },
+        "profile.addrRoad": {
+          "label": "現住址－路街"
+        },
+        "profile.addrSec": {
+          "label": "現住址－段"
+        },
+        "profile.addrLane": {
+          "label": "現住址－巷"
+        },
+        "profile.addrAlley": {
+          "label": "現住址－弄"
+        },
+        "profile.addrNo": {
+          "label": "現住址－門牌號"
+        },
+        "profile.addrFloor": {
+          "label": "現住址－樓"
+        },
+        "profile.sex": {
+          "label": "性別",
+          "options": {
+            "M": "男",
+            "F": "女"
+          }
+        },
+        "profile.mobile": {
+          "label": "手機號碼"
+        },
+        "fit.smoke": {
+          "label": "吸菸史",
+          "options": {
+            "0": "無",
+            "1": "有（含已戒菸）"
+          }
+        },
+        "fit.smokeAge": {
+          "label": "開始吸菸年齡（歲）"
+        },
+        "fit.famCrc": {
+          "label": "大腸直腸癌家族史",
+          "options": {
+            "0": "無",
+            "1": "有",
+            "2": "不知道"
+          }
+        },
+        "fit.famCa": {
+          "label": "其他癌症家族史",
+          "options": {
+            "0": "無",
+            "1": "有",
+            "2": "不知道"
+          }
+        },
+        "fit.symptom": {
+          "label": "腸道不適症狀",
+          "options": {
+            "0": "無",
+            "1": "有"
+          }
+        },
+        "fit.annexConsent": {
+          "label": "是否同意填答家族史及吸菸習慣附表",
+          "options": {
+            "Y": "同意",
+            "N": "不同意"
+          }
+        },
+        "fit.smokeHabit": {
+          "label": "附表－吸菸習慣",
+          "options": {
+            "1": "已戒菸",
+            "2": "吸 10 年以下，每天少於 20 支",
+            "3": "吸 10 年以下，每天 20 支或以上",
+            "4": "吸超過 10 年，每天少於 20 支",
+            "5": "吸超過 10 年，每天 20 支或以上"
+          }
+        },
+        "fit.quitAge": {
+          "label": "戒菸年齡（歲）"
+        },
+        "fit.t1Rel": {
+          "label": "大腸直腸癌家族史－親屬",
+          "options": {
+            "Father": "父親",
+            "Mother": "母親",
+            "Child": "子女",
+            "Sib": "兄弟／姊妹",
+            "Pat": "其他父系親屬",
+            "Mat": "其他母系親屬"
+          }
+        },
+        "fit.t1FatherAge1": {
+          "label": "大腸直腸癌家族史－父親第 1 位罹癌年紀（歲）"
+        },
+        "fit.t1MotherAge1": {
+          "label": "大腸直腸癌家族史－母親第 1 位罹癌年紀（歲）"
+        },
+        "fit.t1ChildN": {
+          "label": "大腸直腸癌家族史－子女罹癌人數"
+        },
+        "fit.t1ChildAge1": {
+          "label": "大腸直腸癌家族史－子女第 1 位罹癌年紀（歲）"
+        },
+        "fit.t1ChildAge2": {
+          "label": "大腸直腸癌家族史－子女第 2 位罹癌年紀（歲）"
+        },
+        "fit.t1ChildAge3": {
+          "label": "大腸直腸癌家族史－子女第 3 位罹癌年紀（歲）"
+        },
+        "fit.t1SibN": {
+          "label": "大腸直腸癌家族史－兄弟／姊妹罹癌人數"
+        },
+        "fit.t1SibAge1": {
+          "label": "大腸直腸癌家族史－兄弟／姊妹第 1 位罹癌年紀（歲）"
+        },
+        "fit.t1SibAge2": {
+          "label": "大腸直腸癌家族史－兄弟／姊妹第 2 位罹癌年紀（歲）"
+        },
+        "fit.t1SibAge3": {
+          "label": "大腸直腸癌家族史－兄弟／姊妹第 3 位罹癌年紀（歲）"
+        },
+        "fit.t1PatN": {
+          "label": "大腸直腸癌家族史－其他父系親屬罹癌人數"
+        },
+        "fit.t1PatAge1": {
+          "label": "大腸直腸癌家族史－其他父系親屬第 1 位罹癌年紀（歲）"
+        },
+        "fit.t1PatAge2": {
+          "label": "大腸直腸癌家族史－其他父系親屬第 2 位罹癌年紀（歲）"
+        },
+        "fit.t1PatAge3": {
+          "label": "大腸直腸癌家族史－其他父系親屬第 3 位罹癌年紀（歲）"
+        },
+        "fit.t1MatN": {
+          "label": "大腸直腸癌家族史－其他母系親屬罹癌人數"
+        },
+        "fit.t1MatAge1": {
+          "label": "大腸直腸癌家族史－其他母系親屬第 1 位罹癌年紀（歲）"
+        },
+        "fit.t1MatAge2": {
+          "label": "大腸直腸癌家族史－其他母系親屬第 2 位罹癌年紀（歲）"
+        },
+        "fit.t1MatAge3": {
+          "label": "大腸直腸癌家族史－其他母系親屬第 3 位罹癌年紀（歲）"
+        },
+        "fit.t2Rel": {
+          "label": "其他癌症家族史－親屬",
+          "options": {
+            "Father": "父親",
+            "Mother": "母親",
+            "Child": "子女",
+            "Sib": "兄弟／姊妹",
+            "Pat": "其他父系親屬",
+            "Mat": "其他母系親屬"
+          }
+        },
+        "fit.t2FatherType": {
+          "label": "其他癌症家族史－父親癌別"
+        },
+        "fit.t2FatherAge1": {
+          "label": "其他癌症家族史－父親第 1 位罹癌年紀（歲）"
+        },
+        "fit.t2MotherType": {
+          "label": "其他癌症家族史－母親癌別"
+        },
+        "fit.t2MotherAge1": {
+          "label": "其他癌症家族史－母親第 1 位罹癌年紀（歲）"
+        },
+        "fit.t2ChildType": {
+          "label": "其他癌症家族史－子女癌別"
+        },
+        "fit.t2ChildN": {
+          "label": "其他癌症家族史－子女罹癌人數"
+        },
+        "fit.t2ChildAge1": {
+          "label": "其他癌症家族史－子女第 1 位罹癌年紀（歲）"
+        },
+        "fit.t2ChildAge2": {
+          "label": "其他癌症家族史－子女第 2 位罹癌年紀（歲）"
+        },
+        "fit.t2ChildAge3": {
+          "label": "其他癌症家族史－子女第 3 位罹癌年紀（歲）"
+        },
+        "fit.t2SibType": {
+          "label": "其他癌症家族史－兄弟／姊妹癌別"
+        },
+        "fit.t2SibN": {
+          "label": "其他癌症家族史－兄弟／姊妹罹癌人數"
+        },
+        "fit.t2SibAge1": {
+          "label": "其他癌症家族史－兄弟／姊妹第 1 位罹癌年紀（歲）"
+        },
+        "fit.t2SibAge2": {
+          "label": "其他癌症家族史－兄弟／姊妹第 2 位罹癌年紀（歲）"
+        },
+        "fit.t2SibAge3": {
+          "label": "其他癌症家族史－兄弟／姊妹第 3 位罹癌年紀（歲）"
+        },
+        "fit.t2PatType": {
+          "label": "其他癌症家族史－其他父系親屬癌別"
+        },
+        "fit.t2PatN": {
+          "label": "其他癌症家族史－其他父系親屬罹癌人數"
+        },
+        "fit.t2PatAge1": {
+          "label": "其他癌症家族史－其他父系親屬第 1 位罹癌年紀（歲）"
+        },
+        "fit.t2PatAge2": {
+          "label": "其他癌症家族史－其他父系親屬第 2 位罹癌年紀（歲）"
+        },
+        "fit.t2PatAge3": {
+          "label": "其他癌症家族史－其他父系親屬第 3 位罹癌年紀（歲）"
+        },
+        "fit.t2MatType": {
+          "label": "其他癌症家族史－其他母系親屬癌別"
+        },
+        "fit.t2MatN": {
+          "label": "其他癌症家族史－其他母系親屬罹癌人數"
+        },
+        "fit.t2MatAge1": {
+          "label": "其他癌症家族史－其他母系親屬第 1 位罹癌年紀（歲）"
+        },
+        "fit.t2MatAge2": {
+          "label": "其他癌症家族史－其他母系親屬第 2 位罹癌年紀（歲）"
+        },
+        "fit.t2MatAge3": {
+          "label": "其他癌症家族史－其他母系親屬第 3 位罹癌年紀（歲）"
+        },
+        "fit.sigAnnex": {
+          "label": "附表－受檢者本人簽名"
+        },
+        "fit.sigConsent": {
+          "label": "受檢者同意簽名"
+        }
+      },
+      "staff_data": {
+        "fit.pay": {
+          "label": "支付方式",
+          "options": {
+            "1": "預防保健",
+            "3": "健保醫療給付",
+            "4": "其他公務預算補助",
+            "5": "自費健康檢查",
+            "9": "其他"
+          }
+        },
+        "fit.site": {
+          "label": "篩檢地點",
+          "options": {
+            "1": "社區或職場設站篩檢",
+            "2": "門診",
+            "3": "住院",
+            "4": "郵寄",
+            "5": "其他"
+          }
+        },
+        "fit.clinic": {
+          "label": "檢查醫療院所名稱及代碼"
+        },
+        "fit.visitY": {
+          "label": "門診日期（民國年）"
+        },
+        "fit.visitM": {
+          "label": "門診日期（月）"
+        },
+        "fit.visitD": {
+          "label": "門診日期（日）"
+        },
+        "fit.lab": {
+          "label": "檢驗機構／醫療院所名稱及代碼"
+        },
+        "fit.labY": {
+          "label": "檢驗日期（民國年）"
+        },
+        "fit.labM": {
+          "label": "檢驗日期（月）"
+        },
+        "fit.labD": {
+          "label": "檢驗日期（日）"
+        },
+        "fit.result": {
+          "label": "糞便潛血檢驗結果",
+          "options": {
+            "0": "陰性",
+            "1": "陽性"
+          }
+        },
+        "fit.value": {
+          "label": "糞便潛血檢驗數值"
+        },
+        "fit.reagent": {
+          "label": "定量試劑商品名稱",
+          "options": {
+            "0": "Eiken",
+            "2": "其他",
+            "3": "Kyowa（HM-JACKarc）"
+          }
+        },
+        "fit.reagentOther": {
+          "label": "其他定量試劑名稱"
+        },
+        "fit.followed": {
+          "label": "檢查後三個月內是否接受後續確診",
+          "options": {
+            "0": "沒有",
+            "1": "有"
+          }
+        },
+        "fit.noReason": {
+          "label": "未接受確診理由",
+          "options": {
+            "1": "無法聯繫",
+            "2": "出國",
+            "3": "搬家",
+            "4": "死亡",
+            "5": "拒做",
+            "6": "其他"
+          }
+        },
+        "fit.noReasonOther": {
+          "label": "其他未確診理由"
+        },
+        "fit.confirmHospital": {
+          "label": "確診醫療院所名稱及代碼"
+        },
+        "fit.confirmY": {
+          "label": "確診日期（民國年）"
+        },
+        "fit.confirmM": {
+          "label": "確診日期（月）"
+        },
+        "fit.confirmD": {
+          "label": "確診日期（日）"
+        },
+        "fit.method": {
+          "label": "確診檢查方法",
+          "options": {
+            "1": "大腸鏡",
+            "9": "其他"
+          }
+        },
+        "fit.methodOther": {
+          "label": "其他檢查方法"
+        },
+        "fit.dx": {
+          "label": "確診診斷",
+          "options": {
+            "0": "正常",
+            "1": "痔瘡",
+            "2": "潰瘍性大腸炎",
+            "3": "息肉",
+            "4": "大腸癌",
+            "9": "其他"
+          }
+        },
+        "fit.dxOther": {
+          "label": "其他診斷"
+        },
+        "fit.polypCut": {
+          "label": "息肉切除情形",
+          "options": {
+            "1": "未切除",
+            "2": "已完全切除",
+            "3": "未完全切除"
+          }
+        },
+        "fit.edu1Y": {
+          "label": "衛教第 1 欄評值日期（民國年）"
+        },
+        "fit.edu1M": {
+          "label": "衛教第 1 欄評值日期（月）"
+        },
+        "fit.edu1D": {
+          "label": "衛教第 1 欄評值日期（日）"
+        },
+        "fit.edu1Name": {
+          "label": "衛教第 1 欄評值受檢者姓名"
+        },
+        "fit.edu1Pid": {
+          "label": "衛教第 1 欄評值受檢者身分證號"
+        },
+        "fit.edu1S1": {
+          "label": "衛教第 1 欄評值－【步驟一】評估民眾是否符合衛生福利部國民健康署大腸癌篩檢之補助條件",
+          "options": {
+            "age": "已評估:確認篩檢資格（年齡）",
+            "done": "已評估:已執行過檢查"
+          }
+        },
+        "fit.edu1S2": {
+          "label": "衛教第 1 欄評值－【步驟二】衛教後是否同意執行大腸癌篩檢（確認篩檢意願）",
+          "options": {
+            "purpose": "已說明:目的",
+            "method": "已說明:方法",
+            "body": "已說明:身體狀況:（排除條件）",
+            "report": "已說明:結果、寄發報告時間"
+          }
+        },
+        "fit.edu1S3": {
+          "label": "衛教第 1 欄評值－【步驟三】依各醫院提示篩檢方式加強提示提醒（建議定期追蹤）危險因子告知",
+          "options": {
+            "risk": ":已說明危險因子",
+            "na": ":不適用"
+          }
+        },
+        "fit.edu1S4": {
+          "label": "衛教第 1 欄評值－【步驟四】提供採檢衛教及採檢管",
+          "options": {
+            "chart": "已執行:衛教說明示意圖",
+            "demo": "已執行:回覆示教"
+          }
+        },
+        "fit.edu1S5": {
+          "label": "衛教第 1 欄評值－【步驟五】追蹤提醒（促進繳回方法）",
+          "options": {
+            "1": "已說明:電話、信件、其他方式"
+          }
+        },
+        "fit.edu1S6": {
+          "label": "衛教第 1 欄評值－【步驟六】寄發報告陰性/陽性報告寄發建議事項結果",
+          "options": {
+            "1": "已說明:諮詢窗口/諮詢專線"
+          }
+        },
+        "fit.edu2Y": {
+          "label": "衛教第 2 欄評值日期（民國年）"
+        },
+        "fit.edu2M": {
+          "label": "衛教第 2 欄評值日期（月）"
+        },
+        "fit.edu2D": {
+          "label": "衛教第 2 欄評值日期（日）"
+        },
+        "fit.edu2Name": {
+          "label": "衛教第 2 欄評值受檢者姓名"
+        },
+        "fit.edu2Pid": {
+          "label": "衛教第 2 欄評值受檢者身分證號"
+        },
+        "fit.edu2S1": {
+          "label": "衛教第 2 欄評值－【步驟一】評估民眾是否符合衛生福利部國民健康署大腸癌篩檢之補助條件",
+          "options": {
+            "age": "已評估:確認篩檢資格（年齡）",
+            "done": "已評估:已執行過檢查"
+          }
+        },
+        "fit.edu2S2": {
+          "label": "衛教第 2 欄評值－【步驟二】衛教後是否同意執行大腸癌篩檢（確認篩檢意願）",
+          "options": {
+            "purpose": "已說明:目的",
+            "method": "已說明:方法",
+            "body": "已說明:身體狀況:（排除條件）",
+            "report": "已說明:結果、寄發報告時間"
+          }
+        },
+        "fit.edu2S3": {
+          "label": "衛教第 2 欄評值－【步驟三】依各醫院提示篩檢方式加強提示提醒（建議定期追蹤）危險因子告知",
+          "options": {
+            "risk": ":已說明危險因子",
+            "na": ":不適用"
+          }
+        },
+        "fit.edu2S4": {
+          "label": "衛教第 2 欄評值－【步驟四】提供採檢衛教及採檢管",
+          "options": {
+            "chart": "已執行:衛教說明示意圖",
+            "demo": "已執行:回覆示教"
+          }
+        },
+        "fit.edu2S5": {
+          "label": "衛教第 2 欄評值－【步驟五】追蹤提醒（促進繳回方法）",
+          "options": {
+            "1": "已說明:電話、信件、其他方式"
+          }
+        },
+        "fit.edu2S6": {
+          "label": "衛教第 2 欄評值－【步驟六】寄發報告陰性/陽性報告寄發建議事項結果",
+          "options": {
+            "1": "已說明:諮詢窗口/諮詢專線"
+          }
+        },
+        "fit.sigInterviewer": {
+          "label": "附表－訪問人員簽名"
+        },
+        "fit.ivY": {
+          "label": "附表訪問日期（民國年）"
+        },
+        "fit.ivM": {
+          "label": "附表訪問日期（月）"
+        },
+        "fit.ivD": {
+          "label": "附表訪問日期（日）"
+        }
+      }
+    },
+    "adult": {
+      "public_data": {
+        "profile.idNo": {
+          "label": "身分證號／統一證號／護照號碼"
+        },
+        "profile.name": {
+          "label": "姓名"
+        },
+        "profile.birthY": {
+          "label": "出生日期（民國年）"
+        },
+        "profile.birthM": {
+          "label": "出生日期（月）"
+        },
+        "profile.birthD": {
+          "label": "出生日期（日）"
+        },
+        "profile.phone": {
+          "label": "聯絡電話"
+        },
+        "profile.email": {
+          "label": "電子郵件"
+        },
+        "profile.edu": {
+          "label": "教育程度",
+          "options": {
+            "1": "無",
+            "2": "小學",
+            "3": "國（初）中",
+            "4": "高中（職）",
+            "5": "專科、大學",
+            "6": "研究所以上",
+            "7": "拒答"
+          }
+        },
+        "profile.addrCounty": {
+          "label": "現住址－縣市"
+        },
+        "profile.addrTown": {
+          "label": "現住址－鄉鎮市區"
+        },
+        "profile.addrVillage": {
+          "label": "現住址－村里"
+        },
+        "profile.addrLin": {
+          "label": "現住址－鄰"
+        },
+        "profile.addrRoad": {
+          "label": "現住址－路街"
+        },
+        "profile.addrSec": {
+          "label": "現住址－段"
+        },
+        "profile.addrLane": {
+          "label": "現住址－巷"
+        },
+        "profile.addrAlley": {
+          "label": "現住址－弄"
+        },
+        "profile.addrNo": {
+          "label": "現住址－門牌號"
+        },
+        "profile.addrFloor": {
+          "label": "現住址－樓"
+        },
+        "profile.sex": {
+          "label": "性別",
+          "options": {
+            "M": "男",
+            "F": "女"
+          }
+        },
+        "profile.aboriginal": {
+          "label": "是否為原住民",
+          "options": {
+            "Y": "是",
+            "N": "否"
+          }
+        },
+        "profile.regSame": {
+          "label": "戶籍地與現住址相同",
+          "options": {
+            "1": "勾選"
+          }
+        },
+        "profile.regCounty": {
+          "label": "戶籍地－縣市"
+        },
+        "adult.dx": {
+          "label": "疾病史",
+          "options": {
+            "htn": "高血壓",
+            "dm": "糖尿病",
+            "hyperlipid": "高血脂症",
+            "heart": "心臟病",
+            "stroke": "腦中風",
+            "kidney": "腎臟病",
+            "hbv": "B 型肝炎",
+            "hcv": "C 型肝炎",
+            "psych": "精神疾病",
+            "other": "其他",
+            "polio": "小兒麻痺",
+            "none": "以上均無"
+          }
+        },
+        "adult.dxOther": {
+          "label": "其他疾病名稱"
+        },
+        "adult.med": {
+          "label": "長期服藥",
+          "options": {
+            "0": "無",
+            "1": "有"
+          }
+        },
+        "adult.medCause": {
+          "label": "長期服藥病因"
+        },
+        "adult.fam": {
+          "label": "家族疾病史",
+          "options": {
+            "htn": "高血壓",
+            "dm": "糖尿病",
+            "lipid": "血脂異常",
+            "heart": "心臟病",
+            "stroke": "腦中風",
+            "psych": "精神疾病",
+            "cancer": "癌症",
+            "other": "其他",
+            "none": "以上均無"
+          }
+        },
+        "adult.famCancer": {
+          "label": "家族癌症名稱"
+        },
+        "adult.famOther": {
+          "label": "家族其他疾病名稱"
+        },
+        "adult.smoke": {
+          "label": "最近半年來，您吸菸的情形是？",
+          "options": {
+            "1": "不吸菸",
+            "2": "朋友敬菸或應酬才吸菸",
+            "3": "平均一天約吸一包菸（含以下）",
+            "4": "平均一天約吸一包菸以上"
+          }
+        },
+        "adult.drink": {
+          "label": "最近半年來，您喝酒的情形是？",
+          "options": {
+            "1": "不喝酒",
+            "2": "偶爾喝酒或應酬才喝",
+            "3": "經常喝酒"
+          }
+        },
+        "adult.betel": {
+          "label": "最近半年來，您嚼檳榔的情形是？",
+          "options": {
+            "1": "不嚼檳榔",
+            "2": "偶爾會嚼或應酬才嚼",
+            "3": "經常嚼或習慣在嚼"
+          }
+        },
+        "adult.exercise": {
+          "label": "最近二週，您是否有運動（每週達 150 分鐘以上）？",
+          "options": {
+            "1": "沒有",
+            "2": "有，但未達每週 150 分鐘（2.5 小時）",
+            "3": "有，且每週達 150 分鐘以上（2.5 小時）"
+          }
+        },
+        "adult.cough": {
+          "label": "您是否出現咳嗽超過二週的情形？",
+          "options": {
+            "1": "沒有",
+            "2": "有"
+          }
+        }
+      },
+      "staff_data": {
+        "adult.s1Y": {
+          "label": "第一階段日期（民國年）"
+        },
+        "adult.s1M": {
+          "label": "第一階段日期（月）"
+        },
+        "adult.s1D": {
+          "label": "第一階段日期（日）"
+        },
+        "adult.s2Y": {
+          "label": "第二階段日期（民國年）"
+        },
+        "adult.s2M": {
+          "label": "第二階段日期（月）"
+        },
+        "adult.s2D": {
+          "label": "第二階段日期（日）"
+        },
+        "adult.sigS1": {
+          "label": "第一階段服務對象同意簽名"
+        },
+        "adult.sigS2": {
+          "label": "第二階段服務對象同意簽名"
+        },
+        "adult.sigHep": {
+          "label": "B、C 型肝炎檢查服務對象同意簽名"
+        },
+        "adult.height": {
+          "label": "身高（公分）"
+        },
+        "adult.weight": {
+          "label": "體重（公斤）"
+        },
+        "adult.pulse": {
+          "label": "脈搏（次／分）"
+        },
+        "adult.waist": {
+          "label": "腰圍（公分）"
+        },
+        "adult.sbp": {
+          "label": "收縮壓（mmHg）"
+        },
+        "adult.dbp": {
+          "label": "舒張壓（mmHg）"
+        },
+        "adult.vaR": {
+          "label": "右眼裸眼視力"
+        },
+        "adult.vaL": {
+          "label": "左眼裸眼視力"
+        },
+        "adult.vcR": {
+          "label": "右眼矯正視力"
+        },
+        "adult.vcL": {
+          "label": "左眼矯正視力"
+        },
+        "adult.ent": {
+          "label": "耳鼻喉及口腔檢查",
+          "options": {
+            "1": "無明顯異常",
+            "2": "異常"
+          }
+        },
+        "adult.entAbn": {
+          "label": "耳鼻喉及口腔異常項目",
+          "options": {
+            "aid": "助聽器",
+            "caries": "齲齒",
+            "perio": "牙結石或牙周病",
+            "other": "其他"
+          }
+        },
+        "adult.lymph": {
+          "label": "頸部淋巴腺腫大",
+          "options": {
+            "Y": "有",
+            "N": "無"
+          }
+        },
+        "adult.thyroid": {
+          "label": "甲狀腺腫大",
+          "options": {
+            "Y": "有",
+            "N": "無"
+          }
+        },
+        "adult.ex_chest": {
+          "label": "胸部檢查",
+          "options": {
+            "1": "無明顯異常",
+            "2": "異常"
+          }
+        },
+        "adult.ex_chestNote": {
+          "label": "胸部異常說明"
+        },
+        "adult.ex_heart": {
+          "label": "心臟聽診檢查",
+          "options": {
+            "1": "無明顯異常",
+            "2": "異常"
+          }
+        },
+        "adult.ex_heartNote": {
+          "label": "心臟聽診異常說明"
+        },
+        "adult.ex_lung": {
+          "label": "呼吸聽診檢查",
+          "options": {
+            "1": "無明顯異常",
+            "2": "異常"
+          }
+        },
+        "adult.ex_lungNote": {
+          "label": "呼吸聽診異常說明"
+        },
+        "adult.ex_abd": {
+          "label": "腹部檢查",
+          "options": {
+            "1": "無明顯異常",
+            "2": "異常"
+          }
+        },
+        "adult.ex_abdNote": {
+          "label": "腹部異常說明"
+        },
+        "adult.ex_limb": {
+          "label": "四肢檢查",
+          "options": {
+            "1": "無明顯異常",
+            "2": "異常"
+          }
+        },
+        "adult.ex_limbNote": {
+          "label": "四肢異常說明"
+        },
+        "adult.otherAbn": {
+          "label": "其他異常"
+        },
+        "adult.uproQual": {
+          "label": "尿液蛋白質（定性）",
+          "options": {
+            "neg": "－",
+            "pm": "+/－",
+            "p1": "+",
+            "p2": "++",
+            "p3": "+++",
+            "p4": "++++"
+          }
+        },
+        "adult.uproQuant": {
+          "label": "尿液蛋白質（定量）（mg/dl）"
+        },
+        "adult.uproQuantRef": {
+          "label": "尿液蛋白質（定量）參考值"
+        },
+        "adult.glu": {
+          "label": "飯前血糖（mg/dl）"
+        },
+        "adult.gluRef": {
+          "label": "飯前血糖參考值"
+        },
+        "adult.tc": {
+          "label": "總膽固醇（mg/dl）"
+        },
+        "adult.tcRef": {
+          "label": "總膽固醇參考值"
+        },
+        "adult.tg": {
+          "label": "三酸甘油脂（mg/dl）"
+        },
+        "adult.tgRef": {
+          "label": "三酸甘油脂參考值"
+        },
+        "adult.hdl": {
+          "label": "高密度脂蛋白膽固醇（mg/dl）"
+        },
+        "adult.hdlRef": {
+          "label": "高密度脂蛋白膽固醇參考值"
+        },
+        "adult.ast": {
+          "label": "肝功能－AST（GOT）（IU/L）"
+        },
+        "adult.astRef": {
+          "label": "肝功能－AST（GOT）參考值"
+        },
+        "adult.alt": {
+          "label": "肝功能－ALT（GPT）（IU/L）"
+        },
+        "adult.altRef": {
+          "label": "肝功能－ALT（GPT）參考值"
+        },
+        "adult.cr": {
+          "label": "肌酸酐（mg/dl）"
+        },
+        "adult.crRef": {
+          "label": "肌酸酐參考值"
+        },
+        "adult.ldlRef": {
+          "label": "低密度脂蛋白膽固醇參考值"
+        },
+        "adult.ua": {
+          "label": "尿酸（mg/dl）"
+        },
+        "adult.hbsag": {
+          "label": "B 型肝炎表面抗原（HBsAg）",
+          "options": {
+            "1": "陰性",
+            "2": "陽性",
+            "3": "未執行"
+          }
+        },
+        "adult.hcv": {
+          "label": "C 型肝炎抗體（Anti-HCV）",
+          "options": {
+            "1": "陰性",
+            "2": "陽性",
+            "3": "未執行"
+          }
+        },
+        "adult.counsel": {
+          "label": "健康諮詢",
+          "options": {
+            "smoke": "戒菸",
+            "drink": "節酒",
+            "betel": "戒檳榔",
+            "exercise": "規律運動（含 150 分鐘／每週）",
+            "weight": "維持正常體重",
+            "diet": "健康飲食（含我的健康餐盤）",
+            "injury": "事故傷害預防",
+            "oral": "口腔保健",
+            "risk": "慢性疾病風險評估",
+            "kidney": "腎病識能衛教指導（含尿蛋白、eGFR 的數據、腎功能期別及其嚴重度、危險因子衛教）"
+          }
+        },
+        "adult.res_bp": {
+          "label": "血壓檢查結果",
+          "options": {
+            "1": "正常",
+            "2": "異常"
+          }
+        },
+        "adult.res_bpAdv": {
+          "label": "血壓建議",
+          "options": {
+            "life": "生活型態改善，並定期追蹤",
+            "exam": "進一步檢查",
+            "treat": "接受治療"
+          }
+        },
+        "adult.res_bpMon": {
+          "label": "血壓追蹤間隔（月）"
+        },
+        "adult.res_glu": {
+          "label": "飯前血糖檢查結果",
+          "options": {
+            "1": "正常",
+            "2": "異常"
+          }
+        },
+        "adult.res_gluAdv": {
+          "label": "飯前血糖建議",
+          "options": {
+            "life": "生活型態改善，並定期追蹤",
+            "exam": "進一步檢查",
+            "treat": "接受治療"
+          }
+        },
+        "adult.res_gluMon": {
+          "label": "飯前血糖追蹤間隔（月）"
+        },
+        "adult.res_lipid": {
+          "label": "血脂肪檢查結果",
+          "options": {
+            "1": "正常",
+            "2": "異常"
+          }
+        },
+        "adult.res_lipidAdv": {
+          "label": "血脂肪建議",
+          "options": {
+            "life": "生活型態改善，並定期追蹤",
+            "exam": "進一步檢查",
+            "treat": "接受治療"
+          }
+        },
+        "adult.res_lipidMon": {
+          "label": "血脂肪追蹤間隔（月）"
+        },
+        "adult.res_renal": {
+          "label": "腎功能檢查結果",
+          "options": {
+            "1": "正常",
+            "2": "異常"
+          }
+        },
+        "adult.res_renalAdv": {
+          "label": "腎功能建議",
+          "options": {
+            "life": "生活型態改善，並定期追蹤",
+            "exam": "進一步檢查",
+            "treat": "接受治療"
+          }
+        },
+        "adult.res_renalMon": {
+          "label": "腎功能追蹤間隔（月）"
+        },
+        "adult.res_liver": {
+          "label": "肝功能檢查結果",
+          "options": {
+            "1": "正常",
+            "2": "異常"
+          }
+        },
+        "adult.res_liverAdv": {
+          "label": "肝功能建議",
+          "options": {
+            "life": "生活型態改善，並定期追蹤",
+            "exam": "進一步檢查",
+            "treat": "接受治療"
+          }
+        },
+        "adult.res_liverMon": {
+          "label": "肝功能追蹤間隔（月）"
+        },
+        "adult.res_mets": {
+          "label": "代謝症候群檢查結果",
+          "options": {
+            "1": "沒有",
+            "2": "有"
+          }
+        },
+        "adult.res_metsAdv": {
+          "label": "代謝症候群建議",
+          "options": {
+            "life": "生活型態改善，並定期追蹤",
+            "exam": "進一步檢查",
+            "treat": "接受治療"
+          }
+        },
+        "adult.res_metsMon": {
+          "label": "代謝症候群追蹤間隔（月）"
+        },
+        "adult.res_renalStage": {
+          "label": "腎功能期別"
+        },
+        "adult.risk_chd": {
+          "label": "冠心病風險值（%）"
+        },
+        "adult.risk_chdNA": {
+          "label": "冠心病風險值不適用",
+          "options": {
+            "1": "勾選"
+          }
+        },
+        "adult.risk_dm": {
+          "label": "糖尿病風險值（%）"
+        },
+        "adult.risk_dmNA": {
+          "label": "糖尿病風險值不適用",
+          "options": {
+            "1": "勾選"
+          }
+        },
+        "adult.risk_htn": {
+          "label": "高血壓風險值（%）"
+        },
+        "adult.risk_htnNA": {
+          "label": "高血壓風險值不適用",
+          "options": {
+            "1": "勾選"
+          }
+        },
+        "adult.risk_stroke": {
+          "label": "腦中風風險值（%）"
+        },
+        "adult.risk_strokeNA": {
+          "label": "腦中風風險值不適用",
+          "options": {
+            "1": "勾選"
+          }
+        },
+        "adult.risk_mace": {
+          "label": "心血管不良事件風險值（%）"
+        },
+        "adult.risk_maceNA": {
+          "label": "心血管不良事件風險值不適用",
+          "options": {
+            "1": "勾選"
+          }
+        },
+        "adult.resHbv": {
+          "label": "B 型肝炎表面抗原結果與建議",
+          "options": {
+            "neg": "陰性",
+            "pos": "陽性",
+            "exam": "進一步檢查",
+            "treat": "接受治療"
+          }
+        },
+        "adult.resHcv": {
+          "label": "C 型肝炎抗體結果與建議",
+          "options": {
+            "neg": "陰性",
+            "pos": "陽性",
+            "exam": "進一步檢查",
+            "treat": "接受治療"
+          }
+        },
+        "adult.resCough": {
+          "label": "咳嗽症狀與建議",
+          "options": {
+            "1": "沒有",
+            "2": "有：建議轉診進一步評估是否可能為結核病"
+          }
+        },
+        "adult.org": {
+          "label": "特約醫事服務機構名稱及代號"
+        },
+        "adult.sigDoctor": {
+          "label": "檢查醫師簽名"
+        },
+        "adult.dualOrg": {
+          "label": "雙軌作業－第二階段服務機構名稱"
+        },
+        "adult.dualAddr": {
+          "label": "雙軌作業－第二階段服務機構地址"
+        }
+      }
+    },
+    "labor": {
+      "public_data": {
+        "profile.idNo": {
+          "label": "身分證號／統一證號／護照號碼"
+        },
+        "profile.name": {
+          "label": "姓名"
+        },
+        "profile.birthY": {
+          "label": "出生日期（民國年）"
+        },
+        "profile.birthM": {
+          "label": "出生日期（月）"
+        },
+        "profile.birthD": {
+          "label": "出生日期（日）"
+        },
+        "profile.email": {
+          "label": "電子郵件"
+        },
+        "profile.sex": {
+          "label": "性別",
+          "options": {
+            "M": "男",
+            "F": "女"
+          }
+        },
+        "labor.company": {
+          "label": "事業單位名稱"
+        },
+        "labor.reason": {
+          "label": "檢查時期（原因）",
+          "options": {
+            "new": "新進員工（受僱時）",
+            "periodic": "定期檢查"
+          }
+        },
+        "labor.hiredY": {
+          "label": "受僱日期（民國年）"
+        },
+        "labor.hiredM": {
+          "label": "受僱日期（月）"
+        },
+        "labor.hiredD": {
+          "label": "受僱日期（日）"
+        },
+        "labor.examY": {
+          "label": "檢查日期（民國年）"
+        },
+        "labor.examM": {
+          "label": "檢查日期（月）"
+        },
+        "labor.examD": {
+          "label": "檢查日期（日）"
+        },
+        "labor.currentHas": {
+          "label": "是否有目前工作",
+          "options": {
+            "Y": "有",
+            "N": "無"
+          }
+        },
+        "labor.currentTitle": {
+          "label": "目前工作內容"
+        },
+        "labor.currentStartY": {
+          "label": "目前工作起始年月（民國年）"
+        },
+        "labor.currentStartM": {
+          "label": "目前工作起始年月（月）"
+        },
+        "labor.currentEndY": {
+          "label": "目前工作截止年月（民國年）"
+        },
+        "labor.currentEndM": {
+          "label": "目前工作截止年月（月）"
+        },
+        "labor.currentYears": {
+          "label": "目前工作合計年資（年）"
+        },
+        "labor.currentMonths": {
+          "label": "目前工作合計年資剩餘月數"
+        },
+        "labor.previousHas": {
+          "label": "是否有最近一項過去工作",
+          "options": {
+            "Y": "有",
+            "N": "無"
+          }
+        },
+        "labor.previousTitle": {
+          "label": "最近一項過去工作內容"
+        },
+        "labor.previousStartY": {
+          "label": "最近一項過去工作起始年月（民國年）"
+        },
+        "labor.previousStartM": {
+          "label": "最近一項過去工作起始年月（月）"
+        },
+        "labor.previousEndY": {
+          "label": "最近一項過去工作截止年月（民國年）"
+        },
+        "labor.previousEndM": {
+          "label": "最近一項過去工作截止年月（月）"
+        },
+        "labor.previousYears": {
+          "label": "最近一項過去工作合計年資（年）"
+        },
+        "labor.previousMonths": {
+          "label": "最近一項過去工作合計年資剩餘月數"
+        },
+        "labor.shift": {
+          "label": "是否需輪班",
+          "options": {
+            "Y": "是",
+            "N": "否"
+          }
+        },
+        "labor.shiftType": {
+          "label": "輪班班制",
+          "options": {
+            "two": "兩班制",
+            "three": "三班制",
+            "four": "四班制",
+            "other": "其他"
+          }
+        },
+        "labor.shiftOther": {
+          "label": "其他班制說明"
+        },
+        "labor.hours1m": {
+          "label": "檢查日前 1 個月平均每週工時（小時）"
+        },
+        "labor.hours6m": {
+          "label": "檢查日前 6 個月平均每週工時（小時）"
+        },
+        "labor.sleep": {
+          "label": "工作日期間平均每天睡眠時間（小時）"
+        },
+        "labor.diseases": {
+          "label": "曾患疾病",
+          "options": {
+            "hypertension": "高血壓",
+            "diabetes": "糖尿病",
+            "heart": "心臟病",
+            "cancer": "癌症",
+            "cataract": "白內障",
+            "stroke": "中風",
+            "epilepsy": "癲癇",
+            "asthma": "氣喘",
+            "copd": "慢性氣管炎、肺氣腫",
+            "tuberculosis": "肺結核",
+            "kidney": "腎臟病",
+            "liver": "肝病",
+            "anemia": "貧血",
+            "ear": "中耳炎",
+            "hearing": "聽力障礙",
+            "thyroid": "甲狀腺疾病",
+            "ulcer": "消化性潰瘍、胃炎",
+            "reflux": "逆流性食道炎",
+            "fracture": "骨折",
+            "surgery": "手術開刀",
+            "other": "其他慢性病",
+            "none": "以上皆無"
+          }
+        },
+        "labor.symptoms": {
+          "label": "最近三個月自覺症狀",
+          "options": {
+            "cough": "咳嗽",
+            "sputum": "咳痰",
+            "breath": "呼吸困難",
+            "chest": "胸痛",
+            "palpitations": "心悸",
+            "dizziness": "頭暈",
+            "headache": "頭痛",
+            "tinnitus": "耳鳴",
+            "fatigue": "倦怠",
+            "nausea": "噁心",
+            "abdomen": "腹痛",
+            "constipation": "便秘",
+            "diarrhea": "腹瀉",
+            "bloodyStool": "血便",
+            "upperBack": "上背痛",
+            "lowerBack": "下背痛",
+            "numbness": "手腳麻痛",
+            "joint": "關節疼痛",
+            "urinary": "排尿不適",
+            "frequency": "多尿、頻尿",
+            "weakness": "手腳肌肉無力",
+            "weightLoss": "體重減輕 3 公斤以上",
+            "other": "其他症狀",
+            "none": "以上皆無"
+          }
+        },
+        "labor.cancerDetail": {
+          "label": "癌症說明"
+        },
+        "labor.fractureDetail": {
+          "label": "骨折說明"
+        },
+        "labor.surgeryDetail": {
+          "label": "手術開刀說明"
+        },
+        "labor.otherDetail": {
+          "label": "其他慢性病說明"
+        },
+        "labor.symptomOther": {
+          "label": "其他症狀說明"
+        },
+        "labor.smoke": {
+          "label": "請問您過去一個月內是否有吸菸？",
+          "options": {
+            "never": "從未吸菸",
+            "daily": "（幾乎）每天吸",
+            "occasional": "偶爾吸（不是天天）",
+            "quit": "已經戒菸"
+          }
+        },
+        "labor.smokeAmount": {
+          "label": "平均每天吸幾支（支）"
+        },
+        "labor.smokeYears": {
+          "label": "已吸菸幾年"
+        },
+        "labor.smokeQuitY": {
+          "label": "已戒吸菸期間（年）"
+        },
+        "labor.smokeQuitM": {
+          "label": "已戒吸菸期間剩餘月數"
+        },
+        "labor.betel": {
+          "label": "請問您最近六個月內是否有嚼食檳榔？",
+          "options": {
+            "never": "從未嚼食檳榔",
+            "daily": "（幾乎）每天嚼",
+            "occasional": "偶爾嚼（不是天天）",
+            "quit": "已經戒嚼"
+          }
+        },
+        "labor.betelAmount": {
+          "label": "平均每天嚼幾顆（顆）"
+        },
+        "labor.betelYears": {
+          "label": "已嚼幾年"
+        },
+        "labor.betelQuitY": {
+          "label": "已戒嚼食檳榔期間（年）"
+        },
+        "labor.betelQuitM": {
+          "label": "已戒嚼食檳榔期間剩餘月數"
+        },
+        "labor.drink": {
+          "label": "請問您過去一個月內是否有喝酒？",
+          "options": {
+            "never": "從未喝酒",
+            "daily": "（幾乎）每天喝",
+            "occasional": "偶爾喝（不是天天）",
+            "quit": "已經戒酒"
+          }
+        },
+        "labor.drinkAmount": {
+          "label": "平均每週喝幾次（次／週）"
+        },
+        "labor.drinkQuitY": {
+          "label": "已戒喝酒期間（年）"
+        },
+        "labor.drinkQuitM": {
+          "label": "已戒喝酒期間剩餘月數"
+        },
+        "labor.drinkType": {
+          "label": "最常喝的酒類"
+        },
+        "labor.drinkBottles": {
+          "label": "每次喝幾瓶"
+        },
+        "labor.uploadConsent": {
+          "label": "是否同意個人自費資料蒐集處理及利用",
+          "options": {
+            "Y": "同意",
+            "N": "不同意"
+          }
+        },
+        "labor.uploadYearsMode": {
+          "label": "自起算日起涵蓋資料的期間",
+          "options": {
+            "seven": "7 年",
+            "custom": "自訂年數"
+          }
+        },
+        "labor.uploadYears": {
+          "label": "自訂涵蓋資料年數"
+        },
+        "labor.uploadUseMode": {
+          "label": "自簽署日起提供健保署的利用期間",
+          "options": {
+            "permanent": "自簽署日起永久",
+            "custom": "自簽署日起自訂年數"
+          }
+        },
+        "labor.uploadUseYears": {
+          "label": "自訂利用年數"
+        },
+        "labor.uploadCloud": {
+          "label": "另同意提供至健保醫療資訊雲端查詢系統",
+          "options": {
+            "1": "勾選"
+          }
+        },
+        "labor.uploadSignature": {
+          "label": "資料上傳同意書本人簽名"
+        },
+        "labor.uploadHasRepresentative": {
+          "label": "是否有法定代理人",
+          "options": {
+            "N": "無",
+            "Y": "有法定代理人"
+          }
+        },
+        "labor.uploadRepresentativeName": {
+          "label": "法定代理人姓名"
+        },
+        "labor.uploadRepresentativeIdNo": {
+          "label": "法定代理人身分證號／證件號"
+        },
+        "labor.uploadRepresentativeSignature": {
+          "label": "資料上傳同意書法定代理人簽名"
+        },
+        "labor.uploadFromY": {
+          "label": "資料上傳同意書的資料起算日期（民國年）"
+        },
+        "labor.uploadFromM": {
+          "label": "資料上傳同意書的資料起算日期（月）"
+        },
+        "labor.uploadFromD": {
+          "label": "資料上傳同意書的資料起算日期（日）"
+        },
+        "labor.uploadSignedY": {
+          "label": "資料上傳同意書簽署日期（民國年）"
+        },
+        "labor.uploadSignedM": {
+          "label": "資料上傳同意書簽署日期（月）"
+        },
+        "labor.uploadSignedD": {
+          "label": "資料上傳同意書簽署日期（日）"
+        }
+      },
+      "staff_data": {}
+    }
+  }
+}

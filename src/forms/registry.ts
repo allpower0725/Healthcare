@@ -5,6 +5,7 @@ import type { FormValues } from '@/db/schema';
 import type { FormId } from '@/lib/forms/catalog';
 import { adultOnSet } from '@/lib/forms/defs/adult';
 import { hpOnSet } from '@/lib/forms/defs/hp';
+import { laborUploadOnSet } from '@/lib/forms/defs/labor-upload';
 import { AdultPublic } from './adult/public';
 import { AdultStaff } from './adult/staff';
 import { FitPublic } from './fit/public';
@@ -36,7 +37,7 @@ const FORM_UI: Partial<Record<FormId, FormUi>> = {
   hp: { Public: HpPublic, Staff: HpStaff, onSet: hpOnSet },
   fit: { Public: FitPublic, Staff: FitStaff },
   adult: { Public: AdultPublic, Staff: AdultStaff, onSet: adultOnSet },
-  labor: { Public: LaborPublic, Staff: LaborStaff },
+  labor: { Public: LaborPublic, Staff: LaborStaff, onSet: laborUploadOnSet },
 };
 
 export function getFormUi(formId: FormId) {

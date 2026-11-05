@@ -4,6 +4,7 @@ import { Checks, Choices, DurationInputs, Field, RocDateInputs, ShowIf, TextInpu
 import { DateField, StepCard } from '@/components/forms/sections';
 import { LABOR_DISEASES, LABOR_HAS, LABOR_HABITS, LABOR_REASON, LABOR_SHIFT, LABOR_SYMPTOMS, habitOptions } from '@/lib/forms/defs/labor';
 import { SEX } from '@/lib/forms/profile';
+import { LaborUploadConsent } from './upload-consent';
 
 function TextField({ name, label, optional, placeholder, maxLength = 40 }: { name: string; label: string; optional?: boolean; placeholder?: string; maxLength?: number }) {
   return <Field rule={name} label={<>{label}{optional && <span className="opt"> 選填</span>}</>} htmlFor={name}>
@@ -96,5 +97,6 @@ export function LaborPublic({ prefilled }: { prefilled: boolean }) {
       <Field rule="labor.symptoms" label="自覺症狀" validateOnBlur={false}><Checks name="labor.symptoms" options={LABOR_SYMPTOMS} ariaLabel="自覺症狀" /></Field>
       <ShowIf when="labor.symptoms=other"><TextField name="labor.symptomOther" label="其他症狀說明" /></ShowIf>
     </StepCard>
+    <LaborUploadConsent />
   </>;
 }

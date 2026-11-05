@@ -30,8 +30,8 @@ export const FORMS: Record<FormId, FormInfo> = {
     officialTitle: '勞工一般體格及健康檢查紀錄',
     color: '#986122',
     tint: '#ffe1a1',
-    minutes: 5,
-    steps: 5,
+    minutes: 7,
+    steps: 6,
   },
   hpv: {
     id: 'hpv',

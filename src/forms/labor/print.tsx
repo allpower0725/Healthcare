@@ -1,5 +1,6 @@
 import type { PrintData } from '@/components/forms/print-kit';
 import { LABOR_PRINT_CHECKS, LABOR_PRINT_TEXT } from './print-layout';
+import { LaborUploadPrint } from './upload-print';
 
 /** 原 PDF 轉為字型輪廓向量底稿，逐欄依原始座標套印。 */
 export function LaborPrint({ data }: { data: PrintData }) {
@@ -20,5 +21,6 @@ export function LaborPrint({ data }: { data: PrintData }) {
         })}
       </svg>
     </section>
+    <LaborUploadPrint data={data} />
   </div>;
 }

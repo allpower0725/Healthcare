@@ -1,5 +1,6 @@
 import type { FieldSpec, FormDef, Rule } from '../engine';
 import { type Option, optionValues, PROFILE_FIELDS, PROFILE_RULES, SEX } from '../profile';
+import { laborUploadFields, laborUploadRules } from './labor-upload';
 
 export const LABOR_DISEASES: readonly Option[] = [
   ['hypertension', '高血壓'], ['diabetes', '糖尿病'], ['heart', '心臟病'], ['cancer', '癌症'],
@@ -103,5 +104,5 @@ rules.push(
 );
 
 export const laborDef: FormDef = {
-  id: 'labor', fields, publicRules: rules, staffRules: [], starred: [], staffDefaults: () => ({}),
+  id: 'labor', fields: { ...fields, ...laborUploadFields }, publicRules: [...rules, ...laborUploadRules], staffRules: [], starred: [], staffDefaults: () => ({}),
 };

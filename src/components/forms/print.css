@@ -25,6 +25,7 @@
 .ps--labor .ps-page { position: relative; height: 297mm; padding: 0; overflow: hidden; }
 .labor-print-template, .labor-print-values { position: absolute; inset: 0; width: 100%; height: 100%; }
 .labor-print-values { font-family: "PMingLiU", "新細明體", "MingLiU", serif; fill: #000; }
+.labor-upload-signature { position: absolute; object-fit: contain; }
 
 .ps-title {
   margin: 0 0 3mm;

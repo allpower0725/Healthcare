@@ -285,6 +285,16 @@ html[data-font-size="xl"] .ppf .intro__art { width: clamp(88px, 24vw, 168px); }
 /* 單選／複選 */
 .ppf .choices { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 8.2em), 1fr)); gap: .5rem; }
 .ppf .choices--list { grid-template-columns: 1fr; }
+.ppf .labor-consent__terms { margin: 1rem 0 1.4rem; padding: .9rem 1rem; border: 1px solid var(--line); border-radius: 12px; line-height: 1.8; }
+.ppf .labor-consent__terms summary { cursor: pointer; font-weight: 700; }
+.ppf .labor-consent__terms h3 { margin: 1rem 0 .7rem; font-size: 1em; }
+.ppf .labor-consent__terms p { margin: .7rem 0; }
+.ppf .labor-consent__section { margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--line); }
+.ppf .labor-consent__section h3 { margin: 0 0 .9rem; font-size: 1.05em; }
+.ppf .labor-consent__identity { display: grid; gap: .7rem; margin: 0; padding: 1rem; border-radius: 12px; background: var(--primary-soft); }
+.ppf .labor-consent__identity > div { display: grid; grid-template-columns: 5em minmax(0, 1fr); gap: .7rem; }
+.ppf .labor-consent__identity dt { color: var(--muted); }
+.ppf .labor-consent__identity dd { margin: 0; overflow-wrap: anywhere; }
 .ppf .choices--wide { grid-template-columns: repeat(auto-fill, minmax(min(100%, 12em), 1fr)); }
 .ppf .choice { position: relative; display: block; cursor: pointer; }
 .ppf .choice > input { position: absolute; top: 0; left: 0; width: 1px; height: 1px; opacity: 0; }

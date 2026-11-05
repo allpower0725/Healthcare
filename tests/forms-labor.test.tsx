@@ -20,9 +20,9 @@ import { createUser, resetDb } from './helpers';
 const errors = (extra: Record<string, string | string[]> = {}) => validateRules(laborDef.publicRules, sanitize(laborDef, 'public', { ...laborPublicSample(), ...extra }));
 
 describe('勞工健康檢查欄位', () => {
-  it('最小完整問卷不要求原表沒有的地址、電話、教育及簽名', () => {
+  it('不同意資料上傳的最小完整問卷不要求地址、電話、教育及簽名', () => {
     expect(errors()).toEqual({});
-    expect(Object.values(laborDef.fields).some((field) => field.kind === 'image')).toBe(false);
+    expect(errors({ 'labor.uploadConsent': 'Y' })).toHaveProperty('labor.uploadSignature');
     expect(Object.keys(sanitize(laborDef, 'staff', {}))).toEqual([]);
   });
   it('email 選填，有填須為正確格式且與基本資料一起保留', () => {

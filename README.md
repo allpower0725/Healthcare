@@ -60,9 +60,15 @@ docker exec healthcare-db psql -U healthcare -d postgres -X -v ON_ERROR_STOP=1 -
 - 後台載入、篩選、切頁、儲存設定及狀態操作會顯示齒輪 loading 遮罩；自動暫存只顯示局部提示。
 - 院內平板可把後台「加入主畫面」（iPad 用 Safari、Android 用 Chrome，按分享→加入主畫面），之後從圖示開啟就沒有網址列。設定在 `public/admin.webmanifest` 與 `src/lib/admin-app.ts`，圖示原檔為 `public/brand/app-icon.svg`；民眾表單頁不提供安裝。
 - 7 張表單（人類乳突病毒、子宮頸抹片、口腔黏膜檢查、胃幽門螺旋桿菌、糞便潛血、成人預防保健、勞工健康檢查）皆已電子化。表單欄位定義在 `src/lib/forms/defs/`，畫面在 `src/forms/`，各表單的設計見 `docs/specs/`。
-- 勞工健康檢查網址為 `/f/labor`，新設定預設關閉，可至「表單管理」設定開放。手機填寫分五步，email 選填並共用；受僱日期、檢查日期及事業單位名稱放在作業經歷，目前工作先填、曾經工作只填最近一項。後台核對問卷後確認完成，不另加院所欄位或簽名；列印仍完整保留原 PDF 的欄位位置與順序，email 不新增到紙本。
+- 勞工健康檢查網址為 `/f/labor`，新設定預設關閉，可至「表單管理」設定開放。手機填寫分六步，email 選填並共用；受僱日期、檢查日期及事業單位名稱放在作業經歷，目前工作先填、曾經工作只填最近一項。第六步為自費資料上傳同意書，同意與否必答，選同意才填期間、提供系統與獨立簽名；姓名、生日及證件號直接帶入，兩處機構名稱固定烏日澄清醫院。不同意仍可完成健檢。後台核對問卷後確認完成，不另加院所欄位或簽名；列印保留原 PDF 欄位位置與順序，同意者另附原樣同意書為第二頁，email 不新增到紙本。詳見 `docs/specs/2026-11-05-labor-upload-consent.md`。
 - 日期、年月、單獨年份及年資採共用的緊湊欄位，輸入框與單位成組換行。日曆月為 1–12，年資剩餘月為 0–11，年份最多三位；前後台共用格式檢查，詳見 `docs/specs/2026-11-04-date-input-consistency.md`。
 - 成人預防保健的同意簽名在院所區由服務對象本人簽；年齡、BMI、LDL、eGFR 自動計算（只顯示與列印，不存入資料庫）。本院檢驗參考值目前留空，之後可在 `src/lib/forms/defs/adult.ts` 的 `staffDefaults` 加入。
+
+## 共用資料開發規範
+
+`heal_submissions` 供其他應用程式共用，欄位與代碼請查閱 [共用資料對照表](docs/data/heal-submissions.md) 或 [JSON 字典](docs/data/heal-submissions.json)。兩份字典均以人工查閱為主：實體欄位只列欄位與中文名稱；七種表單的 `public_data`／`staff_data` 只列 key、中文名稱及有意義的選項對照，另附 `form_id`、`status` 的中文名稱。
+
+新增、刪除、改名或改變欄位／代碼定義時，必須在同一變更同步更新字典及 [契約異動紀錄](docs/data/changes.md)，並說明歷史資料與相依應用程式的相容處理。人工註解維護於 `scripts/lib/submission-dictionary-metadata.ts`；更新後執行 `npm run dictionary:generate`、審閱兩份產物，再執行 `npm run dictionary:check`。`npm test` 也會先檢查字典同步。完整規定見 `AGENTS.md`。
 
 ## 表單 QR code
 
@@ -76,7 +82,9 @@ docker exec healthcare-db psql -U healthcare -d postgres -X -v ON_ERROR_STOP=1 -
 
 需更新原稿時，先備妥 `預防保健表單電子檔/勞工健康檢查.pdf`，在 Python 環境安裝 `PyMuPDF==1.26.7`，從專案根目錄執行 `python scripts/generate-labor-template.py`，再檢查列印對位。原 PDF 與暫存資料不納入 Git，產生的 SVG 與座標檔需一併提交。
 
-新增表單的 migration 為 `drizzle/0006_add_labor_form.sql`。本機已套用；部署 Supabase 時以該環境的 `DATABASE_URL` 執行 `npm run db:migrate`，再部署對應程式。本次本機 migration 前的兩庫完整備份在 `.local/db-backups/2026-11-04-add-labor-form/`。
+資料上傳同意書底稿由 `scripts/generate-labor-upload-template.py` 讀取規格所列的指定 PDF，產生 `public/forms/labor-upload-template.svg` 與 `src/forms/labor/upload-print-layout.ts`；原稿紅色正文完整保留。同意書使用既有 JSONB 的 `labor.upload*` 欄位，無須新增 migration。舊案缺少同意選擇時顯示尚未填寫，不推定為不同意；民眾再次修改送出時須完成新選擇，簽名需重簽。
+
+新增表單的 migration 為 `drizzle/0006_add_labor_form.sql`。本機與 Supabase 專案 `tbulauezaixdjzdcqsem` 均已於 2026-11-04 套用，雲端 Drizzle 紀錄已同步。其他環境部署前，應先以該環境的 `DATABASE_URL` 執行 `npm run db:migrate`，再部署對應程式；`npm run build` 本身不會套用資料庫 migration。本次本機 migration 前的兩庫完整備份在 `.local/db-backups/2026-11-04-add-labor-form/`；雲端套用 SQL、前後資料雜湊與儲存驗證紀錄在 `.local/cloud-migrations/2026-11-04-add-labor-form/`。
 
 ## 指令
 
@@ -84,5 +92,7 @@ docker exec healthcare-db psql -U healthcare -d postgres -X -v ON_ERROR_STOP=1 -
 |---|---|
 | `npm test` | 自動測試（預設使用本機的 `wjcch_test` 資料庫） |
 | `npm run typecheck` | TypeScript 型別檢查 |
+| `npm run dictionary:generate` | 依實際定義與中文註解產生 Markdown／JSON 共用資料字典 |
+| `npm run dictionary:check` | 檢查 key、選項與字典產物是否完整同步；不連線資料庫 |
 | `npm run db:generate` | 修改 `src/db/schema.ts` 後產生 migration |
 | `npm run db:migrate` | 套用 migration |

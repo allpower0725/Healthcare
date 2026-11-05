@@ -7,6 +7,7 @@ export function laborPublicSample(): Record<string, string | string[]> {
     'labor.currentHas': 'N', 'labor.previousHas': 'N', 'labor.reason': 'new',
     'labor.diseases': ['none'], 'labor.symptoms': ['none'],
     'labor.smoke': 'never', 'labor.betel': 'never', 'labor.drink': 'never',
+    'labor.uploadConsent': 'N',
   };
 }
 

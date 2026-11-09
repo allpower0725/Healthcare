@@ -35,6 +35,14 @@ function loadEnterprise(siteKey: string): Promise<Enterprise> {
   void promise.catch(() => { if (scriptJob?.promise === promise) scriptJob = null; });
   return promise;
 }
+
+/** 開頁時準備腳本；若載入失敗，送出時可再次載入。 */
+export function preloadCaptchaScript({ mode, siteKey }: PublicCaptchaConfig): void {
+  if (mode === 'required' && siteKey) {
+    void loadEnterprise(siteKey);
+  }
+}
+
 /** 僅在要求異動時執行；本機暫存、恢復或背景同步不產生 token。 */
 export async function requestCaptchaToken(config: PublicCaptchaConfig, action: PublicCaptchaAction): Promise<string> {
   if (config.mode === 'development-bypass') return '';

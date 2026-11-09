@@ -6,7 +6,7 @@ import { PrintDocumentButton } from '@/components/forms/print-document-button';
 import { useFormState } from '@/components/forms/use-form-state';
 import { LoadingOverlay } from '@/components/loading/loading-overlay';
 import { usePublicRequest } from '@/components/loading/use-public-request';
-import { requestCaptchaToken } from '@/lib/security/recaptcha-client';
+import { preloadCaptchaScript, requestCaptchaToken } from '@/lib/security/recaptcha-client';
 import { PUBLIC_CAPTCHA_ACTIONS, type PublicCaptchaConfig, PublicRequestError, VERIFICATION_MESSAGES } from '@/lib/security/public-protection';
 import type { FormValues, SubmissionStatus } from '@/db/schema';
 import type { FormId } from '@/lib/forms/catalog';
@@ -99,6 +99,10 @@ export function FormApp({
   const statusGeneration = useRef(0);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    preloadCaptchaScript(captcha);
+  }, [captcha]);
 
   const imageKeys = useMemo(
     () => Object.keys(def.fields).filter((k) => def.fields[k].part === 'public' && def.fields[k].kind === 'image'),

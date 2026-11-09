@@ -91,4 +91,4 @@ IndexedDB 暫存、草稿恢復、清理與背景狀態更新都不取得 token�
 - **一直驗證未通過**：檢查 key 類型、Google 網域清單、`RECAPTCHA_ALLOWED_HOSTNAMES`、Console 回傳的 action／分數、伺服器時間及 token 是否已使用或逾時。新站台與測試流量的分數可能與正式流量不同。
 - **Google API 回傳拒絕**：確認正確專案已啟用 Enterprise API、API key 屬於同一專案且 API 限制正確。OAuth Client Secret 不能代替此 key。
 - **手機內嵌瀏覽器異常**：先改用系統 Chrome／Safari 測試；Google 不建議在應用程式內嵌 WebView 使用網站版 reCAPTCHA。[官方選型說明](https://docs.cloud.google.com/recaptcha/docs/choose-key-type)
-- **Google 標章**：沿用官方腳本的預設 badge，未以 CSS 隱藏；不要自行加入已過時的隱私／服務條款文案。若日後調整標章，先核對 [Google FAQ](https://docs.cloud.google.com/recaptcha/docs/faq)。
+- **Google 標章**在表單開啟時隨官方腳本於背景載入，載入後顯示在右下角。首次送出、修改重送及退回修改時才取得權杖。若日後調整標章，先核對 [Google FAQ](https://docs.cloud.google.com/recaptcha/docs/faq)。

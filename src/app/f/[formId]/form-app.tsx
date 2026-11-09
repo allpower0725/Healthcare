@@ -4,6 +4,10 @@ import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } fro
 import { FormContext } from '@/components/forms/context';
 import { PrintDocumentButton } from '@/components/forms/print-document-button';
 import { useFormState } from '@/components/forms/use-form-state';
+import { LoadingOverlay } from '@/components/loading/loading-overlay';
+import { usePublicRequest } from '@/components/loading/use-public-request';
+import { requestCaptchaToken } from '@/lib/security/recaptcha-client';
+import { PUBLIC_CAPTCHA_ACTIONS, type PublicCaptchaConfig, PublicRequestError, VERIFICATION_MESSAGES } from '@/lib/security/public-protection';
 import type { FormValues, SubmissionStatus } from '@/db/schema';
 import type { FormId } from '@/lib/forms/catalog';
 import { getFormDef } from '@/lib/forms/defs';
@@ -56,12 +60,14 @@ function scrollToId(id: string, block: ScrollLogicalPosition = 'center') {
 
 export function FormApp({
   formId,
+  captcha,
   acceptingNew,
   closedMessage,
   closedPeriod,
   intro,
 }: {
   formId: FormId;
+  captcha: PublicCaptchaConfig;
   /** 表單開放中；關閉時只讓已送出的裝置回來查看、退回修改 */
   acceptingNew: boolean;
   closedMessage: string;
@@ -82,6 +88,8 @@ export function FormApp({
   const [showPublic, setShowPublic] = useState(false);
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const { message: pendingMessage, run: runRequest } = usePublicRequest();
+  const starting = useRef(false);
 
   const token = useRef<string | null>(null);
   const ownerRef = useRef<string | null>(null);
@@ -164,8 +172,10 @@ export function FormApp({
       const own = saved.form;
       requestIdRef.current = own?.requestId ?? null;
       const knownId = own?.submissionId ?? own?.requestId;
-      const known = knownId ? await loadDeviceSubmission(knownId, formId) : null;
-      const remote = known ?? await recoverDeviceSubmission(formId, who);
+      const remote = await runRequest('讀取表單中，請稍候…', async () => {
+        const known = knownId ? await loadDeviceSubmission(knownId, formId) : null;
+        return known ?? await recoverDeviceSubmission(formId, who);
+      });
       if (remote) {
         setSentState({ id: remote.id, status: remote.status, submittedAt: remote.submittedAt });
         if (remote.status === 'returned') {
@@ -197,7 +207,7 @@ export function FormApp({
       replace({ ...profile, ...draft, 'profile.idNo': who });
       setPhase('filling');
     },
-    [acceptingNew, formId, latest, replace, withoutImages],
+    [acceptingNew, formId, latest, replace, withoutImages, runRequest],
   );
 
   // 同一分頁重新整理：憑證有效就直接續填
@@ -209,7 +219,14 @@ export function FormApp({
       if (cancelled) return;
       if (saved) {
         token.current = resumeToken;
-        await enter(saved.owner, saved);
+        try { await enter(saved.owner, saved); }
+        catch (error) {
+          if (!cancelled) {
+            setIdInput(saved.owner);
+            setPhase('gate');
+            showToast(error instanceof PublicRequestError ? error.message : '無法讀取表單，請稍後重試。');
+          }
+        }
       } else {
         session.remove(RESUME_KEY);
         await localStore.purge();
@@ -224,6 +241,7 @@ export function FormApp({
   }, []);
 
   async function start() {
+    if (starting.current) return;
     const id = idInput.toUpperCase().replace(/\s+/g, '');
     setIdInput(id);
     if (!id) {
@@ -231,16 +249,22 @@ export function FormApp({
       return;
     }
     setIdError('');
+    starting.current = true;
     setBusy(true);
     try {
       const saved = await localStore.open(id, formId);
       // 裝置換了填寫者：前一位送出的表單不能再從這個裝置存取
-      if (saved.ownerChanged) await forgetDevice();
+      if (saved.ownerChanged) {
+        await runRequest('切換填寫者中，請稍候…', () => forgetDevice());
+      }
       token.current = saved.token;
       if (saved.token) session.set(RESUME_KEY, saved.token);
       await enter(id, saved);
       scrollToId('gate', 'start');
+    } catch (error) {
+      showToast(error instanceof PublicRequestError ? error.message : '無法讀取表單，請稍後重試。');
     } finally {
+      starting.current = false;
       setBusy(false);
     }
   }
@@ -264,11 +288,19 @@ export function FormApp({
   }
 
   async function clearDevice() {
+    if (busy) return;
     if (!window.confirm('確定要清除此裝置上暫存的所有表單資料嗎？清除後無法復原。')) return;
-    await localStore.clearAll();
-    await forgetDevice();
-    session.remove(RESUME_KEY);
-    location.reload();
+    setBusy(true);
+    try {
+      await localStore.clearAll();
+      await runRequest('清除裝置連線中，請稍候…', () => forgetDevice());
+      session.remove(RESUME_KEY);
+      location.reload();
+    } catch (error) {
+      showToast(error instanceof PublicRequestError ? error.message : '無法清除裝置連線，請稍後重試。');
+    } finally {
+      setBusy(false);
+    }
   }
 
   /* ---------- 送出、退回修改 ---------- */
@@ -296,9 +328,12 @@ export function FormApp({
       await localStore.save(owner!, formId, {
         values, submissionId: original?.id, requestId: requestIdRef.current ?? undefined,
       }, profile);
-      const result = original
-        ? await resubmitForm(original.id, values, original.submittedAt)
-        : await submitForm(formId, values, requestIdRef.current!);
+      const result = await runRequest('安全驗證與送出中，請稍候…', async () => {
+        const captchaToken = await requestCaptchaToken(captcha, original ? PUBLIC_CAPTCHA_ACTIONS.resubmit : PUBLIC_CAPTCHA_ACTIONS.submit);
+        return original
+          ? resubmitForm(original.id, values, original.submittedAt, captchaToken)
+          : submitForm(formId, values, requestIdRef.current!, captchaToken);
+      });
       if (result.ok) {
         setSentState({ id: result.id, status: result.status, submittedAt: result.submittedAt });
         if (saveTimer.current) clearTimeout(saveTimer.current);
@@ -313,6 +348,8 @@ export function FormApp({
         setPhase(editingAgain ? 'filling' : 'done');
         showToast(editingAgain ? `表單已再次退回修改，請確認內容${imageKeys.length > 0 ? '並重新簽名' : ''}後送出。` : '已送出，謝謝您的填寫');
         window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (result.reason === 'verification_failed' || result.reason === 'verification_unavailable') {
+        showToast(VERIFICATION_MESSAGES[result.reason]);
       } else if (result.reason === 'invalid' && result.errors) {
         form.setErrors(result.errors);
         const keys = Object.keys(result.errors);
@@ -329,8 +366,8 @@ export function FormApp({
       } else {
         showToast('無法更新先前送出的資料，請重新整理頁面後再試。');
       }
-    } catch {
-      showToast('網路連線不穩定，請稍後再按一次「確認送出」。');
+    } catch (error) {
+      showToast(error instanceof PublicRequestError ? error.message : '網路連線不穩定，請稍後再按一次「確認送出」。');
     } finally {
       submitting.current = false;
       setBusy(false);
@@ -341,10 +378,14 @@ export function FormApp({
     if (!sent || submitting.current) return;
     const question = imageKeys.length > 0 ? '退回修改後，需要重新簽名才能再次送出。確定要修改嗎？' : '確定要退回修改嗎？';
     if (!window.confirm(question)) return;
+    submitting.current = true;
     statusGeneration.current += 1;
     setBusy(true);
     try {
-      const result = await returnForm(sent.id);
+      const result = await runRequest('安全驗證與退回修改中，請稍候…', async () => {
+        const captchaToken = await requestCaptchaToken(captcha, PUBLIC_CAPTCHA_ACTIONS.return);
+        return returnForm(sent.id, captchaToken);
+      });
       if (result.ok) {
         const values = withoutImages(latest.current);
         replace(values);
@@ -353,15 +394,18 @@ export function FormApp({
         setShowPublic(false);
         setPhase('filling');
         scrollToId('gate', 'start');
+      } else if (result.reason === 'verification_failed' || result.reason === 'verification_unavailable') {
+        showToast(VERIFICATION_MESSAGES[result.reason]);
       } else if (result.reason === 'locked') {
         setSentState({ ...sent, status: 'completed' });
         showToast('院所已完成填寫，無法退回修改。');
       } else {
         showToast('找不到這份資料，可能已超過 12 小時，請洽櫃台醫護人員。');
       }
-    } catch {
-      showToast('網路連線不穩定，請稍後再試。');
+    } catch (error) {
+      showToast(error instanceof PublicRequestError ? error.message : '網路連線不穩定，請稍後再試。');
     } finally {
+      submitting.current = false;
       setBusy(false);
     }
   }
@@ -406,12 +450,15 @@ export function FormApp({
     <PublicChrome
       progress={progress.pct}
       foot={
-        <button type="button" className="btn btn--ghost btn--mini" onClick={clearDevice}>
+        <button type="button" className="btn btn--ghost btn--mini" disabled={busy} onClick={clearDevice}>
           清除此裝置上的暫存資料
         </button>
       }
     >
       {intro}
+      {pendingMessage && <LoadingOverlay message={pendingMessage} />}
+      {captcha.mode === 'unavailable' && <p className="notice notice--error" role="alert">目前安全驗證暫時無法使用，請稍後重試或洽院所人員。已填內容會保留。</p>}
+      {captcha.mode === 'development-bypass' && <p className="notice">本機開發模式：已略過人機驗證，正式環境不會使用此模式。</p>}
 
       <FormContext.Provider value={form.ctx}>
         {phase === 'loading' && (
@@ -453,7 +500,7 @@ export function FormApp({
                   身分證統一編號 <span className="field__label-sub">（外籍人士請填統一證號）</span>
                 </label>
                 {passed && (
-                  <button type="button" className="btn btn--soft btn--mini gate__change" onClick={toGate}>
+                  <button type="button" className="btn btn--soft btn--mini gate__change" disabled={busy} onClick={toGate}>
                     更換
                   </button>
                 )}
@@ -588,6 +635,7 @@ export function FormApp({
                 {busy ? '送出中…' : '確認送出'}
               </button>
               <p className="submitbar__note">{formId === 'labor' ? '送出後，將由醫護人員核對問卷內容。' : '送出後，將由醫護人員接續填寫院所資料。'}</p>
+              {captcha.mode === 'required' && <p className="submitbar__note">本網站使用 reCAPTCHA 防護，送出時將進行安全驗證。</p>}
             </div>
           </>
         )}

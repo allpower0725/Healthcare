@@ -16,6 +16,8 @@ npm run db:migrate             # 建立資料表
 npm run dev                    # http://localhost:3000
 ```
 
+前台防護設定請先依 [reCAPTCHA 設定步驟](docs/setup/recaptcha.md) 建立 Google Cloud Web／Score-based site key 與伺服器 API key，並填入 `.env.local`／Vercel 環境變數。尚未有金鑰時，僅本機 `npm run dev` 可明確設定 `RECAPTCHA_DEV_BYPASS=true` 測試畫面；正式版與 Vercel 不允許略過，未設定完成會拒絕送出。此變更無須資料庫 migration，問卷資料字典不變。
+
 ### 本機資料庫命名
 
 - 主資料庫：`wjcch`；自動測試資料庫：`wjcch_test`。
@@ -58,6 +60,7 @@ docker exec healthcare-db psql -U healthcare -d postgres -X -v ON_ERROR_STOP=1 -
 - 後台「協同完成」：首次進入預設七種表單全選、狀態勾選「待院所確認」。輸入不含數字時以姓名部分比對，含數字時依身分證號部分比對；可依表單種類、狀態篩選及點欄位標題排序。
 - 列表「開啟」使用 modal，民眾內容預設展開；關閉時保留篩選、排序、頁碼、捲動與未套用的勾選。院所區自動儲存，關閉或列印前等待儲存完成，失敗時保留內容。列表及 modal 皆可直接開啟瀏覽器列印介面，所有狀態均可列印；「確認送出」仍會鎖定資料，「取消送出」後民眾才能再退回修改，重複資料仍可作廢。
 - 後台載入、篩選、切頁、儲存設定及狀態操作會顯示齒輪 loading 遮罩；自動暫存只顯示局部提示。
+- 前台首次送出、修改重送及退回修改共用伺服器 reCAPTCHA 驗證，檢查 token、動作、hostname 與分數，失敗保留答案。明確的伺服器讀取、驗證／送出及準備列印顯示共用齒輪 loading；IndexedDB 與背景狀態同步不顯示遮罩。共用實作與後續開發規則見 `AGENTS.md` 及 `docs/specs/2026-11-06-public-form-protection.md`。
 - 院內平板可把後台「加入主畫面」（iPad 用 Safari、Android 用 Chrome，按分享→加入主畫面），之後從圖示開啟就沒有網址列。設定在 `public/admin.webmanifest` 與 `src/lib/admin-app.ts`，圖示原檔為 `public/brand/app-icon.svg`；民眾表單頁不提供安裝。
 - 7 張表單（人類乳突病毒、子宮頸抹片、口腔黏膜檢查、胃幽門螺旋桿菌、糞便潛血、成人預防保健、勞工健康檢查）皆已電子化。表單欄位定義在 `src/lib/forms/defs/`，畫面在 `src/forms/`，各表單的設計見 `docs/specs/`。
 - 勞工健康檢查網址為 `/f/labor`，新設定預設關閉，可至「表單管理」設定開放。手機填寫分六步，email 選填並共用；受僱日期、檢查日期及事業單位名稱放在作業經歷，目前工作先填、曾經工作只填最近一項。第六步為自費資料上傳同意書，同意與否必答，選同意才填期間、提供系統與獨立簽名；姓名、生日及證件號直接帶入，兩處機構名稱固定烏日澄清醫院。不同意仍可完成健檢。後台核對問卷後確認完成，不另加院所欄位或簽名；列印保留原 PDF 欄位位置與順序，同意者另附原樣同意書為第二頁，email 不新增到紙本。詳見 `docs/specs/2026-11-05-labor-upload-consent.md`。

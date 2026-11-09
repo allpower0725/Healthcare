@@ -1,17 +1,27 @@
 'use client';
 
 const PRINT_ERROR = '無法載入列印內容，請確認連線與登入狀態後再試一次。';
-let activeJob: Promise<void> | null = null;
+type PrintJob = { promise: Promise<void>; ready: boolean; onReady: Set<() => void> };
+let activeJob: PrintJob | null = null;
 let previousFrame: HTMLIFrameElement | null = null;
 
 /** 在原畫面準備同源列印文件，避免另開分頁或遺失列表／表單狀態。 */
-export function printDocument(href: string): Promise<void> {
-  if (activeJob) return activeJob;
-  activeJob = preparePrint(href).finally(() => { activeJob = null; });
-  return activeJob;
+export function printDocument(href: string, onReady?: () => void): Promise<void> {
+  if (activeJob) {
+    if (onReady) { if (activeJob.ready) onReady(); else activeJob.onReady.add(onReady); }
+    return activeJob.promise;
+  }
+  const job: PrintJob = { promise: null!, ready: false, onReady: new Set(onReady ? [onReady] : []) };
+  activeJob = job;
+  job.promise = preparePrint(href, () => {
+    job.ready = true;
+    for (const callback of job.onReady) callback();
+    job.onReady.clear();
+  }).finally(() => { if (activeJob === job) activeJob = null; });
+  return job.promise;
 }
 
-function preparePrint(href: string): Promise<void> {
+function preparePrint(href: string, beforePrint: () => void): Promise<void> {
   return new Promise((resolve, reject) => {
     const url = new URL(href, window.location.href);
     if (url.origin !== window.location.origin) {
@@ -62,6 +72,7 @@ function preparePrint(href: string): Promise<void> {
           if (!frame.isConnected) return;
           clearTimeout(timeout);
           target.addEventListener('afterprint', cleanup, { once: true });
+          beforePrint();
           target.focus();
           target.print();
           // 部分行動瀏覽器的 print() 不會阻塞；文件保留到 afterprint 才清除。

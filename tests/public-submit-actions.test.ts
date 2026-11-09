@@ -14,6 +14,8 @@ vi.mock('@/lib/submissions/device', () => ({
   readDeviceToken: vi.fn(async () => 'action-test-device'),
   clearDeviceToken: vi.fn(async () => {}),
 }));
+// 本檔保留案件重試整合測試；實際驗證與拒絕異動另由 public-protection 測試覆蓋。
+vi.mock('@/lib/security/recaptcha', () => ({ verifyRecaptcha: vi.fn(async () => ({ ok: true })) }));
 
 beforeEach(async () => {
   vi.clearAllMocks();

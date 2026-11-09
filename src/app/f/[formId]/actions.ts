@@ -2,6 +2,8 @@
 
 import type { FormValues, SubmissionStatus } from '@/db/schema';
 import { isFormId } from '@/lib/forms/catalog';
+import { PUBLIC_CAPTCHA_ACTIONS } from '@/lib/security/public-protection';
+import { verifyRecaptcha } from '@/lib/security/recaptcha';
 import { clearDeviceToken, ensureDeviceToken, readDeviceToken } from '@/lib/submissions/device';
 import {
   createPublicSubmission,
@@ -11,7 +13,7 @@ import {
   returnToPublic,
 } from '@/lib/submissions/service';
 
-// 這些 Server Action 對外公開（民眾不需登入），只靠裝置憑證辨識是誰送出的
+// 民眾不需登入；公開異動先通過人機驗證，既有案件仍以裝置憑證確認存取權。
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -25,27 +27,33 @@ async function submittedResult(id: string, token: string): Promise<SubmitFormRes
   return { ok: true, id, status: row.status, submittedAt: row.publicSubmittedAt.toISOString() };
 }
 
-export async function submitForm(formId: string, values: FormValues, requestId?: string): Promise<SubmitFormResult> {
+export async function submitForm(formId: string, values: FormValues, requestId?: string, captchaToken?: string): Promise<SubmitFormResult> {
   if (!isFormId(formId)) return { ok: false, reason: 'not_supported' };
   if (requestId != null && !UUID.test(requestId)) return { ok: false, reason: 'not_found' };
+  const verification = await verifyRecaptcha(PUBLIC_CAPTCHA_ACTIONS.submit, captchaToken);
+  if (!verification.ok) return verification;
   const token = await ensureDeviceToken();
   const result = await createPublicSubmission(formId, values, token, new Date(), requestId);
   if (!result.ok) return result;
   return submittedResult(result.id, token);
 }
 
-export async function resubmitForm(submissionId: string, values: FormValues, previousSubmittedAt?: string): Promise<SubmitFormResult> {
+export async function resubmitForm(submissionId: string, values: FormValues, previousSubmittedAt?: string, captchaToken?: string): Promise<SubmitFormResult> {
   const token = await readDeviceToken();
   if (!token || !UUID.test(submissionId)) return { ok: false, reason: 'not_found' };
+  const verification = await verifyRecaptcha(PUBLIC_CAPTCHA_ACTIONS.resubmit, captchaToken);
+  if (!verification.ok) return verification;
   const result = await resubmitPublic(submissionId, token, values, new Date(), previousSubmittedAt);
   if (!result.ok) return result;
   await ensureDeviceToken();
   return submittedResult(submissionId, token);
 }
 
-export async function returnForm(submissionId: string) {
+export async function returnForm(submissionId: string, captchaToken?: string) {
   const token = await readDeviceToken();
   if (!token || !UUID.test(submissionId)) return { ok: false as const, reason: 'not_found' as const };
+  const verification = await verifyRecaptcha(PUBLIC_CAPTCHA_ACTIONS.return, captchaToken);
+  if (!verification.ok) return verification;
   return returnToPublic(submissionId, token);
 }
 

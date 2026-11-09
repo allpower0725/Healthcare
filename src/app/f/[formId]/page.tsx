@@ -11,6 +11,8 @@ import { findDeviceSubmissions } from '@/lib/submissions/service';
 import { formatDateTime } from '@/lib/time';
 import { ClosedCard, PublicChrome } from './chrome';
 import { FormApp } from './form-app';
+import { LoadingOverlay } from '@/components/loading/loading-overlay';
+import { getPublicCaptchaConfig } from '@/lib/security/recaptcha';
 
 type Props = PageProps<'/f/[formId]'>;
 
@@ -30,6 +32,7 @@ export default function PublicFormPage({ params }: Props) {
     <Suspense
       fallback={
         <PublicChrome>
+          <LoadingOverlay message="載入表單中，請稍候…" />
           <section className="card" aria-busy="true">
             <p className="field__hint" style={{ margin: 0 }}>
               載入中…
@@ -93,6 +96,7 @@ async function FormEntry({ params }: { params: Props['params'] }) {
       return (
         <FormApp
           formId={formId}
+          captcha={getPublicCaptchaConfig()}
           acceptingNew={status === 'open'}
           closedMessage={closedMessage}
           closedPeriod={period}

@@ -1,8 +1,8 @@
 /* 齒輪配色與旋轉構圖參考 https://codepen.io/jcoulterdesign/pen/bNxeKY */
 .overlay { position: fixed; inset: 0; width: 100vw; max-width: none; height: 100dvh; max-height: none; margin: 0; padding: 0; border: 0; background: transparent; color: #38566b; }
 .overlay::backdrop { background: rgb(247 250 252 / 84%); backdrop-filter: blur(2px); }
-.content { display: grid; place-content: center; justify-items: center; height: 100%; gap: 28px; font-weight: 600; }
-.content p { margin: 0; }
+.content { display: grid; place-content: center; justify-items: center; height: 100%; gap: 28px; padding: 24px; text-align: center; font-size: 1rem; line-height: 1.6; font-weight: 600; }
+.content p { margin: 0; max-width: 28em; overflow-wrap: anywhere; }
 .cogs { position: relative; width: 164px; height: 142px; }
 .gear { position: absolute; width: var(--size); height: var(--size); animation: rotate 9s linear infinite; }
 .gear i { position: absolute; inset: 0; background: var(--color); border-radius: 12%; }

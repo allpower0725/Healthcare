@@ -57,9 +57,3 @@
 .content p:last-child {
   margin-bottom: 0;
 }
-
-.draft {
-  color: var(--staff);
-  font-size: 0.875rem;
-  font-weight: 700;
-}

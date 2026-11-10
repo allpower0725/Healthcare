@@ -30,7 +30,11 @@ export default function AppointmentNoticePrivacyPage() {
         寄件帳號持有人可在 <a href="https://myaccount.google.com/connections">Google 帳戶的第三方連結管理頁面</a>
         撤銷本應用程式的授權。撤銷後，系統便無法再用該授權寄信。
       </p>
-      <p>公開聯絡方式、寄送紀錄保留與刪除規則，以及政策生效日期，待院方確認後補入。</p>
+      <p>
+        系統保留寄送紀錄供核對與避免重複通知，目前未設定固定期限自動刪除。
+        若要詢問紀錄保留情形、申請刪除寄送紀錄，或在停用寄件時申請移除系統保管的授權憑證，請透過院方的
+        <a href="https://www.wjcch.com.tw/contact">聯絡管道</a>提出。
+      </p>
     </>
   );
 }

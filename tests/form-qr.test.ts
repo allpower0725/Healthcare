@@ -2,7 +2,8 @@ import { Resvg } from '@resvg/resvg-js';
 import { BinaryBitmap, HybridBinarizer, QRCodeReader, RGBLuminanceSource } from '@zxing/library';
 import jsQR from 'jsqr';
 import QRCode from 'qrcode';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import { appointmentQrUrl, renderAppointmentQrSvg } from '@/lib/appointments/qr';
 import { FORM_IDS, FORMS } from '@/lib/forms/catalog';
 import { renderFormQrSvg } from '@/lib/forms/qr';
 
@@ -83,5 +84,24 @@ describe('表單 QR code', () => {
     const url = `https://preventive-care-forms.wujih-chengching-hospital.org.tw/f/${formId}`;
     expect(QRCode.create(url, { errorCorrectionLevel: 'H' }).version).toBeGreaterThanOrEqual(7);
     expectScannable(renderFormQrSvg(formId, url), url);
+  });
+});
+
+describe('預約健檢 QR code', () => {
+  it.each([
+    ['http://localhost:3000', 'http://localhost:3000/f/labor-appointment'],
+    ['https://wjcch-healthcare.vercel.app/', 'https://wjcch-healthcare.vercel.app/f/labor-appointment'],
+  ])('%s 的預約健檢 QR code 含月曆圖示，且在各種尺寸都能掃出預約網址', (baseUrl, expectedUrl) => {
+    vi.stubEnv('APP_URL', baseUrl);
+    try {
+      const url = appointmentQrUrl();
+      expect(url).toBe(expectedUrl);
+
+      const svg = renderAppointmentQrSvg(url, { size: 1024 });
+      expect(svg).toContain('id="health-appointment-page"');
+      expectScannable(svg, expectedUrl);
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 });

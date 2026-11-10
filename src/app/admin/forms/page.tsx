@@ -2,6 +2,8 @@ import { LoadingOverlay } from '@/app/admin/loading-overlay';
 import type { Metadata } from 'next';
 import { AdminLink as Link } from '@/app/admin/pending-ui';
 import { Suspense } from 'react';
+import { APPOINTMENT_ADMIN_PATH, APPOINTMENT_ICON_PATH, APPOINTMENT_NAME } from '@/lib/appointments/catalog';
+import { getAppointmentSetting } from '@/lib/appointments/settings';
 import { requireUser } from '@/lib/auth/dal';
 import { artSvg } from '@/lib/forms/art';
 import { FORMS } from '@/lib/forms/catalog';
@@ -20,7 +22,7 @@ export default function FormsPage() {
     <>
       <div className={adminStyles.pageHead}>
         <h1>表單管理</h1>
-        <p>每張表單有固定的填寫 QR code。點選表單可設定開放時間、下載 QR code 與列印海報。</p>
+        <p>可管理各表單的開放時間、填寫 QR code 與海報，以及預約健檢的開放開關與通知收件人。</p>
       </div>
       <Suspense fallback={null}>
         <Reminders />
@@ -45,7 +47,7 @@ async function Reminders() {
     <div className={styles.reminders}>
       {counts.submitted > 0 && (
         <p className={`notice notice--warn ${styles.reminder}`} role="status">
-          <span>有 {counts.submitted} 份民眾已送出的表單等待院所確認。</span>
+          <span>有 {counts.submitted} 筆案件等待院所確認。</span>
           <Link className="btn btn--ghost btn--sm" href={listHref({ statuses: ['submitted'] })}>
             前往協同完成
           </Link>
@@ -65,7 +67,7 @@ async function Reminders() {
 
 async function FormCards() {
   await requireUser();
-  const settings = await listFormSettings();
+  const [settings, appointmentSetting] = await Promise.all([listFormSettings(), getAppointmentSetting()]);
   const now = new Date();
 
   return (
@@ -94,6 +96,18 @@ async function FormCards() {
           </Link>
         );
       })}
+      <Link href={APPOINTMENT_ADMIN_PATH} className={styles.formCard}>
+        <div className={styles.cardArt} aria-hidden="true">
+          <img src={APPOINTMENT_ICON_PATH} alt="" width={112} height={112} />
+        </div>
+        <div className={styles.cardBody}>
+          <h2>{APPOINTMENT_NAME}</h2>
+          <div className={styles.cardMeta}>
+            <FormStatusBadge status={appointmentSetting.isOpen ? 'open' : 'closed'} />
+            <span>預約開放與通知設定</span>
+          </div>
+        </div>
+      </Link>
     </div>
   );
 }

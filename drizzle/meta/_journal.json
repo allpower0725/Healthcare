@@ -50,6 +50,13 @@
       "when": 1793760883168,
       "tag": "0006_add_labor_form",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1794272879809,
+      "tag": "0007_health_check_appointments",
+      "breakpoints": true
     }
   ]
 }

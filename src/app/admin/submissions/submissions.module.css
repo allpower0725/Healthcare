@@ -417,6 +417,40 @@
   color: var(--muted);
   font-size: 0.875rem;
 }
+
+.appointmentCard h2 {
+  margin: 0 0 12px;
+  font-size: 1.125rem;
+}
+.appointmentCard > p:last-child {
+  margin-bottom: 0;
+}
+.appointmentFields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
+  gap: 12px 20px;
+  margin: 0 0 16px;
+}
+.appointmentFields dt {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+.appointmentFields dd {
+  margin: 3px 0 0;
+  font-weight: 600;
+}
+.appointmentIntakeStatus,
+.appointmentActions,
+.appointmentConfirm {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+.appointmentActions,
+.appointmentConfirm {
+  justify-content: flex-end;
+}
 .modal { width: min(1200px, calc(100vw - 48px)); max-width: none; max-height: calc(100dvh - 48px); margin: auto; padding: 0; border: 1px solid var(--line); border-radius: 20px; color: var(--text); background: var(--bg); box-shadow: 0 24px 80px rgb(20 50 45 / 24%); overscroll-behavior: contain; }
 .modal::backdrop { background: rgb(20 40 40 / 48%); backdrop-filter: blur(3px); }
 .modalBar { position: sticky; top: 0; z-index: 5; display: flex; justify-content: space-between; gap: 12px; padding: 14px 24px; background: var(--surface); border-bottom: 1px solid var(--line); }

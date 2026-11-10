@@ -12,6 +12,15 @@ const QUIET_ZONE = 4;
 /** 定位點外框色：與插圖描邊同色 */
 const RING_COLOR = '#1f3d3a';
 
+type QrArtwork = {
+  name: string;
+  color: string;
+  tint: string;
+  art: (attributes: string) => string;
+};
+
+export type QrSvgOptions = { size?: number };
+
 /** 對齊圖形的中心座標（QR 規格 ISO/IEC 18004 附錄 E，與 qrcode 套件的算法相同） */
 function alignmentCenters(version: number, size: number) {
   if (version === 1) return [];
@@ -36,8 +45,7 @@ function alignmentCenters(version: number, size: number) {
  * 容錯等級 H 可承受約 30% 的資料損失，中央留白只占約 7% 的面積。
  * 對齊圖形必須畫成完整的「眼睛」，只用圓點拼的話掃描器常認不出來（見 tests/form-qr.test.ts）。
  */
-export function renderFormQrSvg(formId: FormId, url: string, options: { size?: number } = {}) {
-  const form = FORMS[formId];
+export function renderQrSvg(form: QrArtwork, url: string, options: QrSvgOptions = {}) {
   const qr = QRCode.create(url, { errorCorrectionLevel: 'H' });
   const n = qr.modules.size;
   const total = n + QUIET_ZONE * 2;
@@ -96,8 +104,12 @@ export function renderFormQrSvg(formId: FormId, url: string, options: { size?: n
   const artSize = holeRadius * 2 * 0.74;
   parts.push(
     `<circle cx="${cx}" cy="${cx}" r="${holeRadius}" fill="#fff" stroke="${form.tint}" stroke-width="0.35"/>`,
-    artSvg(formId, `x="${cx - artSize / 2}" y="${cx - artSize / 2}" width="${artSize}" height="${artSize}"`),
+    form.art(`x="${cx - artSize / 2}" y="${cx - artSize / 2}" width="${artSize}" height="${artSize}"`),
     `</svg>`,
   );
   return parts.join('');
+}
+
+export function renderFormQrSvg(formId: FormId, url: string, options?: QrSvgOptions) {
+  return renderQrSvg({ ...FORMS[formId], art: (attributes) => artSvg(formId, attributes) }, url, options);
 }

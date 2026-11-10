@@ -1,0 +1,65 @@
+.shell {
+  width: min(100% - 2rem, 48rem);
+  margin: 0 auto;
+  padding-block: 1.5rem 3rem;
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  column-gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.brand {
+  color: var(--primary-strong);
+  font-weight: 700;
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 1rem;
+}
+
+.header a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  text-underline-offset: 0.18em;
+}
+
+.content {
+  padding: clamp(1.25rem, 5vw, 2.5rem);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  overflow-wrap: break-word;
+}
+
+.content h1 {
+  margin: 0 0 1rem;
+  font-size: clamp(1.65rem, 5vw, 2.25rem);
+}
+
+.content h2 {
+  margin: 1.75rem 0 0.5rem;
+  font-size: 1.2rem;
+}
+
+.content p {
+  margin: 0 0 1rem;
+}
+
+.content p:last-child {
+  margin-bottom: 0;
+}
+
+.draft {
+  color: var(--staff);
+  font-size: 0.875rem;
+  font-weight: 700;
+}

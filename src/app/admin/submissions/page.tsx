@@ -5,10 +5,12 @@ import { AdminLink as Link } from '@/app/admin/pending-ui';
 import { type ReactNode, Suspense } from 'react';
 import { SUBMISSION_STATUSES } from '@/db/schema';
 import { PrintDocumentButton } from '@/components/forms/print-document-button';
+import { APPOINTMENT_CATEGORY, APPOINTMENT_COLOR, APPOINTMENT_NAME } from '@/lib/appointments/catalog';
 import { requireUser } from '@/lib/auth/dal';
-import { FORM_IDS, FORMS } from '@/lib/forms/catalog';
+import { FORMS } from '@/lib/forms/catalog';
 import {
   LIST_PATH,
+  SUBMISSION_LIST_FORMS,
   pageHref,
   parseQuery,
   queryString,
@@ -22,6 +24,7 @@ import adminStyles from '../admin.module.css';
 import { SUBMISSION_STATUS_LABELS, SubmissionStatusBadge } from '../ui';
 import { FilterToggle } from './filter-toggle';
 import { FormPending } from '../pending-ui';
+import { AppointmentDetail } from './appointment-detail';
 import { SubmissionDetail } from './submission-detail';
 import { SubmissionModal } from './submission-modal';
 import styles from './submissions.module.css';
@@ -34,7 +37,7 @@ export default function SubmissionsPage({ searchParams }: PageProps<'/admin/subm
       <div className={adminStyles.pageHead}>
         <h1>協同完成</h1>
         <p>
-          民眾送出的表單由院所人員核對，並依表單填寫院所區，各狀態皆可列印。勾選表單種類與狀態後按「篩選」，兩組都至少要勾一項；可輸入姓名或部分身分證號查詢，輸入查詢內容時自動全選，清空後恢復原本勾選。點欄位標題排序。
+          院所人員可在這裡核對表單及確認健檢預約。勾選表單種類與狀態後按「篩選」，兩組都至少要勾一項；可輸入姓名或部分身分證號查詢，輸入查詢內容時自動全選，清空後恢復原本勾選。點欄位標題排序。
         </p>
       </div>
       <Suspense fallback={<LoadingOverlay message="載入中，請稍候…" />}>
@@ -71,10 +74,10 @@ function Filters({ q }: { q: SubmissionQuery }) {
           表單種類
         </span>
         <div className={styles.checks}>
-          {FORM_IDS.map((id) => (
+          {SUBMISSION_LIST_FORMS.map((id) => (
             <label key={id} className={styles.check}>
               <input type="checkbox" name="form" value={id} defaultChecked={q.forms.includes(id)} />
-              <span>{FORMS[id].shortName}</span>
+              <span>{id === APPOINTMENT_CATEGORY ? APPOINTMENT_NAME : FORMS[id].shortName}</span>
             </label>
           ))}
         </div>
@@ -131,6 +134,7 @@ async function SubmissionList({ searchParams }: { searchParams: PageProps<'/admi
   const raw = await searchParams;
   const q = parseQuery(raw);
   const openId = typeof raw.open === 'string' ? raw.open : null;
+  const appointmentId = typeof raw.openAppointment === 'string' ? raw.openAppointment : null;
   const returnHref = `${LIST_PATH}${queryString(q)}`;
   const { rows, total, pages } = await searchSubmissions(q);
   // 任一組全不勾就沒有資料：提示要勾哪一組，免得誤以為查無此人
@@ -193,54 +197,71 @@ async function SubmissionList({ searchParams }: { searchParams: PageProps<'/admi
               </tr>
             </thead>
             <tbody>
-              {rows.map((row) => (
-                <tr key={row.id}>
-                  <td data-label="表單">
-                    <span className={styles.formCell}>
-                      <span className={styles.formDot} style={{ background: FORMS[row.formId].color }} />
-                      {FORMS[row.formId].shortName}
-                    </span>
-                  </td>
-                  <td data-label="狀態">
-                    <span className={styles.badges}>
-                      <SubmissionStatusBadge status={row.status} />
-                      {row.duplicates > 0 && (
-                        <span className="badge badge--dup" title="同一人、同一表單還有其他未完成的資料">
-                          可能重複
-                        </span>
-                      )}
-                    </span>
-                  </td>
-                  <td data-label="姓名" className={styles.name}>
-                    {row.name}
-                  </td>
-                  <td data-label="身分證號" className={styles.mono}>
-                    {row.idNo}
-                  </td>
-                  <td data-label="民眾送出" className={styles.date}>
-                    {formatDateTime(row.publicSubmittedAt)}
-                  </td>
-                  <td data-label="院所完成" className={styles.date}>
-                    {formatDateTime(row.completedAt)}
-                  </td>
-                  <td className={styles.actionsCell}>
-                    <div className={styles.rowActions}>
-                      <Link className="btn btn--ghost btn--sm" href={`${returnHref}&open=${row.id}`} scroll={false}>
-                        開啟
-                      </Link>
-                      <PrintDocumentButton className="btn btn--primary btn--sm" href={`/admin/submissions/${row.id}/print`}>
-                        列印 / 另存原樣 PDF
-                      </PrintDocumentButton>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {rows.map((row) => {
+                const { formId } = row;
+                const isAppointment = formId === APPOINTMENT_CATEGORY;
+                const form = isAppointment ? { shortName: APPOINTMENT_NAME, color: APPOINTMENT_COLOR } : FORMS[formId];
+                return (
+                  <tr key={`${formId}:${row.id}`}>
+                    <td data-label="表單">
+                      <span className={styles.formCell}>
+                        <span className={styles.formDot} style={{ background: form.color }} />
+                        {form.shortName}
+                      </span>
+                    </td>
+                    <td data-label="狀態">
+                      <span className={styles.badges}>
+                        <SubmissionStatusBadge status={row.status} />
+                        {row.duplicates > 0 && (
+                          <span className="badge badge--dup" title="同一人、同一表單還有其他未完成的資料">
+                            可能重複
+                          </span>
+                        )}
+                      </span>
+                    </td>
+                    <td data-label="姓名" className={styles.name}>
+                      {row.name}
+                    </td>
+                    <td data-label="身分證號" className={styles.mono}>
+                      {row.idNo}
+                    </td>
+                    <td data-label="民眾送出" className={styles.date}>
+                      {formatDateTime(row.publicSubmittedAt)}
+                    </td>
+                    <td data-label="院所完成" className={styles.date}>
+                      {formatDateTime(row.completedAt)}
+                    </td>
+                    <td className={styles.actionsCell}>
+                      <div className={styles.rowActions}>
+                        <Link
+                          className="btn btn--ghost btn--sm"
+                          href={`${returnHref}&${isAppointment ? 'openAppointment' : 'open'}=${row.id}`}
+                          scroll={false}
+                        >
+                          開啟
+                        </Link>
+                        {row.printSubmissionId && (
+                          <PrintDocumentButton className="btn btn--primary btn--sm" href={`/admin/submissions/${row.printSubmissionId}/print`}>
+                            列印 / 另存原樣 PDF
+                          </PrintDocumentButton>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}
       </div>
 
-      {openId && (
+      {appointmentId ? (
+        <SubmissionModal key={`appointment:${appointmentId}`} returnHref={returnHref}>
+          <Suspense fallback={<LoadingOverlay message="載入預約中…" />}>
+            <AppointmentDetail id={appointmentId} />
+          </Suspense>
+        </SubmissionModal>
+      ) : openId && (
         <SubmissionModal key={openId} returnHref={returnHref}>
           <Suspense fallback={<LoadingOverlay message="載入表單中…" />}>
             <SubmissionDetail params={Promise.resolve({ id: openId })} />

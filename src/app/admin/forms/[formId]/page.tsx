@@ -12,8 +12,8 @@ import { formatDateTime, toTaipeiInput } from '@/lib/time';
 import { getUserName } from '@/lib/users/service';
 import adminStyles from '../../admin.module.css';
 import { FormStatusBadge } from '../../ui';
+import { FillingQrCard } from '../filling-qr-card';
 import styles from '../forms.module.css';
-import { QrTools } from './qr-tools';
 import { SettingsForm } from './settings-form';
 
 export const metadata: Metadata = { title: '表單設定' };
@@ -40,7 +40,6 @@ async function FormDetail({ params }: { params: PageProps<'/admin/forms/[formId]
   const setting = await getFormSetting(formId);
   const editorName = setting.updatedBy ? await getUserName(setting.updatedBy) : null;
   const url = formUrl(formId);
-  const isLocal = /^https?:\/\/(localhost|127\.0\.0\.1)/.test(url);
   const period = describePeriod(setting);
 
   return (
@@ -57,23 +56,12 @@ async function FormDetail({ params }: { params: PageProps<'/admin/forms/[formId]
       </header>
 
       <div className={styles.detailGrid}>
-        <section className={adminStyles.card} aria-labelledby="qr-title">
-          <h2 className={styles.cardTitle} id="qr-title">
-            填寫 QR code
-          </h2>
-          <div className={styles.qrBox} dangerouslySetInnerHTML={{ __html: renderFormQrSvg(formId, url) }} />
-          <QrTools
-            url={url}
-            svg={renderFormQrSvg(formId, url, { size: 1024 })}
-            fileName={`${form.name}-填寫QR`}
-            posterHref={`/admin/forms/${formId}/poster`}
-          />
-          {isLocal && (
-            <p className="notice notice--warn" style={{ marginTop: 14 }}>
-              目前的網址是本機開發用（localhost），手機掃描後打不開。正式列印前，請先部署並把 APP_URL 設為正式網域。
-            </p>
-          )}
-        </section>
+        <FillingQrCard
+          url={url}
+          svg={renderFormQrSvg(formId, url, { size: 1024 })}
+          formName={form.name}
+          posterHref={`/admin/forms/${formId}/poster`}
+        />
 
         <section className={adminStyles.card} aria-labelledby="settings-title">
           <h2 className={styles.cardTitle} id="settings-title">

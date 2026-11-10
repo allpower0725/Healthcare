@@ -3,6 +3,8 @@ import type { Metadata } from 'next';
 import { AdminLink as Link } from '@/app/admin/pending-ui';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
+import { APPOINTMENT_ADMIN_PATH, APPOINTMENT_COLOR, APPOINTMENT_NAME, APPOINTMENT_SLUG, APPOINTMENT_TINT } from '@/lib/appointments/catalog';
+import { appointmentQrUrl, renderAppointmentQrSvg } from '@/lib/appointments/qr';
 import { requireUser } from '@/lib/auth/dal';
 import { FORMS, isFormId } from '@/lib/forms/catalog';
 import { formUrl, renderFormQrSvg } from '@/lib/forms/qr';
@@ -24,22 +26,26 @@ export default function PosterPage({ params }: PageProps<'/admin/forms/[formId]/
 
 async function Poster({ params }: { params: Params }) {
   const { formId } = await params;
-  if (!isFormId(formId)) notFound();
+  const isAppointment = formId === APPOINTMENT_SLUG;
+  if (!isAppointment && !isFormId(formId)) notFound();
   await requireUser();
 
-  const form = FORMS[formId];
-  const setting = await getFormSetting(formId);
-  const period = describePeriod(setting);
-  const url = formUrl(formId);
+  const form = isAppointment
+    ? { name: APPOINTMENT_NAME, officialTitle: '勞工健康檢查線上預約', color: APPOINTMENT_COLOR, tint: APPOINTMENT_TINT }
+    : FORMS[formId];
+  const period = isAppointment ? null : describePeriod(await getFormSetting(formId));
+  const url = isAppointment ? appointmentQrUrl() : formUrl(formId);
+  const qrSvg = isAppointment ? renderAppointmentQrSvg(url) : renderFormQrSvg(formId, url);
 
   return (
     <>
       <div className={styles.toolbar}>
-        <Link className="btn btn--ghost btn--sm" href={`/admin/forms/${formId}`}>
+        <Link className="btn btn--ghost btn--sm" href={isAppointment ? APPOINTMENT_ADMIN_PATH : `/admin/forms/${formId}`}>
           ← 回表單設定
         </Link>
         <PrintButton />
         <p>列印時紙張選 A4、邊界選「無」，並勾選「背景圖形」。</p>
+        {isAppointment && <p>預約前台上線後再張貼。</p>}
       </div>
 
       <div className={styles.frame}>
@@ -53,16 +59,16 @@ async function Poster({ params }: { params: Params }) {
           </header>
 
           <div className={styles.body}>
-            <p className={styles.eyebrow}>手機掃描・線上填寫</p>
+            <p className={styles.eyebrow}>手機掃描・{isAppointment ? '線上預約' : '線上填寫'}</p>
             <h1 className={styles.title}>{form.name}</h1>
             <p className={styles.official}>{form.officialTitle}</p>
 
-            <div className={styles.qr} dangerouslySetInnerHTML={{ __html: renderFormQrSvg(formId, url) }} />
+            <div className={styles.qr} dangerouslySetInnerHTML={{ __html: qrSvg }} />
 
             <ol className={styles.steps}>
               <li>手機相機掃描 QR code</li>
-              <li>填寫基本資料並簽名</li>
-              <li>送出後出示畫面給櫃台</li>
+              <li>{isAppointment ? '選擇預約日期與健檢套餐' : '填寫基本資料並簽名'}</li>
+              <li>{isAppointment ? '送出預約，等候院所確認' : '送出後出示畫面給櫃台'}</li>
             </ol>
 
             {period && <p className={styles.period}>開放填寫：{period}</p>}

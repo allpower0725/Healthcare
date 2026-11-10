@@ -1,19 +1,19 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '@/db';
 import { SUBMISSION_STATUSES, type SubmissionStatus, submissions } from '@/db/schema';
-import { FORM_IDS, type FormId } from '@/lib/forms/catalog';
-import { listHref, PAGE_SIZE, parseQuery, queryString, sortHref } from '@/lib/submissions/query';
+import type { FormId } from '@/lib/forms/catalog';
+import { listHref, PAGE_SIZE, parseQuery, queryString, sortHref, SUBMISSION_LIST_FORMS } from '@/lib/submissions/query';
 import { searchSubmissions } from '@/lib/submissions/service';
 import { resetDb } from './helpers';
 
 /** 表單與狀態全選（任一組全不勾時沒有資料） */
-const ALL = { form: [...FORM_IDS], status: [...SUBMISSION_STATUSES] };
+const ALL = { form: [...SUBMISSION_LIST_FORMS], status: [...SUBMISSION_STATUSES] };
 
 describe('網址參數', () => {
   it('首次進入預設所有表單、待院所確認、依送出時間新到舊、第 1 頁', () => {
     expect(parseQuery({})).toEqual({
       idNo: '',
-      forms: [...FORM_IDS],
+      forms: [...SUBMISSION_LIST_FORMS],
       statuses: ['submitted'],
       sort: 'submitted',
       dir: 'desc',
@@ -35,14 +35,14 @@ describe('網址參數', () => {
 
   it('保留實際勾選，全勾時也照樣列出（畫面依此顯示勾選）', () => {
     const all = parseQuery(ALL);
-    expect(all).toMatchObject({ forms: [...FORM_IDS], statuses: [...SUBMISSION_STATUSES] });
+    expect(all).toMatchObject({ forms: [...SUBMISSION_LIST_FORMS], statuses: [...SUBMISSION_STATUSES] });
     expect(queryString(all)).toBe(
-      `?${[...FORM_IDS.map((f) => `form=${f}`), ...SUBMISSION_STATUSES.map((s) => `status=${s}`)].join('&')}`,
+      `?${[...SUBMISSION_LIST_FORMS.map((f) => `form=${f}`), ...SUBMISSION_STATUSES.map((s) => `status=${s}`)].join('&')}`,
     );
   });
 
   it('組回網址時省略預設值；換排序回到第 1 頁', () => {
-    expect(queryString(parseQuery({}))).toBe(`?${FORM_IDS.map(f => `form=${f}`).join('&')}&status=submitted`);
+    expect(queryString(parseQuery({}))).toBe(`?${SUBMISSION_LIST_FORMS.map((f) => `form=${f}`).join('&')}&status=submitted`);
     const q = parseQuery({ id: 'a1', form: 'hpv', sort: 'name', dir: 'asc', page: '3' });
     expect(queryString(q)).toBe('?id=A1&form=hpv&filtered=1&sort=name&dir=asc&page=3');
     expect(sortHref(q, 'name')).toBe('/admin/submissions?id=A1&form=hpv&filtered=1&sort=name&dir=desc');
@@ -64,7 +64,7 @@ describe('網址參數', () => {
 
   it('從其他頁連到列表時表單全選，再加上指定的狀態', () => {
     expect(listHref({ statuses: ['submitted'] })).toBe(
-      `/admin/submissions?${FORM_IDS.map((f) => `form=${f}`).join('&')}&status=submitted`,
+      `/admin/submissions?${SUBMISSION_LIST_FORMS.map((f) => `form=${f}`).join('&')}&status=submitted`,
     );
   });
 });

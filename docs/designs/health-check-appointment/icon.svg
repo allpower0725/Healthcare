@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-labelledby="health-appointment-title">
+  <title id="health-appointment-title">預約健檢：桌曆與標有愛心的日期</title>
+  <defs>
+    <clipPath id="health-appointment-page">
+      <rect x="43" y="62" width="151" height="128" rx="13"/>
+    </clipPath>
+  </defs>
+
+  <circle cx="120" cy="126" r="102" fill="#dff0ea"/>
+  <circle cx="196" cy="55" r="27" fill="#fff0cf"/>
+  <circle cx="25" cy="116" r="4" fill="#a9bede"/>
+  <circle cx="217" cy="149" r="5" fill="#f7bccb"/>
+  <ellipse cx="121" cy="207" rx="81" ry="5" fill="#bfdcd3"/>
+
+  <g stroke="#1f3d3a" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M26 47h7v7h7v7h-7v7h-7v-7h-7v-7h7Z" fill="#6cc3ad" stroke-width="3"/>
+    <path d="M201 23Q203.5 33 214 36Q203.5 38.5 201 49Q198.5 38.5 188 36Q198.5 33 201 23Z" fill="#ffd36e" stroke-width="3"/>
+    <path d="M222 55Q223.4 61 229 62.5Q223.4 64 222 70Q220.6 64 215 62.5Q220.6 61 222 55Z" fill="#ffd36e" stroke-width="2.5"/>
+
+    <g transform="rotate(-6 121 125)">
+      <!-- 桌曆背板與側邊折腳。 -->
+      <path d="M170 68h13q10 0 13 10l17 106q2 11-9 13H59q-7 0-7-8v-17Z" fill="#5c88c7" stroke-width="4"/>
+      <path d="m190 83 17 101q1 7-6 8h-34Z" fill="#3f66a3" stroke="none"/>
+
+      <!-- 白色紙面、墨綠月份帶與分塊陰影。 -->
+      <rect x="43" y="62" width="151" height="128" rx="13" fill="#fff" stroke="none"/>
+      <g clip-path="url(#health-appointment-page)" stroke="none">
+        <path d="M43 62h151v37H43Z" fill="#2f8f7f"/>
+        <path d="M43 90h151v9H43Z" fill="#1f6b5f"/>
+        <path d="M184 99h10v91H43v-7h141Z" fill="#e3ebf3"/>
+      </g>
+      <path d="M54 77v-2q0-5 6-5h8m23 0h44" fill="none" stroke="#9fe0cf" stroke-width="3"/>
+      <rect x="43" y="62" width="151" height="128" rx="13" fill="none" stroke-width="4"/>
+      <path d="M43 99h151" fill="none" stroke-width="3"/>
+
+      <g fill="#c9d6e3" stroke-width="3">
+        <rect x="70" y="45" width="13" height="34" rx="6.5"/>
+        <rect x="153" y="45" width="13" height="34" rx="6.5"/>
+      </g>
+      <path d="M75 51v13m83-13v13" fill="none" stroke="#fff" stroke-width="2.5"/>
+
+      <!-- 日期格不使用固定數字。 -->
+      <g fill="#dbe8ea" stroke="none">
+        <rect x="60" y="111" width="17" height="11" rx="4"/>
+        <rect x="93" y="111" width="17" height="11" rx="4"/>
+        <rect x="126" y="111" width="17" height="11" rx="4"/>
+        <rect x="159" y="111" width="17" height="11" rx="4"/>
+        <rect x="60" y="138" width="17" height="11" rx="4"/>
+        <rect x="93" y="138" width="17" height="11" rx="4"/>
+        <rect x="159" y="138" width="17" height="11" rx="4"/>
+        <rect x="60" y="165" width="17" height="11" rx="4"/>
+        <rect x="93" y="165" width="17" height="11" rx="4"/>
+        <rect x="126" y="165" width="17" height="11" rx="4"/>
+        <rect x="159" y="165" width="17" height="11" rx="4"/>
+      </g>
+
+      <rect x="117" y="127" width="35" height="33" rx="7" fill="#ffd36e" stroke-width="2.8"/>
+      <path d="M134.5 153c-4-3.1-11.5-8.1-11.5-13.1 0-5.6 7.6-7.2 11.5-2.1 3.9-5.1 11.5-3.5 11.5 2.1 0 5-7.5 10-11.5 13.1Z" fill="#ef6b73" stroke-width="2.5"/>
+      <path d="M126.7 139q.5-1.7 2.4-2.1" fill="none" stroke="#fff" stroke-width="1.8"/>
+    </g>
+  </g>
+</svg>

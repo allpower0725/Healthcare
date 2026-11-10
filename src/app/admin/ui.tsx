@@ -26,8 +26,8 @@ export const SUBMISSION_STATUS_LABELS: Record<SubmissionStatus, string> = {
   voided: '已作廢',
 };
 
-export function SubmissionStatusBadge({ status }: { status: SubmissionStatus }) {
-  return <span className={`badge badge--sub-${status}`}>{SUBMISSION_STATUS_LABELS[status]}</span>;
+export function SubmissionStatusBadge({ status, label = SUBMISSION_STATUS_LABELS[status] }: { status: SubmissionStatus; label?: string }) {
+  return <span className={`badge badge--sub-${status}`}>{label}</span>;
 }
 
 export function Avatar({ name, src }: { name: string; src: string | null }) {

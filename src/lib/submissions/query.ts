@@ -1,9 +1,12 @@
 // 協同完成列表的篩選、排序、分頁條件，與網址參數互轉（篩選結果可重新整理、分享）
 import { SUBMISSION_STATUSES, type SubmissionStatus } from '@/db/schema';
-import { FORM_IDS, type FormId } from '@/lib/forms/catalog';
+import { APPOINTMENT_CATEGORY } from '@/lib/appointments/catalog';
+import { FORM_IDS } from '@/lib/forms/catalog';
 
 export const LIST_PATH = '/admin/submissions';
 export const PAGE_SIZE = 50;
+export const SUBMISSION_LIST_FORMS = [...FORM_IDS, APPOINTMENT_CATEGORY] as const;
+export type SubmissionListFormId = (typeof SUBMISSION_LIST_FORMS)[number];
 export const SORT_KEYS = ['form', 'status', 'name', 'idNo', 'submitted', 'completed'] as const;
 export type SortKey = (typeof SORT_KEYS)[number];
 export type SortDir = 'asc' | 'desc';
@@ -12,7 +15,7 @@ export type SubmissionQuery = {
   /** 姓名或身分證號（部分比對；含數字時查身分證號） */
   idNo: string;
   /** 勾選的表單；全不勾時沒有資料 */
-  forms: FormId[];
+  forms: SubmissionListFormId[];
   /** 勾選的狀態；全不勾時沒有資料 */
   statuses: SubmissionStatus[];
   sort: SortKey;
@@ -29,7 +32,7 @@ const defaultDir = (sort: SortKey): SortDir => (sort === 'submitted' || sort ===
 export function parseQuery(raw: Raw): SubmissionQuery {
   // 沒帶篩選條件才套用首次進入的預設值；空字串代表使用者明確取消勾選。
   const defaults = raw.form == null && raw.status == null && raw.filtered == null;
-  const forms = defaults ? [...FORM_IDS] : FORM_IDS.filter((id) => list(raw.form).includes(id));
+  const forms = defaults ? [...SUBMISSION_LIST_FORMS] : SUBMISSION_LIST_FORMS.filter((id) => list(raw.form).includes(id));
   const statuses = defaults ? ['submitted' as const] : SUBMISSION_STATUSES.filter((s) => list(raw.status).includes(s));
   const search = (list(raw.id)[0] ?? '').trim().slice(0, 80);
   const sortRaw = list(raw.sort)[0];
@@ -76,6 +79,6 @@ export function pageHref(q: SubmissionQuery, page: number) {
 
 /** 從其他頁連到列表：沒指定的表單、狀態全選（全不勾時沒有資料） */
 export function listHref(patch: Partial<SubmissionQuery> = {}) {
-  const all = parseQuery({ form: [...FORM_IDS], status: [...SUBMISSION_STATUSES] });
+  const all = parseQuery({ form: [...SUBMISSION_LIST_FORMS], status: [...SUBMISSION_STATUSES] });
   return `${LIST_PATH}${queryString(all, patch)}`;
 }

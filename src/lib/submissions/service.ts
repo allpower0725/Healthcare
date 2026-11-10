@@ -1,11 +1,12 @@
 import { createHash } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
-import { type AnyColumn, and, asc, count, desc, eq, gt, ilike, inArray, like, ne, sql } from 'drizzle-orm';
+import { type SQLWrapper, and, asc, count, desc, eq, gt, ilike, inArray, like, ne, notExists, sql } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import { db } from '@/db';
 import {
   type FormValues,
   type Submission,
+  appointments,
   formSettings,
   SUBMISSION_STATUSES,
   type SubmissionAction,
@@ -14,12 +15,14 @@ import {
   submissions,
   users,
 } from '@/db/schema';
-import { FORM_IDS, type FormId } from '@/lib/forms/catalog';
+import { APPOINTMENT_CATEGORY } from '@/lib/appointments/catalog';
+import { appointmentListStatus, matchesAppointmentSubmission, type SubmissionIdentityColumns } from '@/lib/appointments/service';
+import type { FormId } from '@/lib/forms/catalog';
 import { getFormDef } from '@/lib/forms/defs';
 import { sanitize, validateRules } from '@/lib/forms/engine';
 import { rocToIso } from '@/lib/forms/format';
 import { formStatus } from '@/lib/forms/settings';
-import { PAGE_SIZE, type SubmissionQuery } from './query';
+import { PAGE_SIZE, SUBMISSION_LIST_FORMS, type SubmissionListFormId, type SubmissionQuery } from './query';
 
 /** 民眾裝置自送出起 12 小時內可查看、退回修改（同原電子表單的暫存期限） */
 export const DEVICE_TTL_MS = 12 * 60 * 60 * 1000;
@@ -383,14 +386,20 @@ export async function getSubmission(id: string) {
   return { ...row.submission, staffUpdatedByName: row.staffUpdatedByName, completedByName: row.completedByName };
 }
 
-/** 各狀態的筆數（後台首頁提醒用） */
+function standaloneSubmission(form: SubmissionIdentityColumns = submissions) {
+  return notExists(db.select({ id: appointments.id }).from(appointments).where(matchesAppointmentSubmission(form)));
+}
+
+/** 協同完成各狀態的筆數（後台首頁提醒用）。 */
 export async function countSubmissionsByStatus() {
   const rows = await db
-    .select({ status: submissions.status, n: sql<number>`count(*)::int` })
+    .select({ status: submissions.status, n: count() })
     .from(submissions)
-    .groupBy(submissions.status);
+    .where(standaloneSubmission())
+    .groupBy(submissions.status)
+    .unionAll(db.select({ status: appointmentListStatus, n: count() }).from(appointments).groupBy(appointments.status));
   const counts: Record<SubmissionStatus, number> = { submitted: 0, returned: 0, completed: 0, voided: 0 };
-  for (const row of rows) counts[row.status] = row.n;
+  for (const row of rows) counts[row.status] += row.n;
   return counts;
 }
 
@@ -411,7 +420,7 @@ export async function findDuplicates(id: string) {
   const [row] = await db
     .select({ idNo: submissions.idNo, formId: submissions.formId, status: submissions.status })
     .from(submissions)
-    .where(eq(submissions.id, id));
+    .where(and(eq(submissions.id, id), standaloneSubmission()));
   if (!row || !UNFINISHED.includes(row.status)) return [];
   return db
     .select({ id: submissions.id, status: submissions.status, publicSubmittedAt: submissions.publicSubmittedAt })
@@ -422,6 +431,7 @@ export async function findDuplicates(id: string) {
         eq(submissions.formId, row.formId),
         ne(submissions.id, id),
         inArray(submissions.status, UNFINISHED),
+        standaloneSubmission(),
       ),
     )
     .orderBy(desc(submissions.publicSubmittedAt));
@@ -431,8 +441,8 @@ export async function findDuplicates(id: string) {
 const escapeLike = (s: string) => s.replace(/[\\%_]/g, (c) => `\\${c}`);
 
 /** 依表單、狀態的固定順序排序（不是依代號的字母順序） */
-const orderOf = (values: readonly string[], column: AnyColumn) =>
-  sql`array_position(array[${sql.raw(values.map((v) => `'${v}'`).join(', '))}]::text[], ${column})`;
+const orderOf = (values: readonly string[], column: SQLWrapper) =>
+  sql`array_position(array[${sql.join(values.map((value) => sql`${value}`), sql`, `)}]::text[], ${column})`;
 
 /**
  * 協同完成列表：篩選（姓名／身分證號部分比對、表單、狀態；條件同時成立）、排序、分頁。
@@ -440,55 +450,81 @@ const orderOf = (values: readonly string[], column: AnyColumn) =>
  * duplicates 為同一人同表單其他未完成的筆數。
  */
 export async function searchSubmissions(q: SubmissionQuery) {
-  // 全選的那一組不必加條件
-  const where =
-    q.forms.length && q.statuses.length
-      ? and(
-          q.forms.length < FORM_IDS.length ? inArray(submissions.formId, q.forms) : undefined,
-          q.statuses.length < SUBMISSION_STATUSES.length ? inArray(submissions.status, q.statuses) : undefined,
-          q.idNo
-            ? /\d/.test(q.idNo)
-              ? like(submissions.idNo, `%${escapeLike(q.idNo)}%`)
-              : ilike(submissions.name, `%${escapeLike(q.idNo)}%`)
-            : undefined,
-        )
-      : sql`false`;
+  if (!q.forms.length || !q.statuses.length) return { rows: [], total: 0, pages: 1 };
+
+  const other = alias(submissions, 'other_submission');
+  const duplicateCount = db.select({ n: count() }).from(other).where(and(
+    eq(other.idNo, submissions.idNo),
+    eq(other.formId, submissions.formId),
+    ne(other.id, submissions.id),
+    inArray(other.status, UNFINISHED),
+    standaloneSubmission(other),
+  ));
+  const forms = db.select({
+    id: submissions.id,
+    formId: sql<SubmissionListFormId>`${submissions.formId}`.as('form_id'),
+    status: submissions.status,
+    idNo: submissions.idNo,
+    name: submissions.name,
+    publicSubmittedAt: submissions.publicSubmittedAt,
+    completedAt: submissions.completedAt,
+    createdAt: submissions.createdAt,
+    printSubmissionId: sql<string | null>`${submissions.id}`.as('print_submission_id'),
+    duplicates: sql<number>`case when ${inArray(submissions.status, UNFINISHED)} then (${duplicateCount}) else 0 end`
+      .mapWith(Number).as('duplicates'),
+  }).from(submissions).where(standaloneSubmission());
+  const bookings = db.select({
+    id: appointments.id,
+    formId: sql<SubmissionListFormId>`${APPOINTMENT_CATEGORY}::text`.as('form_id'),
+    status: appointmentListStatus.as('status'),
+    idNo: appointments.idNo,
+    name: appointments.name,
+    publicSubmittedAt: appointments.createdAt,
+    completedAt: appointments.confirmedAt,
+    createdAt: appointments.createdAt,
+    printSubmissionId: submissions.id,
+    duplicates: sql<number>`0`.as('duplicates'),
+  }).from(appointments).leftJoin(submissions, matchesAppointmentSubmission());
+
+  const records = db.$with('collaboration_rows').as(forms.unionAll(bookings));
+  const where = and(
+    q.forms.length < SUBMISSION_LIST_FORMS.length ? inArray(records.formId, q.forms) : undefined,
+    q.statuses.length < SUBMISSION_STATUSES.length ? inArray(records.status, q.statuses) : undefined,
+    q.idNo ? /\d/.test(q.idNo)
+      ? like(records.idNo, `%${escapeLike(q.idNo)}%`)
+      : ilike(records.name, `%${escapeLike(q.idNo)}%`) : undefined,
+  );
 
   const direction = q.dir === 'asc' ? sql`asc` : sql`desc`;
   const primary = {
-    form: sql`${orderOf(FORM_IDS, submissions.formId)} ${direction}`,
-    status: sql`${orderOf(SUBMISSION_STATUSES, submissions.status)} ${direction}`,
-    name: sql`${submissions.name} ${direction}`,
-    idNo: sql`${submissions.idNo} ${direction}`,
-    submitted: sql`${submissions.publicSubmittedAt} ${direction}`,
+    form: sql`${orderOf(SUBMISSION_LIST_FORMS, records.formId)} ${direction}`,
+    status: sql`${orderOf(SUBMISSION_STATUSES, records.status)} ${direction}`,
+    name: sql`${records.name} ${direction}`,
+    idNo: sql`${records.idNo} ${direction}`,
+    submitted: sql`${records.publicSubmittedAt} ${direction}`,
     // 尚未完成的排在最後
-    completed: sql`${submissions.completedAt} ${direction} nulls last`,
+    completed: sql`${records.completedAt} ${direction} nulls last`,
   }[q.sort];
 
-  const duplicates = sql<number>`case when "heal_submissions"."status" in ('submitted', 'returned') then (
-    select count(*)::int from "heal_submissions" as "others"
-    where "others"."id_no" = "heal_submissions"."id_no"
-      and "others"."form_id" = "heal_submissions"."form_id"
-      and "others"."id" <> "heal_submissions"."id"
-      and "others"."status" in ('submitted', 'returned')
-  ) else 0 end`;
-  const [{ total }] = await db.select({ total: count() }).from(submissions).where(where);
-  const rows = await db
-    .select({
-      id: submissions.id,
-      formId: submissions.formId,
-      status: submissions.status,
-      idNo: submissions.idNo,
-      name: submissions.name,
-      publicSubmittedAt: submissions.publicSubmittedAt,
-      completedAt: submissions.completedAt,
-      duplicates,
+  const [[{ total }], rows] = await Promise.all([
+    db.with(records).select({ total: count() }).from(records).where(where),
+    db.with(records).select({
+      id: records.id,
+      formId: records.formId,
+      status: records.status,
+      idNo: records.idNo,
+      name: records.name,
+      publicSubmittedAt: records.publicSubmittedAt,
+      completedAt: records.completedAt,
+      printSubmissionId: records.printSubmissionId,
+      duplicates: records.duplicates,
     })
-    .from(submissions)
-    .where(where)
-    .orderBy(primary, desc(submissions.publicSubmittedAt), desc(submissions.createdAt), desc(submissions.id))
-    .limit(PAGE_SIZE)
-    .offset((q.page - 1) * PAGE_SIZE);
+      .from(records)
+      .where(where)
+      .orderBy(primary, desc(records.publicSubmittedAt), desc(records.createdAt), desc(records.id), asc(records.formId))
+      .limit(PAGE_SIZE)
+      .offset((q.page - 1) * PAGE_SIZE),
+  ]);
 
   return { rows, total, pages: Math.max(1, Math.ceil(total / PAGE_SIZE)) };
 }

@@ -1,19 +1,20 @@
 'use client';
 
-import { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { LoadingOverlay } from '@/app/admin/loading-overlay';
-import { FormContext, type FormContextValue } from '@/components/forms/context';
+import { FormContext } from '@/components/forms/context';
 import { printDocument } from '@/components/forms/print-document';
 import { useFormState } from '@/components/forms/use-form-state';
 import type { FormValues, SubmissionStatus } from '@/db/schema';
 import type { FormId } from '@/lib/forms/catalog';
 import { getFormDef } from '@/lib/forms/defs';
-import { conditionsHold, missingStarred, sanitize } from '@/lib/forms/engine';
+import { missingStarred, sanitize } from '@/lib/forms/engine';
 import type { StaffActionResult } from '@/lib/submissions/service';
 import { getFormUi } from '@/forms/registry';
 import styles from '../submissions.module.css';
 import { completeAction, reopenAction, restoreAction, saveStaff, voidAction } from './actions';
 import { BeforeLeaveContext } from '../submission-modal';
+import { PublicSubmissionContent } from '../public-submission-content';
 
 type Props = {
   id: string;
@@ -64,20 +65,6 @@ export function SubmissionEditor(props: Props) {
       timer.current = setTimeout(() => void save(), 1200);
     },
   });
-
-  // 民眾填寫內容：唯讀
-  const publicCtx = useMemo<FormContextValue>(
-    () => ({
-      def,
-      values: props.publicData,
-      set: () => {},
-      errors: {},
-      validate: () => {},
-      readOnly: true,
-      holds: (condition) => conditionsHold(condition, props.publicData),
-    }),
-    [def, props.publicData],
-  );
 
   function showResult(result: StaffActionResult) {
     if (!result.ok) setError(ERRORS[result.reason] ?? '操作沒有完成，請再試一次。');
@@ -233,21 +220,7 @@ export function SubmissionEditor(props: Props) {
       </div>
 
       <div className={`ppf ${styles.formArea}`}>
-        <details className={styles.publicPart} open>
-          <summary>
-            <span>民眾填寫內容</span>
-            <span className={`btn btn--ghost btn--mini ${styles.toggle}`} aria-hidden="true">
-              <span className={styles.whenClosed}>展開 ▾</span>
-              <span className={styles.whenOpen}>收合 ▴</span>
-            </span>
-          </summary>
-          <FormContext.Provider value={publicCtx}>
-            <fieldset className="public" disabled>
-              <legend className="sr-only">民眾填寫內容</legend>
-              <ui.Public prefilled={false} />
-            </fieldset>
-          </FormContext.Provider>
-        </details>
+        <PublicSubmissionContent formId={props.formId} values={props.publicData} />
 
         <section className="staff" aria-labelledby="staff-title">
           <header className="staff__head">

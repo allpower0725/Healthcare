@@ -22,3 +22,10 @@
 - 同意時新增資料起算日 `labor.uploadFromY/M/D`、涵蓋期間 `labor.uploadYearsMode`（`seven`／`custom`）及自訂 `labor.uploadYears`、利用期間 `labor.uploadUseMode`（`permanent`／`custom`）及自訂 `labor.uploadUseYears`、另提供健保雲端的 `labor.uploadCloud`（`1` 勾選）、本人簽名 `labor.uploadSignature`、代理人有無 `labor.uploadHasRepresentative`（`Y`／`N`）、代理人姓名／證件號／簽名 `labor.uploadRepresentativeName/IdNo/Signature`，以及簽署日期 `labor.uploadSignedY/M/D`。各完整 key 與中文對照已同步資料字典。
 - 相依應用程式須容許新增欄位缺少或為空；只有同意為 `Y` 時讀取及列印同意細項，代理人為 `Y` 時才使用其資料，`custom` 時才使用自訂年數。姓名、出生日期與本人證件號繼續讀取 `profile.*`，機構名稱使用固定烏日澄清醫院。
 - 不回填歷史案件。歷史案件可照常院所確認；若民眾再次送出，需完成新選擇。沿用現有案件覆寫機制，最新送出取代原內容；改為不同意會清除本筆同意細項與簽名，未新增歷次簽署版本表。裝置重新進入修改仍依既有規則清除簽名重簽。
+
+## 2026-11-10 預約健檢後台
+
+- 新增 `heal_appointment_settings`、`heal_appointments`、`heal_appointment_notices`。預約狀態 `pending`、`confirmed`、`cancelled` 分別代表待確認、預約成立、預約取消。套餐代碼對照以 `src/lib/appointments/catalog.ts` 為準。
+- `heal_appointments.submission_id` 可關聯一筆已送出的 `heal_submissions`，原表單代號為 `labor`。關聯表單與預約的證件號和生日須相符。預約確認只更新預約狀態，問卷本身仍依原狀態解讀。
+- `appointment` 是後台列表的篩選值。預約狀態只在列表對應到 `submitted`、`completed`、`voided`，相依程式仍可按原字典讀取七種問卷。需要辨識預約案件時，透過 `heal_appointments.submission_id` 關聯。外鍵會保護已關聯的勞工表免於被直接刪除。
+- Migration `0007_health_check_appointments.sql` 預設關閉新預約，無須回填或轉換歷史問卷。兩份 `heal_submissions` 字典的欄位、代號與答案 key 保持原定義。

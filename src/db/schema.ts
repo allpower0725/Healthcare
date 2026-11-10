@@ -9,11 +9,13 @@ import {
   integer,
   jsonb,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core';
+import { APPOINTMENT_PACKAGE_CODES, APPOINTMENT_STATUSES } from '../lib/appointments/catalog';
 import { FORM_IDS } from '../lib/forms/catalog';
 
 export const USER_ROLES = ['superadmin', 'admin', 'staff'] as const;
@@ -192,3 +194,67 @@ export type User = typeof users.$inferSelect;
 export type Session = typeof sessions.$inferSelect;
 export type FormSetting = typeof formSettings.$inferSelect;
 export type Submission = typeof submissions.$inferSelect;
+
+/** 預約可獨立開關，收件地址供院所管理與排程寄信使用。 */
+export const appointmentSettings = pgTable(
+  'heal_appointment_settings',
+  {
+    id: integer('id').primaryKey().default(1),
+    isOpen: boolean('is_open').notNull().default(false),
+    recipients: text('recipients').array().notNull().default(sql`'{}'::text[]`),
+    updatedBy: uuid('updated_by').references(() => users.id, { onDelete: 'set null' }),
+    updatedAt: timestamptz('updated_at').notNull().defaultNow().$onUpdate(() => new Date()),
+  },
+  (t) => [check('heal_appointment_settings_singleton_check', sql`${t.id} = 1`)],
+).enableRLS();
+
+/** 預約可以先成立案件，之後再關聯一份勞工健康檢查表。 */
+export const appointments = pgTable(
+  'heal_appointments',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    idNo: text('id_no').notNull(),
+    name: text('name').notNull(),
+    birthDate: date('birth_date').notNull(),
+    appointmentDate: date('appointment_date').notNull(),
+    packageCode: text('package_code', { enum: APPOINTMENT_PACKAGE_CODES }).notNull(),
+    status: text('status', { enum: APPOINTMENT_STATUSES }).notNull().default('pending'),
+    submissionId: uuid('submission_id').references(() => submissions.id, { onDelete: 'restrict' }).unique(),
+    confirmedBy: uuid('confirmed_by').references(() => users.id, { onDelete: 'set null' }),
+    confirmedAt: timestamptz('confirmed_at'),
+    cancelledAt: timestamptz('cancelled_at'),
+    createdAt: timestamptz('created_at').notNull().defaultNow(),
+    updatedAt: timestamptz('updated_at').notNull().defaultNow().$onUpdate(() => new Date()),
+  },
+  (t) => [
+    check('heal_appointments_package_check', sql`${t.packageCode} in ('new_worker', 'new_worker_hbv', 'food_service', 'in_service')`),
+    check('heal_appointments_status_check', sql`${t.status} in ('pending', 'confirmed', 'cancelled')`),
+    index('heal_appointments_identity_idx').on(t.idNo, t.birthDate, t.createdAt.desc()),
+    index('heal_appointments_date_status_idx').on(t.appointmentDate, t.status),
+    index('heal_appointments_status_created_idx').on(t.status, t.createdAt.desc()),
+  ],
+).enableRLS();
+
+/** 每筆預約對每位收件人一筆投遞紀錄，摘要批次共用 batchId。 */
+export const appointmentNotices = pgTable(
+  'heal_appointment_notices',
+  {
+    appointmentId: uuid('appointment_id').notNull().references(() => appointments.id, { onDelete: 'restrict' }),
+    recipient: text('recipient').notNull(),
+    status: text('status', { enum: ['sending', 'sent', 'failed', 'uncertain'] }).notNull(),
+    batchId: uuid('batch_id').notNull(),
+    attemptedAt: timestamptz('attempted_at').notNull().defaultNow(),
+    sentAt: timestamptz('sent_at'),
+    messageId: text('message_id'),
+    lastErrorCode: text('last_error_code'),
+  },
+  (t) => [
+    primaryKey({ columns: [t.appointmentId, t.recipient] }),
+    check('heal_appointment_notices_status_check', sql`${t.status} in ('sending', 'sent', 'failed', 'uncertain')`),
+    index('heal_appointment_notices_batch_idx').on(t.batchId),
+    index('heal_appointment_notices_recipient_idx').on(t.recipient, t.attemptedAt.desc()),
+  ],
+).enableRLS();
+
+export type AppointmentSetting = typeof appointmentSettings.$inferSelect;
+export type Appointment = typeof appointments.$inferSelect;

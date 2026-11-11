@@ -22,7 +22,9 @@ export function useAppointmentRequest(captcha: PublicCaptchaConfig) {
       if (!result.ok) setError(result.message);
       return result;
     } catch (cause) {
-      setError(cause instanceof PublicRequestError ? cause.message : '目前無法連線，輸入內容已保留，請稍後再試。');
+      const message = cause instanceof PublicRequestError ? cause.message : '目前無法連線，輸入內容已保留，請稍後再試。';
+      setError(message);
+      return { ok: false, message } as const;
     } finally {
       busy.current = false;
     }

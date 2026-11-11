@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 300" role="img" aria-label="健康紀錄、聽診器與愛心的照護插畫">
+      <ellipse cx="183" cy="266" rx="128" ry="12" fill="#bfd9f4" opacity=".45"/>
+      <path d="M41 181C18 119 74 47 145 46c62-2 92 23 126 43 70 40 69 118 11 150-58 33-211 27-241-58Z" fill="#e1efff"/>
+      <circle cx="275" cy="75" r="35" fill="#f9e8de"/>
+      <circle cx="66" cy="65" r="7" fill="#a7c8ee"/>
+      <circle cx="314" cy="186" r="5" fill="#a7c8ee"/>
+      <g fill="none" stroke="#b4d0f1" stroke-width="1.5">
+        <path d="M29 127c18-44 64-77 109-84M252 246c28-10 47-28 59-49"/>
+        <circle cx="303" cy="114" r="6"/><circle cx="47" cy="217" r="4"/>
+      </g>
+      <g transform="rotate(-8 165 153)">
+        <rect x="91" y="56" width="150" height="207" rx="21" fill="#c2daf6"/>
+        <rect x="83" y="48" width="150" height="207" rx="21" fill="#fff" stroke="#416e9c" stroke-width="2.5"/>
+        <rect x="130" y="38" width="56" height="23" rx="9" fill="#739dce" stroke="#416e9c" stroke-width="2"/>
+        <rect x="145" y="45" width="26" height="6" rx="3" fill="#e7f2ff"/>
+        <rect x="103" y="81" width="110" height="67" rx="10" fill="#eef5ff"/>
+        <path d="M119 110h18l8-15 11 35 10-21h31" fill="none" stroke="#6b94c8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <g fill="#e7f0fb"><rect x="104" y="167" width="15" height="15" rx="4"/><rect x="104" y="195" width="15" height="15" rx="4"/></g>
+        <g fill="none" stroke="#739dce" stroke-width="2" stroke-linecap="round"><path d="m108 174 3 3 5-6m-8 31 3 3 5-6"/><path d="M133 174h64m-64 27h45" stroke="#c1d4e9" stroke-width="5"/></g>
+        <path d="M104 231h61" fill="none" stroke="#e5edf6" stroke-width="5" stroke-linecap="round"/>
+      </g>
+      <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M242 131v24c0 20 29 20 29 0v-24" stroke="#406c99" stroke-width="8"/>
+        <path d="M242 131v24c0 20 29 20 29 0v-24" stroke="#aac9ed" stroke-width="4"/>
+        <path d="M256 173v35c0 41-54 47-54 8v-11" stroke="#406c99" stroke-width="7"/>
+        <path d="M256 173v35c0 41-54 47-54 8v-11" stroke="#78a2d4" stroke-width="3"/>
+        <path d="M242 130v-9m29 9v-9" stroke="#406c99" stroke-width="6"/>
+      </g>
+      <circle cx="202" cy="196" r="15" fill="#fff" stroke="#406c99" stroke-width="3"/>
+      <circle cx="202" cy="196" r="8" fill="#bed8f5"/>
+      <g transform="rotate(10 278 215)">
+        <rect x="250" y="190" width="57" height="48" rx="15" fill="#fff" stroke="#d9e4f0" stroke-width="1.5"/>
+        <path d="M278 224c-4-3-15-10-15-17 0-8 10-10 15-3 5-7 15-5 15 3 0 7-11 14-15 17Z" fill="#dfa794"/>
+      </g>
+    </svg>

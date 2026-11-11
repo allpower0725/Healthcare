@@ -4,6 +4,7 @@ import { startTransition, useActionState, useState } from 'react';
 import styles from '../forms.module.css';
 import { saveFormSetting } from './actions';
 import { LoadingOverlay } from '../../loading-overlay';
+import { ActionResultModal, useNativeValidationModal } from '@/components/feedback/result-modal';
 
 type Props = {
   formId: string;
@@ -19,18 +20,22 @@ export function SettingsForm({ formId, ...initial }: Props) {
   const [isOpen, setIsOpen] = useState(initial.isOpen);
   const [opensAt, setOpensAt] = useState(initial.opensAt);
   const [closesAt, setClosesAt] = useState(initial.closesAt);
+  const onInvalid = useNativeValidationModal();
 
   return (
     <form
       className={styles.settings}
+      onInvalidCapture={onInvalid}
       // 不用 action 屬性：React 在 action 完成後會自動重設表單，開關會跳回頁面載入時的狀態
       onSubmit={(event) => {
         event.preventDefault();
+        if (pending) return;
         const data = new FormData(event.currentTarget);
         startTransition(() => action(data));
       }}
     >
       {pending && <LoadingOverlay message="儲存設定中…" />}
+      <ActionResultModal state={state} pending={pending} successMessage="表單開放設定已儲存。" />
       <label className={styles.switch}>
         <input type="checkbox" name="isOpen" checked={isOpen} onChange={(e) => setIsOpen(e.target.checked)} />
         開放填寫

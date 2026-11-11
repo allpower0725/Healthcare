@@ -1,6 +1,8 @@
 'use client';
 
 import { useContext, useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useResultModal } from '@/components/feedback/result-modal';
 import { LoadingOverlay } from '@/app/admin/loading-overlay';
 import { FormContext } from '@/components/forms/context';
 import { printDocument } from '@/components/forms/print-document';
@@ -54,6 +56,8 @@ export function SubmissionEditor(props: Props) {
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const showModal = useResultModal();
+  const router = useRouter();
 
   const staff = useFormState(def, props.staffData, {
     rules: def.staffRules,
@@ -155,7 +159,8 @@ export function SubmissionEditor(props: Props) {
     const bad = Object.keys(formatErrors);
     if (bad.length > 0) {
       setError('有欄位格式不正確，請修正後再確認送出。');
-      document.getElementById(`field-${bad[0]}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      showModal({ title: '尚未確認送出', tone: 'warning', message: '有欄位格式不正確，請修正後再確認送出。',
+        confirmLabel: '前往修正', onClose: () => document.getElementById(`field-${bad[0]}`)?.scrollIntoView({ block: 'center' }) });
       return;
     }
     const missing = missingStarred(def, sanitize(def, 'staff', staff.latest.current, props.publicData), props.publicData);
@@ -169,24 +174,44 @@ export function SubmissionEditor(props: Props) {
     setError(null);
     dirty.current = false;
     try {
-      if (!showResult(await completeAction(props.id, version.current, staff.latest.current))) dirty.current = true;
+      const result = await completeAction(props.id, version.current, staff.latest.current);
+      if (!result.ok) {
+        showResult(result);
+        dirty.current = true;
+        showModal({ title: '尚未確認送出', tone: 'error', message: ERRORS[result.reason] });
+      } else {
+        showModal({ title: '已確認送出', tone: 'success', message: '院所資料已儲存，這份表單已完成並鎖定。' });
+        router.refresh();
+      }
     } catch {
       dirty.current = true;
       setError('操作失敗，請檢查連線後再試一次。');
+      showModal({ title: '尚未確認送出', tone: 'error', message: '操作失敗，請檢查連線後再試一次。目前輸入內容已保留。' });
     } finally {
       setBusy(false);
     }
   }
 
-  async function act(action: (id: string) => Promise<StaffActionResult>, question: string) {
+  async function act(action: (id: string) => Promise<StaffActionResult>, question: string, successMessage: string) {
     if (!window.confirm(question)) return;
     setBusy(true);
     setError(null);
     try {
-      if (!(await flush())) return;
-      showResult(await action(props.id));
+      if (!(await flush())) {
+        showModal({ title: '操作未完成', tone: 'error', message: '尚未成功儲存目前的輸入內容，請檢查畫面提示後再試一次。' });
+        return;
+      }
+      const result = await action(props.id);
+      if (result.ok) {
+        showModal({ title: '操作完成', tone: 'success', message: successMessage });
+        router.refresh();
+      } else {
+        showResult(result);
+        showModal({ title: '操作未完成', tone: 'error', message: ERRORS[result.reason] });
+      }
     } catch {
       setError('操作失敗，請檢查連線後再試一次。');
+      showModal({ title: '操作未完成', tone: 'error', message: '操作失敗，請檢查連線後再試一次。目前輸入內容已保留。' });
     } finally {
       setBusy(false);
     }
@@ -267,7 +292,7 @@ export function SubmissionEditor(props: Props) {
                   type="button"
                   className="btn btn--danger"
                   disabled={busy}
-                  onClick={() => void act(voidAction, '確定要作廢這筆資料嗎？作廢後列表預設不顯示，之後仍可復原。')}
+                  onClick={() => void act(voidAction, '確定要作廢這筆資料嗎？作廢後列表預設不顯示，之後仍可復原。', '這筆資料已作廢。')}
                 >
                   作廢
                 </button>
@@ -292,7 +317,7 @@ export function SubmissionEditor(props: Props) {
                     className="btn btn--ghost"
                     disabled={busy}
                     onClick={() =>
-                      void act(reopenAction, '取消送出後，院所區可以再修改，民眾也可以退回修改。確定要取消送出嗎？')
+                      void act(reopenAction, '取消送出後，院所區可以再修改，民眾也可以退回修改。確定要取消送出嗎？', '已取消送出，這份表單可再次修改。')
                     }
                   >
                     取消送出
@@ -304,7 +329,7 @@ export function SubmissionEditor(props: Props) {
                   type="button"
                   className="btn btn--ghost"
                   disabled={busy}
-                  onClick={() => void act(restoreAction, '確定要復原這筆資料嗎？')}
+                  onClick={() => void act(restoreAction, '確定要復原這筆資料嗎？', '這筆資料已復原。')}
                 >
                   復原
                 </button>

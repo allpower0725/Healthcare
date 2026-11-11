@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { ResultModalProvider } from '@/components/feedback/result-modal';
 import './globals.css';
 
 // 手機網址列與各頁白色頂部列同色，看起來連成一片
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
     <html lang="zh-Hant-TW">
-      <body>{children}</body>
+      <body><ResultModalProvider>{children}</ResultModalProvider></body>
     </html>
   );
 }

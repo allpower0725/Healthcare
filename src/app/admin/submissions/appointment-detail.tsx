@@ -1,7 +1,8 @@
 import '@/components/forms/forms.css';
 import { notFound } from 'next/navigation';
 import { PrintDocumentButton } from '@/components/forms/print-document-button';
-import { APPOINTMENT_ICON_PATH, APPOINTMENT_NAME, APPOINTMENT_PACKAGES } from '@/lib/appointments/catalog';
+import { APPOINTMENT_NAME, APPOINTMENT_PACKAGES } from '@/lib/appointments/catalog';
+import { FormIllustration } from '@/components/brand/form-illustration';
 import { APPOINTMENT_LIST_STATUS, getAppointment } from '@/lib/appointments/service';
 import { requireUser } from '@/lib/auth/dal';
 import { formatDateTime } from '@/lib/time';
@@ -37,7 +38,7 @@ export async function AppointmentDetail({ id }: { id: string }) {
     <>
       <header className={styles.head}>
         <div className={styles.headArt} aria-hidden="true">
-          <img src={APPOINTMENT_ICON_PATH} width={54} height={54} alt="" />
+          <FormIllustration formId="appointment" />
         </div>
         <div>
           <h1>

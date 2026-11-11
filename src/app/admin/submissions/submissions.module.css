@@ -312,7 +312,7 @@
   border-radius: 18px;
   background: var(--art-bg);
 }
-.headArt svg {
+.headArt :is(svg, img) {
   width: 54px;
   height: 54px;
 }

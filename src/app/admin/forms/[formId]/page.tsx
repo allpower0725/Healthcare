@@ -4,7 +4,7 @@ import { AdminLink as Link } from '@/app/admin/pending-ui';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { requireUser } from '@/lib/auth/dal';
-import { artSvg } from '@/lib/forms/art';
+import { FormIllustration } from '@/components/brand/form-illustration';
 import { FORMS, isFormId } from '@/lib/forms/catalog';
 import { formUrl, renderFormQrSvg } from '@/lib/forms/qr';
 import { describePeriod, formStatus, getFormSetting } from '@/lib/forms/settings';
@@ -45,7 +45,7 @@ async function FormDetail({ params }: { params: PageProps<'/admin/forms/[formId]
   return (
     <>
       <header className={styles.head}>
-        <div className={styles.headArt} aria-hidden="true" dangerouslySetInnerHTML={{ __html: artSvg(formId) }} />
+        <div className={styles.headArt} aria-hidden="true"><FormIllustration formId={formId} /></div>
         <div>
           <h1>
             {form.name}

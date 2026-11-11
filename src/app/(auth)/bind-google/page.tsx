@@ -37,6 +37,9 @@ async function BindActions({ searchParams }: { searchParams: PageProps<'/bind-go
   return (
     <div className={styles.stack}>
       <Notice searchParams={searchParams} param="error" messages={ERRORS} />
+      <Notice searchParams={searchParams} param="notice" messages={{
+        password_verified: { tone: 'info', text: '帳密驗證成功。請繼續綁定 Google 帳號，以完成首次設定。' },
+      }} />
       <a className={styles.google} href="/api/auth/google">
         <GoogleIcon />
         選擇要綁定的 Google 帳號

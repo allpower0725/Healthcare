@@ -1,6 +1,8 @@
 'use client';
 
 import { useFormStatus } from 'react-dom';
+import { useActionState } from 'react';
+import { ActionResultModal } from '@/components/feedback/result-modal';
 import { updateUser } from './actions';
 import { FormPending } from '../pending-ui';
 
@@ -13,8 +15,10 @@ type Props = {
 };
 
 export function UserActionButton({ userId, action, label, variant, confirmText }: Props) {
+  const [state, submit, pending] = useActionState(updateUser, {});
   return (
-    <form action={updateUser}>
+    <form action={submit}>
+      <ActionResultModal state={state} pending={pending} refreshOnSuccess successTitle="使用者資料已更新" successMessage={`已完成「${label}」。`} />
       <FormPending />
       <input type="hidden" name="userId" value={userId} />
       <input type="hidden" name="action" value={action} />

@@ -1,3 +1,5 @@
+import { UrlResultModal } from '@/components/feedback/url-result-modal';
+
 export type NoticeMessages = Record<string, { tone: 'info' | 'warn' | 'error'; text: string }>;
 
 /** 依網址參數顯示提示訊息；未知的值不顯示 */
@@ -15,8 +17,7 @@ export async function Notice({
   if (!message) return null;
 
   return (
-    <p className={`notice notice--${message.tone}`} role={message.tone === 'error' ? 'alert' : 'status'}>
-      {message.text}
-    </p>
+    <UrlResultModal param={param} title={message.tone === 'error' ? '操作未完成' : '操作結果'}
+      message={message.text} tone={message.tone === 'info' ? 'success' : message.tone === 'warn' ? 'warning' : 'error'} />
   );
 }

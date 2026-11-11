@@ -17,8 +17,8 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  gap: 20px;
 }
 
 .formCard {
@@ -45,18 +45,19 @@
 .cardArt {
   display: grid;
   place-items: center;
-  padding: 18px 0 10px;
+  min-height: 132px;
+  padding: 10px 0;
   background: var(--art-bg);
 }
-.cardArt svg {
+.cardArt :is(svg, img) {
   width: 112px;
   height: 112px;
 }
 
 .cardBody {
   display: grid;
-  gap: 6px;
-  padding: 14px 18px 18px;
+  gap: 12px;
+  padding: 20px;
 }
 .cardBody h2 {
   margin: 0;
@@ -93,7 +94,7 @@
   border-radius: 22px;
   background: var(--art-bg);
 }
-.headArt svg {
+.headArt :is(svg, img) {
   width: 72px;
   height: 72px;
 }
@@ -274,4 +275,18 @@
   border-top: 1px solid var(--line);
   color: var(--muted);
   font-size: 0.8125rem;
+}
+
+@media (max-width: 600px) {
+  .grid { gap: 12px; }
+  .formCard { flex-direction: row; }
+  .cardArt { flex: 0 0 90px; min-height: 130px; padding: 8px; }
+  .cardArt :is(svg, img) { width: 78px; height: 78px; }
+  .cardBody { min-width: 0; padding: 18px 15px; align-content: center; gap: 9px; }
+  .cardBody h2 { font-size: 1rem; overflow-wrap: break-word; }
+  .cardMeta { font-size: .8125rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .formCard { transition: none; }
+  .formCard:hover { transform: none; }
 }

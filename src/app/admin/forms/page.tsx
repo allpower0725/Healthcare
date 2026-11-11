@@ -2,10 +2,10 @@ import { LoadingOverlay } from '@/app/admin/loading-overlay';
 import type { Metadata } from 'next';
 import { AdminLink as Link } from '@/app/admin/pending-ui';
 import { Suspense } from 'react';
-import { APPOINTMENT_ADMIN_PATH, APPOINTMENT_ICON_PATH, APPOINTMENT_NAME } from '@/lib/appointments/catalog';
+import { APPOINTMENT_ADMIN_PATH, APPOINTMENT_NAME } from '@/lib/appointments/catalog';
 import { isAppointmentOpen } from '@/lib/appointments/settings';
 import { requireUser } from '@/lib/auth/dal';
-import { artSvg } from '@/lib/forms/art';
+import { FormIllustration } from '@/components/brand/form-illustration';
 import { FORMS } from '@/lib/forms/catalog';
 import { describePeriod, formStatus, listFormSettings } from '@/lib/forms/settings';
 import { listHref } from '@/lib/submissions/query';
@@ -81,11 +81,7 @@ async function FormCards() {
             href={`/admin/forms/${form.id}`}
             className={styles.formCard}
           >
-            <div
-              className={styles.cardArt}
-              aria-hidden="true"
-              dangerouslySetInnerHTML={{ __html: artSvg(form.id) }}
-            />
+            <div className={styles.cardArt} aria-hidden="true"><FormIllustration formId={form.id} /></div>
             <div className={styles.cardBody}>
               <h2>{form.name}</h2>
               <div className={styles.cardMeta}>
@@ -98,7 +94,7 @@ async function FormCards() {
       })}
       <Link href={APPOINTMENT_ADMIN_PATH} className={styles.formCard}>
         <div className={styles.cardArt} aria-hidden="true">
-          <img src={APPOINTMENT_ICON_PATH} alt="" width={112} height={112} />
+          <FormIllustration formId="appointment" />
         </div>
         <div className={styles.cardBody}>
           <h2>{APPOINTMENT_NAME}</h2>

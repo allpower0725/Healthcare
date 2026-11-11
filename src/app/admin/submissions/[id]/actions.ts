@@ -1,6 +1,5 @@
 'use server';
 
-import { refresh } from 'next/cache';
 import type { FormValues } from '@/db/schema';
 import { requireUser } from '@/lib/auth/dal';
 import {
@@ -29,7 +28,6 @@ export async function completeAction(id: string, version: number, values: FormVa
   const user = await requireUser();
   if (!UUID.test(id)) return NOT_FOUND;
   const result = await completeSubmission(user.id, id, version, values);
-  if (result.ok) refresh();
   return result;
 }
 
@@ -37,7 +35,6 @@ export async function reopenAction(id: string): Promise<StaffActionResult> {
   const user = await requireUser();
   if (!UUID.test(id)) return NOT_FOUND;
   const result = await reopenSubmission(user.id, id);
-  if (result.ok) refresh();
   return result;
 }
 
@@ -45,7 +42,6 @@ export async function voidAction(id: string): Promise<StaffActionResult> {
   const user = await requireUser();
   if (!UUID.test(id)) return NOT_FOUND;
   const result = await voidSubmission(user.id, id);
-  if (result.ok) refresh();
   return result;
 }
 
@@ -53,6 +49,5 @@ export async function restoreAction(id: string): Promise<StaffActionResult> {
   const user = await requireUser();
   if (!UUID.test(id)) return NOT_FOUND;
   const result = await restoreSubmission(user.id, id);
-  if (result.ok) refresh();
   return result;
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import { APPOINTMENT_ADMIN_PATH, APPOINTMENT_ICON_PATH, APPOINTMENT_NAME } from '@/lib/appointments/catalog';
+import { APPOINTMENT_ADMIN_PATH, APPOINTMENT_NAME } from '@/lib/appointments/catalog';
+import { FormIllustration } from '@/components/brand/form-illustration';
 import { appointmentMailConfigured } from '@/lib/appointments/gmail';
 import { readAppointmentNoticeSummary } from '@/lib/appointments/notifications';
 import { appointmentQrUrl, renderAppointmentQrSvg } from '@/lib/appointments/qr';
@@ -42,7 +43,7 @@ async function AppointmentSettings() {
     <>
       <header className={styles.head}>
         <div className={styles.headArt} aria-hidden="true">
-          <img src={APPOINTMENT_ICON_PATH} alt="" width={72} height={72} />
+          <FormIllustration formId="appointment" />
         </div>
         <div>
           <h1>

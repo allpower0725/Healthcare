@@ -1,31 +1,30 @@
 /* =========================================================
    烏日澄清醫院｜預防保健表單後台 — 共用樣式
-   色票與質感沿用民眾端電子表單（薄荷綠主色、院所區琥珀色、圓角卡片）
+   晴空藍主題：淡藍底、深藍操作色、白色圓角卡片；院所提示保留琥珀色
    ========================================================= */
 
 :root {
   color-scheme: light;
 
-  /* 品牌色（取自院徽） */
-  --mint: #a6d6cb;
-  --blue: #a9bede;
-  /* 表單插圖底色：品牌雙色漸層（薄荷綠 → 淡藍），各表單共用 */
-  --art-bg: linear-gradient(135deg, #d6efe6 0%, #e1e9f7 100%);
+  --sky: #a7c8ee;
+  --blue: #bdd8f5;
+  --art-bg: linear-gradient(130deg, #e9f3ff, #f3f7fe);
 
-  --primary: #23786a;
-  --primary-strong: #19594e;
-  --primary-soft: #e8f4f0;
-  --primary-line: #a9d4c9;
-  --primary-ring: rgba(35, 120, 106, 0.2);
-  --accent: #3d5f96;
-  --accent-soft: #ecf1f9;
+  --primary: #386da7;
+  --primary-strong: #244e7e;
+  --primary-soft: #eaf3ff;
+  --primary-line: #b5cdeb;
+  --primary-ring: rgba(56, 109, 167, 0.2);
+  --accent: #486b96;
+  --accent-soft: #edf3fc;
 
-  --bg: #f2f6f5;
+  --bg: #f3f7fd;
   --surface: #fff;
-  --text: #1c2a2e;
-  --muted: #5b6b70;
-  --line: #dbe4e2;
-  --line-strong: #b9c8c4;
+  --surface-soft: #fcfdff;
+  --text: #233a53;
+  --muted: #60738a;
+  --line: #d9e4f1;
+  --line-strong: #bdcfe3;
   --danger: #b42318;
   --danger-soft: #fdeeec;
   --danger-line: #f1b8b1;
@@ -33,13 +32,13 @@
   /* 院所（後台）強調色 */
   --staff: #8a5300;
   --staff-strong: #633b00;
-  --staff-bg: #fff7e6;
-  --staff-soft: #fcebc6;
-  --staff-line: #e5bd72;
+  --staff-bg: #fff8ed;
+  --staff-soft: #f9ebd4;
+  --staff-line: #ead7b6;
 
-  --radius: 16px;
+  --radius: 22px;
   --radius-sm: 12px;
-  --shadow: 0 1px 2px rgba(20, 50, 45, 0.05), 0 6px 20px rgba(20, 50, 45, 0.06);
+  --shadow: 0 2px 4px rgba(52, 93, 133, 0.025), 0 12px 30px rgba(52, 93, 133, 0.045);
   --font: "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", "微軟正黑體", "Heiti TC", system-ui, -apple-system,
     "Segoe UI", sans-serif;
 }
@@ -124,7 +123,7 @@ a {
   min-height: 2.5rem;
   padding: 0.5rem 1.125rem;
   border: 1px solid transparent;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   font-weight: 600;
   line-height: 1.2;
   text-decoration: none;
@@ -203,7 +202,8 @@ a {
   padding: 0.5rem 0.875rem;
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
-  background: #fff;
+  background: var(--surface-soft);
+  color: var(--text);
 }
 .input:focus {
   outline: none;
@@ -228,12 +228,20 @@ a {
 .notice--warn {
   background: var(--staff-bg);
   border-color: var(--staff-line);
+  border-inline-start: 4px solid var(--staff);
   color: var(--staff-strong);
 }
 .notice--error {
   background: var(--danger-soft);
   border-color: var(--danger-line);
+  border-inline-start: 4px solid var(--danger);
   color: var(--danger);
+}
+.notice__title {
+  display: block;
+  margin-bottom: .3rem;
+  font-size: 1rem;
+  font-weight: 700;
 }
 
 /* ---------- 標籤 ---------- */
@@ -256,7 +264,7 @@ a {
   color: var(--primary-strong);
 }
 .badge--staff {
-  background: #eef2f1;
+  background: #eef2f7;
   color: var(--muted);
 }
 .badge--pending {
@@ -264,8 +272,8 @@ a {
   color: var(--staff-strong);
 }
 .badge--open {
-  background: #e1f3e8;
-  color: #1d6b43;
+  background: var(--primary-soft);
+  color: var(--primary-strong);
 }
 .badge--scheduled {
   background: var(--staff-soft);
@@ -273,7 +281,7 @@ a {
 }
 .badge--ended,
 .badge--closed {
-  background: #eef2f1;
+  background: #eef2f7;
   color: var(--muted);
 }
 .badge--sub-submitted {
@@ -289,7 +297,7 @@ a {
   color: #1d6b43;
 }
 .badge--sub-voided {
-  background: #eef2f1;
+  background: #eef2f7;
   color: var(--muted);
 }
 .badge--dup {

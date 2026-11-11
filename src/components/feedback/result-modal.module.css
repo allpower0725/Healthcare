@@ -1,0 +1,11 @@
+.dialog { box-sizing: border-box; width: min(28rem, calc(100vw - 2rem)); max-height: calc(100dvh - 2rem); overflow: auto; margin: auto; padding: 1.6rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); color: var(--text); box-shadow: 0 24px 70px rgb(32 57 81 / .25); text-align: center; }
+.dialog::backdrop { background: rgb(35 59 83 / .4); backdrop-filter: blur(4px); }
+:global(body):has(.dialog[open]) { overflow: hidden; }
+.dialog h2 { margin: .85rem 0 .65rem; font-size: 1.35rem; line-height: 1.4; }
+.dialog p { margin: 0 0 1.35rem; font-size: 1rem; line-height: 1.7; white-space: pre-wrap; overflow-wrap: anywhere; text-align: start; }
+.dialog button { width: 100%; min-height: 48px; white-space: normal; }
+.icon { display: grid; place-items: center; width: 3.2rem; height: 3.2rem; margin: auto; border-radius: 50%; font-size: 1.8rem; font-weight: 800; }
+.success .icon { color: var(--primary-strong); background: var(--primary-soft); }
+.warning .icon { color: var(--staff-strong); background: var(--staff-bg); }
+.error .icon { color: var(--danger); background: var(--danger-soft); }
+@media (max-width: 380px) { .dialog { padding: 1.25rem; } }

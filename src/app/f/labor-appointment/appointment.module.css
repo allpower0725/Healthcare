@@ -27,3 +27,5 @@
 .actions > * { max-width: 100%; white-space: normal; text-align: center; }
 .back { margin-top: .8rem; }
 .intake { padding: 0; border: 0; margin: 0; min-width: 0; }
+.errorLink { display: block; margin-top: .5rem; padding: .2rem 0; border: 0; background: none; color: inherit; font: inherit; text-align: start; text-decoration: underline; cursor: pointer; }
+.intake :global(.submitbar > .notice) { margin: 0 0 .8rem; }

@@ -3,12 +3,15 @@
 import { useActionState } from 'react';
 import styles from '../auth.module.css';
 import { loginWithPassword } from './actions';
+import { ActionResultModal, useNativeValidationModal } from '@/components/feedback/result-modal';
 
 export function PasswordForm() {
   const [state, action, pending] = useActionState(loginWithPassword, {});
+  const onInvalid = useNativeValidationModal();
 
   return (
-    <form action={action} className={styles.form}>
+    <form action={action} className={styles.form} onInvalidCapture={onInvalid}>
+      <ActionResultModal state={state} pending={pending} successMessage="" />
       <p className={styles.hint}>只用於第一次登入。驗證後須綁定 Google 帳號，之後帳密登入即停用。</p>
       <div>
         <label className="label" htmlFor="admin-username">

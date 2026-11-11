@@ -7,6 +7,7 @@ import { db } from '@/db';
 import { appointments, appointmentSettings, formSettings, submissions } from '@/db/schema';
 import { allowAppointmentAttempt, type AppointmentGate, readAppointmentAccess, writeAppointmentAccess } from '@/lib/appointments/access';
 import { addDays, bookingCalendar, calendarLink, DEFAULT_BOOKING_DATES, weekday } from '@/lib/appointments/dates';
+import { todayRoc } from '@/lib/forms/format';
 import { cancelAppointment, createAppointment, latestAppointment, parseAppointmentIdentity, publicBookingCount,
   readAppointmentIntake, returnAppointmentIntake, saveAppointmentIntake } from '@/lib/appointments/public-service';
 import { confirmAppointment } from '@/lib/appointments/service';
@@ -147,6 +148,32 @@ describe('預約前台', () => {
 });
 
 describe('公開預約驗證', () => {
+  it('含資料上傳同意書的健檢表會回傳可定位的欄位錯誤，補齊簽名後可送出並重試', async () => {
+    const lookup = await lookupAppointment(input, 'valid');
+    if (!lookup.ok) throw new Error(lookup.message);
+    const date = weekday(lookup.calendar.firstDate) === 0 ? addDays(lookup.calendar.firstDate, 1) : lookup.calendar.firstDate;
+    const booked = await bookAppointment(lookup.requestId, { ...data, date }, 'valid');
+    if (!booked.ok) throw new Error(booked.message);
+    const { id } = booked.booking;
+    const signed = todayRoc();
+    const values = {
+      ...laborPublicSample(), 'labor.uploadConsent': 'Y',
+      'labor.uploadFromY': '115', 'labor.uploadFromM': '1', 'labor.uploadFromD': '1',
+      'labor.uploadYearsMode': 'seven', 'labor.uploadUseMode': 'permanent',
+      'labor.uploadHasRepresentative': 'N', 'labor.uploadSignature': '',
+      'labor.uploadSignedY': signed.y, 'labor.uploadSignedM': signed.m, 'labor.uploadSignedD': signed.d,
+    };
+    expect(await submitAppointmentIntake(id, null, values, 'valid')).toMatchObject({
+      ok: false, errors: { 'labor.uploadSignature': expect.any(String) },
+    });
+    expect(await db.select().from(submissions)).toHaveLength(0);
+    values['labor.uploadSignature'] = 'data:image/png;base64,iVBORw0KGgo=';
+    expect(await submitAppointmentIntake(id, null, values, 'valid')).toMatchObject({ ok: true, version: 1 });
+    expect(await submitAppointmentIntake(id, null, values, 'valid')).toMatchObject({ ok: true, version: 1 });
+    expect(await db.select().from(submissions)).toHaveLength(1);
+    expect(await refreshAppointment(id)).toMatchObject({ ok: true, booking: { hasIntake: true } });
+  });
+
   it('限流原子累計，逾時可重試', async () => {
     const attempts = await Promise.all(Array.from({ length: 13 }, () => allowAppointmentAttempt('lookup', identity.idNo, now)));
     expect(attempts.filter(Boolean)).toHaveLength(12);

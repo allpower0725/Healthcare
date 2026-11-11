@@ -3,7 +3,7 @@ import { AdminLink as Link } from '@/app/admin/pending-ui';
 import { notFound } from 'next/navigation';
 import type { SubmissionAction } from '@/db/schema';
 import { requireUser } from '@/lib/auth/dal';
-import { artSvg } from '@/lib/forms/art';
+import { FormIllustration } from '@/components/brand/form-illustration';
 import { FORMS } from '@/lib/forms/catalog';
 import { getFormDef } from '@/lib/forms/defs';
 import { sanitize } from '@/lib/forms/engine';
@@ -70,11 +70,7 @@ export async function SubmissionDetail({ params }: { params: Params }) {
   return (
     <>
       <header className={styles.head}>
-        <div
-          className={styles.headArt}
-          aria-hidden="true"
-          dangerouslySetInnerHTML={{ __html: artSvg(submission.formId) }}
-        />
+        <div className={styles.headArt} aria-hidden="true"><FormIllustration formId={submission.formId} /></div>
         <div>
           <h1>
             {submission.name}

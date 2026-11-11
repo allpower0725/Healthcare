@@ -18,11 +18,15 @@ export async function loginWithPassword(_prev: PasswordLoginState, formData: For
   const password = String(formData.get('password') ?? '');
   if (!username.trim() || !password) return { error: '請輸入帳號與密碼。', username };
 
-  const result = await loginSuperadminWithPassword(username, password);
-  if (!result.ok) return { error: ERRORS[result.reason], username };
+  try {
+    const result = await loginSuperadminWithPassword(username, password);
+    if (!result.ok) return { error: ERRORS[result.reason], username };
 
-  // 帳密只換得 10 分鐘的綁定用 session，必須完成 Google 綁定才能進入後台
-  const session = await createSession(result.userId, 'bind_google', await requestMeta());
-  await setSessionCookie(session.token, session.expiresAt);
-  redirect('/bind-google');
+    // 帳密只換得 10 分鐘的綁定用 session，必須完成 Google 綁定才能進入後台
+    const session = await createSession(result.userId, 'bind_google', await requestMeta());
+    await setSessionCookie(session.token, session.expiresAt);
+  } catch {
+    return { error: '暫時無法完成登入，請檢查連線後再試一次。', username };
+  }
+  redirect('/bind-google?notice=password_verified');
 }

@@ -5,15 +5,18 @@ import { LoadingOverlay } from '../../loading-overlay';
 import styles from '../forms.module.css';
 import { saveAppointmentSetting } from './actions';
 import type { BookingDateSettings } from '@/lib/appointments/dates';
+import { ActionResultModal, useNativeValidationModal } from '@/components/feedback/result-modal';
 
 export function AppointmentSettingsForm({ isOpen, recipients, dates }: { isOpen: boolean; recipients: string[]; dates: BookingDateSettings }) {
   const [state, action, pending] = useActionState(saveAppointmentSetting, {});
   const [open, setOpen] = useState(isOpen);
   const [addresses, setAddresses] = useState(recipients.join('\n'));
+  const onInvalid = useNativeValidationModal();
 
   return (
     <form
       className={styles.settings}
+      onInvalidCapture={onInvalid}
       onSubmit={(event) => {
         event.preventDefault();
         if (pending) return;
@@ -22,6 +25,7 @@ export function AppointmentSettingsForm({ isOpen, recipients, dates }: { isOpen:
       }}
     >
       {pending && <LoadingOverlay message="儲存設定中…" />}
+      <ActionResultModal state={state} pending={pending} successMessage="預約開放、日期與通知設定已儲存。" />
       <label className={styles.switch}>
         <input type="checkbox" name="isOpen" checked={open} onChange={(event) => setOpen(event.target.checked)} />
         開放預約

@@ -62,7 +62,7 @@
   gap: 8px;
   min-height: 2.5rem;
   padding: 0 14px;
-  border-radius: var(--radius-sm);
+  border-radius: 5px;
   color: var(--text);
   font-weight: 600;
   text-decoration: none;
@@ -72,8 +72,9 @@
   background: var(--bg);
 }
 .navLink[aria-current="page"] {
-  background: var(--primary-soft);
+  background: transparent;
   color: var(--primary-strong);
+  box-shadow: inset 0 -2px var(--primary);
 }
 .navLink:focus-visible {
   outline: 3px solid var(--primary-ring);
@@ -131,11 +132,20 @@
 }
 
 .pageHead {
-  margin-bottom: 22px;
+  margin-bottom: 26px;
 }
 .pageHead h1 {
   margin: 0;
-  font-size: 1.625rem;
+  font-size: 1.75rem;
+  letter-spacing: 0.025em;
+}
+.pageHead h1::before {
+  content: "";
+  display: block;
+  width: 28px;
+  height: 2px;
+  margin-bottom: 12px;
+  background: var(--sky);
 }
 .pageHead p {
   margin: 4px 0 0;
@@ -153,7 +163,7 @@
 .skeleton {
   height: 160px;
   border-radius: var(--radius);
-  background: linear-gradient(90deg, #e9efed, #f5f8f7, #e9efed);
+  background: linear-gradient(90deg, #e8f0fa, #f5f8fe, #e8f0fa);
   background-size: 200% 100%;
   animation: shimmer 1.2s infinite linear;
 }
@@ -161,6 +171,9 @@
   to {
     background-position: -200% 0;
   }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton { animation: none; }
 }
 
 /* ---------- 較窄的螢幕：主選單移到第二列 ---------- */

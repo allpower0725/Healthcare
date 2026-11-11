@@ -2,7 +2,7 @@ import '@/components/forms/forms.css';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
-import { artSvg } from '@/lib/forms/art';
+import { FormIllustration } from '@/components/brand/form-illustration';
 import { FORM_IDS, FORMS, type FormId, isFormId } from '@/lib/forms/catalog';
 import { getFormDef } from '@/lib/forms/defs';
 import { describePeriod, formStatus, getFormSetting } from '@/lib/forms/settings';
@@ -50,11 +50,7 @@ function Intro({ formId }: { formId: FormId }) {
   const form = FORMS[formId];
   return (
     <section className="intro">
-      <span
-        className="intro__art"
-        aria-hidden="true"
-        dangerouslySetInnerHTML={{ __html: artSvg(formId, 'width="240" height="240"') }}
-      />
+      <span className="intro__art" aria-hidden="true"><FormIllustration formId={formId} /></span>
       <p className="intro__eyebrow">預防保健服務</p>
       <h1 className="intro__title">{form.name}</h1>
       <p className="intro__sub">{form.officialTitle}</p>
@@ -107,7 +103,7 @@ async function FormEntry({ params }: { params: Props['params'] }) {
   }
 
   return (
-    <PublicChrome>
+    <PublicChrome welcome>
       <Intro formId={formId} />
       {status === 'open' ? (
         <section className="card closed">

@@ -86,10 +86,12 @@ export function ClosedCard({ message, period }: { message: string; period: strin
 export function PublicChrome({
   progress,
   foot,
+  welcome = false,
   children,
 }: {
   progress?: number;
   foot?: ReactNode;
+  welcome?: boolean;
   children: ReactNode;
 }) {
   return (
@@ -105,7 +107,7 @@ export function PublicChrome({
           <div className="progress__bar" style={{ width: `${progress ?? 0}%` }} />
         </div>
       </header>
-      <main className="page">{children}</main>
+      <main className={`page${welcome ? ' page--welcome' : ''}`}>{children}</main>
       <footer className="foot">
         <p>烏日澄清醫院｜預防保健服務</p>
         {foot}

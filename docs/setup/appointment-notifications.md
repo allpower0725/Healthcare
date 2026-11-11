@@ -31,7 +31,12 @@
 
 ## 啟用 Supabase Cron
 
-正式資料庫套用資料表 migration、部署程式並確認收件設定後，在 Supabase 啟用 Cron（`pg_cron`）及 `pg_net`。使用 Vault 新增 `wjcch_appointment_cron_secret`，值與 Vercel 的 `APPOINTMENT_CRON_SECRET` 相同。`pg_net` 送出前會短暫保留請求標頭，應限制資料庫角色存取佇列。 [Supabase 定時 HTTP 請求及 Vault](https://supabase.com/docs/guides/functions/schedule-functions)
+正式資料庫套用資料表 migration、部署程式並確認收件設定後，在 Supabase 啟用 Cron（`pg_cron`）及 `http` 擴充功能。使用 Vault 新增 `wjcch_appointment_cron_secret`，值與 Vercel 的 `APPOINTMENT_CRON_SECRET` 相同。此排程使用同步 HTTP 請求，不將驗證標頭寫入 `pg_net` 的請求佇列；Supabase 的佇列預設可由其他資料庫登入角色讀取，不能只以 `postgres` 撤銷其預設權限。密鑰只存於 Vault 和 Vercel Secret，不寫入排程 SQL。 [Supabase HTTP](https://supabase.com/docs/guides/database/extensions/http) · [Vault](https://supabase.com/docs/guides/database/vault) · [pg_net 權限限制](https://supabase.com/kb/troubleshooting/revoking-access-to-pg_net-objects-has-no-effect-0bbc16)
+
+```sql
+create extension if not exists pg_cron with schema pg_catalog;
+create extension if not exists http with schema extensions;
+```
 
 把下列網址替換為正式 `APP_URL` 的網域，再於正式 Supabase 建立排程。`0 * * * *` 每小時第 0 分鐘觸發，台灣與 UTC 的整點相同。 [Supabase Cron](https://supabase.com/docs/guides/cron/quickstart)
 
@@ -40,26 +45,39 @@ select cron.schedule(
   'wjcch-appointment-notices-hourly',
   '0 * * * *',
   $job$
-    select net.http_post(
-      url := 'https://your-production-domain.example/api/internal/appointment-notices',
-      headers := jsonb_build_object(
-        'Content-Type', 'application/json',
-        'Authorization', 'Bearer ' || secret.decrypted_secret
-      ),
-      body := '{}'::jsonb,
-      timeout_milliseconds := 60000
-    )
-    from vault.decrypted_secrets as secret
-    where secret.name = 'wjcch_appointment_cron_secret';
+    do $send$
+    declare
+      response_status integer;
+    begin
+      perform set_config('http.curlopt_timeout_ms', '60000', true);
+      perform set_config('http.curlopt_connecttimeout_ms', '5000', true);
+      select response.status into response_status
+      from vault.decrypted_secrets as secret
+      cross join lateral extensions.http((
+        'POST',
+        'https://your-production-domain.example/api/internal/appointment-notices',
+        array[extensions.http_header('Authorization', 'Bearer ' || secret.decrypted_secret)],
+        'application/json',
+        '{}'
+      )::extensions.http_request) as response
+      where secret.name = 'wjcch_appointment_cron_secret';
+      if response_status is distinct from 200 then
+        raise exception 'Appointment notices endpoint returned HTTP %',
+          coalesce(response_status::text, 'no response');
+      end if;
+    end
+    $send$;
   $job$
 );
 ```
+
+先確認正式站已重新部署以套用密鑰。執行上述 SQL 會啟用排程，若設定過同名排程，應先檢查 `cron.job`，避免由不同角色建立重複工作。排程 SQL 只記錄狀態碼，不記錄密鑰或回應內容。
 
 ## 查看通知結果
 
 - 「表單管理 → 預約健檢」顯示目前收件人的最近嘗試、最近寄送及失敗或待核對的件數。最近寄送時間代表 Gmail SMTP 接受郵件的時間。
 - 郵件明確被拒絕時，該預約仍待處理才會在下一小時重試。已寄送的預約對相同收件人只通知一次。
 - Gmail 回應逾時或排程中斷時，送達結果可能不明。系統會保留「待核對」記錄。管理者可在已授權的 Gmail 寄件備份，依 `heal_appointment_notices.batch_id` 對照 `Message-ID` 中的 `appointment-digest.<batch_id>` 及最近嘗試時間查核。
-- 若排程歷史有執行但設定頁沒有結果，可查同時段的 `pg_net` 回應狀態碼。`401` 表示排程密鑰未通過，`503` 表示正式站缺少可用的 Gmail 寄件設定。 [pg_net 查詢回應](https://supabase.com/docs/guides/database/extensions/pg_net)
+- 在 Supabase「Integrations → Cron」查看工作是否啟用及執行歷史，或查詢 `cron.job_run_details`。此排程會在 HTTP 狀態非 `200` 時標為失敗；`401` 表示排程密鑰未通過，`503` 表示正式站缺少可用的 Gmail 寄件設定。`succeeded` 表示端點完成處理，實際寄送、失敗或待核對件數仍以後台通知結果為準。 [Supabase Cron 執行歷史](https://supabase.com/docs/guides/cron/quickstart)
 
 本機自動測試透過模擬 Gmail 回應驗證上述流程。正式授權、排程啟用及測試寄件需由院所另外確認。

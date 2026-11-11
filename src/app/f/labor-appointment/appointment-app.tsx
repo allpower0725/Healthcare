@@ -3,7 +3,9 @@
 import Link from 'next/link';
 import { type FormEvent, useState } from 'react';
 import { LoadingOverlay } from '@/components/loading/loading-overlay';
-import { APPOINTMENT_ICON_PATH, APPOINTMENT_PACKAGES, APPOINTMENT_PUBLIC_PATH, type AppointmentPackage } from '@/lib/appointments/catalog';
+import { useNativeValidationModal, useResultModal } from '@/components/feedback/result-modal';
+import { APPOINTMENT_PACKAGES, APPOINTMENT_PUBLIC_PATH, type AppointmentPackage } from '@/lib/appointments/catalog';
+import { FormIllustration } from '@/components/brand/form-illustration';
 import { type BookingCalendar, calendarLink } from '@/lib/appointments/dates';
 import type { publicAppointmentView } from '@/lib/appointments/public-service';
 import { clampDay, clampMonth, normalizeIntegerInput } from '@/lib/forms/format';
@@ -37,11 +39,16 @@ export function AppointmentApp({ open, calendar, requestId: initialRequestId, bo
   const { request, message, error, setError } = useAppointmentRequest(captcha);
   const countPending = message === COUNT_PENDING;
   const overlayMessage = countPending ? null : message;
+  const showResult = useResultModal();
+  const onInvalid = useNativeValidationModal();
 
   async function lookup(event: FormEvent) {
     event.preventDefault();
     const result = await request('正在查詢預約…', (token) => lookupAppointment(identity, token), ACTION.appointmentLookup);
-    if (!result?.ok) return;
+    if (!result?.ok) {
+      if (result) showResult({ title: '查詢未完成', tone: 'error', message: result.message });
+      return;
+    }
     setRequestId(result.requestId);
     setBooking(result.booking);
     setAvailability({ open: result.open, calendar: result.calendar });
@@ -62,7 +69,13 @@ export function AppointmentApp({ open, calendar, requestId: initialRequestId, bo
     event.preventDefault();
     if (!requestId) return;
     const result = await request('正在送出預約…', (token) => bookAppointment(requestId, { date, name, packageCode }, token), ACTION.appointmentCreate);
-    if (result?.ok) setBooking(result.booking);
+    if (!result) return;
+    if (result.ok) {
+      setBooking(result.booking);
+      showResult({ title: '預約已送出', tone: 'success', message: result.booking.packageCode === 'in_service'
+        ? '已收到預約。請接著填寫並送出勞工健康檢查表，院所才能確認預約。'
+        : '已收到預約，待院所確認後預約才會成立。' });
+    } else showResult({ title: '預約未送出', tone: 'error', message: result.message });
   }
 
   async function restart() {
@@ -86,23 +99,29 @@ export function AppointmentApp({ open, calendar, requestId: initialRequestId, bo
   async function cancel() {
     if (!booking) return;
     const result = await request('正在取消預約…', (token) => cancelPublicAppointment(booking.id, token), ACTION.appointmentCancel);
-    if (!result?.ok) return;
+    if (!result?.ok) {
+      if (result) showResult({ title: '取消預約未完成', tone: 'error', message: result.message });
+      return;
+    }
     void appointmentDraft.clear(booking.id);
     setBooking(result.booking);
     setConfirmCancel(false);
+    showResult({ title: '預約已取消', tone: 'success', message: '此預約及已關聯的勞工健康檢查表已失效。' });
   }
 
-  return <PublicChrome progress={booking ? 100 : requestId ? 50 : 0}>
+  return <PublicChrome progress={booking ? 100 : requestId ? 50 : 0} welcome={!requestId}>
     {overlayMessage && <LoadingOverlay message={overlayMessage} />}
-    <header className={styles.heading}>
-      <div><h1>預約健檢</h1><p>選擇健檢日期與套餐，送出後由院所確認。</p></div>
-      <img src={APPOINTMENT_ICON_PATH} alt="" width={84} height={84} />
+    <header className="intro">
+      <span className="intro__art" aria-hidden="true"><FormIllustration formId="appointment" /></span>
+      <p className="intro__eyebrow">預防保健服務</p>
+      <h1 className="intro__title">預約健檢</h1>
+      <p className="intro__sub">選擇健檢日期與套餐，送出後由院所確認。</p>
     </header>
-    {!configured && <p role="status" className="notice">預約服務暫時無法使用，請洽院所協助。</p>}
+    {!configured && <p role="status" className="notice notice--warn">預約服務暫時無法使用，請洽院所協助。</p>}
     {error && <p role="alert" className="notice notice--error">{error}</p>}
-    {!requestId ? <form className="card" onSubmit={lookup}>
+    {!requestId ? <form className="card" onSubmit={lookup} onInvalidCapture={onInvalid}>
       <h2>輸入證件號與出生日期</h2>
-      {!open && <p className="notice">目前暫停受理新預約，既有預約仍可查詢。</p>}
+      {!open && <p className="notice notice--warn">目前暫停受理新預約，既有預約仍可查詢。</p>}
       <label className={styles.field}>身分證統一編號、統一證號或護照號碼
         <input className="input" autoCapitalize="characters" autoComplete="off" maxLength={12} required
           value={identity.idNo} onChange={(e) => setIdentity({ ...identity, idNo: e.target.value.toUpperCase().replace(/\s/g, '') })} />
@@ -127,11 +146,14 @@ export function AppointmentApp({ open, calendar, requestId: initialRequestId, bo
         <dt>預約日期</dt><dd>{booking.date.replaceAll('-', '/')}</dd>
         <dt>健檢套餐</dt><dd>{APPOINTMENT_PACKAGES[booking.packageCode]}</dd>
       </dl>
-      {booking.status === 'cancelled' ? <p className="notice">此預約已取消，關聯的勞工健康檢查表亦已失效。</p> : <>
+      {booking.status === 'cancelled' ? <p className="notice notice--warn">此預約已取消，關聯的勞工健康檢查表亦已失效。</p> : <>
         {booking.canManage && booking.packageCode === 'in_service' && !booking.hasIntake && booking.status === 'pending' &&
-          <p className="notice">在職套餐須先送出勞工健康檢查表，院所才能確認預約。</p>}
+          <div className="notice notice--warn" role="status">
+            <strong className="notice__title">請先填寫並送出勞工健康檢查表</strong>
+            <span>在職套餐須完成此步驟，院所才能確認預約。</span>
+          </div>}
         {!booking.canManage &&
-          <p className="notice">若要開啟健檢表或取消預約，請使用送出預約時的瀏覽器，或洽院所協助。</p>}
+          <p className="notice notice--warn">若要開啟健檢表或取消預約，請使用送出預約時的瀏覽器，或洽院所協助。</p>}
         <ul className={styles.links}>
           <li><a href="https://www.wjcch.com.tw/health/health031" target="_blank" rel="noreferrer">健檢當日注意事項</a></li>
           <li><a href="https://www.wjcch.com.tw/health/health021" target="_blank" rel="noreferrer">健檢流程</a></li>
@@ -160,7 +182,7 @@ export function AppointmentApp({ open, calendar, requestId: initialRequestId, bo
       <p className="notice" role="status">
         {availability.open ? '查無有效預約，可在下方建立新預約。' : '查無有效預約，目前暫停受理新預約。'}
       </p>
-      {availability.open && <form className="card" onSubmit={book}>
+      {availability.open && <form className="card" onSubmit={book} onInvalidCapture={onInvalid}>
         <h2>選擇預約日期與套餐</h2>
         <AppointmentCalendar calendar={availability.calendar} selected={date} select={(value) => void selectDate(value)}
           disabled={!!overlayMessage} countPending={countPending} />

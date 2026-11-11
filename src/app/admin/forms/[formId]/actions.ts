@@ -28,13 +28,17 @@ export async function saveFormSetting(
   const closesAt = readTime(formData, 'closesAt');
   if (!opensAt.ok || !closesAt.ok) return { error: '時間格式不正確，請重新選擇。' };
 
-  const result = await updateFormSetting(user.id, formId, {
-    isOpen: formData.get('isOpen') === 'on',
-    opensAt: opensAt.value,
-    closesAt: closesAt.value,
-  });
-  if (!result.ok) {
-    return { error: result.reason === 'forbidden' ? '只有管理者可以修改開放設定。' : '結束時間必須晚於開始時間。' };
+  try {
+    const result = await updateFormSetting(user.id, formId, {
+      isOpen: formData.get('isOpen') === 'on',
+      opensAt: opensAt.value,
+      closesAt: closesAt.value,
+    });
+    if (!result.ok) {
+      return { error: result.reason === 'forbidden' ? '只有管理者可以修改開放設定。' : '結束時間必須晚於開始時間。' };
+    }
+  } catch {
+    return { error: '儲存設定失敗，請檢查連線後再試一次。' };
   }
 
   refresh();

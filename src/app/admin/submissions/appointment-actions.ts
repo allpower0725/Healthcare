@@ -1,12 +1,11 @@
 'use server';
 
-import { refresh } from 'next/cache';
 import { confirmAppointment } from '@/lib/appointments/service';
 import { requireUser } from '@/lib/auth/dal';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export type ConfirmAppointmentState = { error?: string };
+export type ConfirmAppointmentState = { error?: string; success?: boolean };
 
 const CONFIRM_ERRORS = {
   not_found: '找不到這筆預約。',
@@ -31,6 +30,5 @@ export async function confirmAppointmentAction(
     return { error: '確認預約失敗，請檢查連線後再試一次。' };
   }
 
-  refresh();
-  return {};
+  return { success: true };
 }

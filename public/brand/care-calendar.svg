@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 300" role="img" aria-label="標記健康檢查日期的藍色桌曆插畫">
+      <path d="M37 164C21 95 102 33 172 47c73 15 137 15 147 87 12 86-43 119-128 122-72 3-139-24-154-92Z" fill="#e1efff"/>
+      <circle cx="284" cy="67" r="30" fill="#f9e8de"/>
+      <ellipse cx="177" cy="263" rx="116" ry="10" fill="#bfd9f4" opacity=".45"/>
+      <circle cx="41" cy="105" r="5" fill="#abc9ed"/><circle cx="318" cy="214" r="5" fill="#abc9ed"/>
+      <g transform="rotate(-7 180 159)">
+        <path d="M95 82h164l20 170H78Z" fill="#c4dcf6" stroke="#416e9c" stroke-width="2.5"/>
+        <rect x="73" y="67" width="195" height="179" rx="17" fill="#fff" stroke="#416e9c" stroke-width="2.5"/>
+        <path d="M74 85a17 17 0 0 1 17-17h160a17 17 0 0 1 17 17v28H74Z" fill="#7fa7d8"/>
+        <g stroke="#416e9c" stroke-width="6" stroke-linecap="round"><path d="M112 57v24m119-24v24"/></g>
+        <g fill="#d5e4f6"><rect x="96" y="134" width="24" height="20" rx="5"/><rect x="137" y="134" width="24" height="20" rx="5"/><rect x="178" y="134" width="24" height="20" rx="5"/><rect x="219" y="134" width="24" height="20" rx="5"/><rect x="96" y="173" width="24" height="20" rx="5"/><rect x="137" y="173" width="24" height="20" rx="5"/><rect x="219" y="173" width="24" height="20" rx="5"/><rect x="96" y="211" width="24" height="14" rx="5"/><rect x="137" y="211" width="24" height="14" rx="5"/></g>
+        <rect x="172" y="166" width="36" height="33" rx="9" fill="#477cb6"/>
+        <path d="m181 182 6 6 12-14" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+      <circle cx="278" cy="226" r="30" fill="#fff" stroke="#c9dcf0" stroke-width="2"/>
+      <path d="M278 241c-4-3-16-11-16-19 0-9 11-11 16-3 5-8 16-6 16 3 0 8-12 16-16 19Z" fill="#dfa794"/>
+      <g fill="none" stroke="#b3ceed" stroke-width="1.5"><circle cx="301" cy="128" r="7"/><path d="M44 200c-13-31-7-64 6-82"/></g>
+    </svg>

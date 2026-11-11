@@ -186,8 +186,67 @@
   gap: 16px;
 }
 
-.recipientInput {
-  resize: vertical;
+.itemEntry {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.itemEntry input {
+  flex: 1;
+  min-width: 0;
+}
+.itemEntry > button {
+  flex: none;
+}
+.dateEntry {
+  max-width: 22rem;
+}
+.settingItems {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 8px;
+  padding: 0;
+  list-style: none;
+}
+.settingItem {
+  position: relative;
+  max-width: 100%;
+  padding: 7px 34px 7px 10px;
+  border: 1px solid var(--primary-line);
+  border-radius: 8px;
+  background: var(--primary-soft);
+  color: var(--primary-strong);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.removeItem {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.removeItem:hover:not(:disabled) {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+.removeItem:focus-visible {
+  outline: 3px solid var(--primary-ring);
+  outline-offset: 1px;
+}
+.removeItem:disabled {
+  opacity: 0.5;
+  cursor: wait;
 }
 
 .switch {

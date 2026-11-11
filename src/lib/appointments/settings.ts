@@ -2,11 +2,11 @@ import 'server-only';
 import { eq } from 'drizzle-orm';
 import { db } from '@/db';
 import { appointmentSettings, type AppointmentSetting, users } from '@/db/schema';
-import { isNotificationAddress } from './gmail';
+import { isNotificationAddress, MAX_APPOINTMENT_RECIPIENTS } from './recipient-validation';
 import { DEFAULT_BOOKING_DATES, isDate } from './dates';
 
 const SETTINGS_ID = 1;
-export const MAX_APPOINTMENT_RECIPIENTS = 20;
+export { MAX_APPOINTMENT_RECIPIENTS } from './recipient-validation';
 
 export async function isAppointmentOpen() {
   const [setting] = await db.select({ isOpen: appointmentSettings.isOpen }).from(appointmentSettings)

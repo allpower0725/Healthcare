@@ -1,6 +1,6 @@
 /* 齒輪配色與旋轉構圖參考 https://codepen.io/jcoulterdesign/pen/bNxeKY */
 .overlay { position: fixed; inset: 0; width: 100vw; max-width: none; height: 100dvh; max-height: none; margin: 0; padding: 0; border: 0; background: transparent; color: var(--primary-strong); }
-.overlay::backdrop { background: rgb(243 247 253 / 88%); backdrop-filter: blur(3px); }
+.overlay::backdrop { background: rgb(243 247 253 / 40%); backdrop-filter: blur(3px); }
 .content { display: grid; place-content: center; justify-items: center; height: 100%; gap: 28px; padding: 24px; text-align: center; font-size: 1rem; line-height: 1.6; font-weight: 600; }
 .content p { margin: 0; max-width: 28em; overflow-wrap: anywhere; }
 .cogs { position: relative; width: 164px; height: 142px; }

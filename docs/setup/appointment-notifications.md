@@ -1,15 +1,22 @@
-# 預約健檢 Gmail 通知設定
+# 預約健檢部署與 Gmail 通知設定
 
 排程每小時檢查尚待院所確認的預約。一般勞工體格檢查（在職）在勞工健康檢查表有效送出後列入待辦。每位收件人當小時有新待辦才收到一封摘要，信內提供件數及需登入的「協同完成」連結。
 
 管理者可在「表單管理 → 預約健檢」編輯收件地址。關閉預約入口後，已存在的待辦仍會通知。清空收件地址可暫停寄送。
 
-## 建立院所 Gmail 寄件授權
+## 啟用預約前台
 
-1. 選用院所專用的 Gmail 或 Google Workspace 帳號。於 Google Cloud 啟用 Gmail API，並為寄件建立專用的 Web OAuth 用戶端。
-2. 將 `https://developers.google.com/oauthplayground` 加入該用戶端的授權重新導向 URI。開啟 Google 的 OAuth 2.0 Playground，在設定選擇 Server-side、Offline、Consent Screen、Use your own OAuth credentials，再填入這個寄件用戶端的資料。 [OAuth 2.0 Playground](https://developers.google.com/oauthplayground/)
-3. 在 Step 1 填入 `https://www.googleapis.com/auth/gmail.send`，由院所寄件帳號授權。在 Step 2 交換授權碼，取得 refresh token。 [Gmail OAuth 權限](https://developers.google.com/workspace/gmail/api/auth/scopes)
-4. 正式寄信請選用適用的 Google OAuth 發布設定，例如院所 Workspace 內部應用程式。外部應用程式處於測試狀態時，含 Gmail 權限的 refresh token 會在七天後到期。 [Google 權杖效期說明](https://developers.google.com/identity/protocols/oauth2#expiration)
+1. 部署前依序確認 `0007_health_check_appointments.sql` 與 `0008_appointment_public.sql` 已套用至目標資料庫。本機使用 `npm run db:migrate`，執行前確認 `DATABASE_URL` 指向預期的資料庫。
+2. 在本機環境或 Vercel 加入 `APPOINTMENT_SESSION_SECRET`。使用獨立的高熵隨機值，例如執行 `node -e "console.log(require('node:crypto').randomBytes(32).toString('base64url'))"` 產生。每個環境使用自己的密鑰。同一環境的部署須共用相同值，變更會使既有查詢工作階段和原瀏覽器的預約操作憑證失效。
+3. 依 [前台 reCAPTCHA 設定](recaptcha.md) 確認正式網域、網站金鑰及評估服務。預約查詢、送出、取消及關聯問卷異動均使用共用防護。
+4. 到「表單管理 → 預約健檢」設定日期範圍及休診日，開啟新預約並掃描既有 QR code 驗證。預設可預約台灣時間起算 15 至 90 天內的週一至週六，已建立的預約仍可於關閉新預約後查詢。
+
+民眾可用證件號與出生日期查到預約日期、套餐及狀態。開啟關聯健檢表或取消預約時，系統會自動核對送出預約的瀏覽器憑證。憑證遺失時可洽院所協助。
+
+## 設定院所 Gmail SMTP
+
+1. 使用院所指定的 Gmail 寄件帳號，確認帳號已啟用兩步驟驗證，且可建立應用程式密碼。由帳號持有人建立專供預約健檢通知使用的 16 字元應用程式密碼。 [Google 應用程式密碼](https://support.google.com/accounts/answer/185833)
+2. 將寄件信箱和新密碼直接填入下列 Vercel Production 環境變數。系統透過 TLS 連線至 `smtp.gmail.com:465`。 [Gmail SMTP 設定](https://developers.google.com/workspace/gmail/imap/imap-smtp#server-addresses-and-ports)
 
 ## 設定正式 Vercel 環境變數
 
@@ -17,12 +24,10 @@
 | --- | --- |
 | `APP_URL` | 正式網站的 HTTPS 網址，信件連結由此產生 |
 | `APPOINTMENT_CRON_SECRET` | 此排程專用的隨機密鑰，至少 32 字元，可使用英數、底線及連字號 |
-| `APPOINTMENT_GMAIL_CLIENT_ID` | 寄件用 OAuth 用戶端 ID |
-| `APPOINTMENT_GMAIL_CLIENT_SECRET` | 寄件用 OAuth 用戶端密鑰 |
-| `APPOINTMENT_GMAIL_REFRESH_TOKEN` | 院所寄件帳號授權取得的 refresh token |
-| `APPOINTMENT_GMAIL_SENDER` | 已授權的寄件信箱 |
+| `APPOINTMENT_GMAIL_SENDER` | Gmail 寄件信箱，也是 SMTP 登入帳號 |
+| `APPOINTMENT_GMAIL_APP_PASSWORD` | 上述寄件帳號建立的 16 字元應用程式密碼 |
 
-密鑰及 refresh token 存於 Vercel Production 的 Secret 環境變數。確認專案啟用 Vercel 系統環境變數，以提供 `VERCEL_ENV=production`。寄件授權獨立於後台 Google 登入。 [Vercel 系統環境變數](https://vercel.com/docs/environment-variables/system-environment-variables)
+將排程密鑰及應用程式密碼存於 Vercel Production 的 Secret 環境變數，並重新部署以套用。確認專案啟用 Vercel 系統環境變數，以提供 `VERCEL_ENV=production`。寄件設定獨立於後台 Google 登入。 [Vercel 環境變數](https://vercel.com/docs/environment-variables) · [Vercel 系統環境變數](https://vercel.com/docs/environment-variables/system-environment-variables)
 
 ## 啟用 Supabase Cron
 
@@ -52,7 +57,7 @@ select cron.schedule(
 
 ## 查看通知結果
 
-- 「表單管理 → 預約健檢」顯示目前收件人的最近嘗試、最近寄送及失敗或待核對的件數。最近寄送時間代表 Gmail API 接受郵件的時間。
+- 「表單管理 → 預約健檢」顯示目前收件人的最近嘗試、最近寄送及失敗或待核對的件數。最近寄送時間代表 Gmail SMTP 接受郵件的時間。
 - 郵件明確被拒絕時，該預約仍待處理才會在下一小時重試。已寄送的預約對相同收件人只通知一次。
 - Gmail 回應逾時或排程中斷時，送達結果可能不明。系統會保留「待核對」記錄。管理者可在已授權的 Gmail 寄件備份，依 `heal_appointment_notices.batch_id` 對照 `Message-ID` 中的 `appointment-digest.<batch_id>` 及最近嘗試時間查核。
 - 若排程歷史有執行但設定頁沒有結果，可查同時段的 `pg_net` 回應狀態碼。`401` 表示排程密鑰未通過，`503` 表示正式站缺少可用的 Gmail 寄件設定。 [pg_net 查詢回應](https://supabase.com/docs/guides/database/extensions/pg_net)

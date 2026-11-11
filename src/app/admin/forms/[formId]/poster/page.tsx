@@ -45,7 +45,6 @@ async function Poster({ params }: { params: Params }) {
         </Link>
         <PrintButton />
         <p>列印時紙張選 A4、邊界選「無」，並勾選「背景圖形」。</p>
-        {isAppointment && <p>預約前台上線後再張貼。</p>}
       </div>
 
       <div className={styles.frame}>

@@ -18,9 +18,15 @@ export async function saveAppointmentSetting(
     const result = await updateAppointmentSetting(user.id, {
       isOpen: formData.get('isOpen') === 'on',
       recipients,
+      dates: {
+        minDays: String(formData.get('minDays') ?? ''),
+        maxDays: String(formData.get('maxDays') ?? ''),
+        closedDates: String(formData.get('closedDates') ?? ''),
+      },
     });
     if (!result.ok) {
       if (result.reason === 'forbidden') return { error: '只有管理者可以修改預約設定。' };
+      if (result.reason === 'invalid_dates') return { error: '請確認預約天數為 1 至 365 天，最晚天數須大於或等於最早天數。停診日請用西元 YYYY-MM-DD 格式。' };
       return { error: `請檢查收件人信箱格式，最多可設定 ${MAX_APPOINTMENT_RECIPIENTS} 個信箱。`, invalidRecipients: true };
     }
   } catch {

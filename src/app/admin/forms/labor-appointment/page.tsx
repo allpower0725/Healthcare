@@ -59,13 +59,14 @@ async function AppointmentSettings() {
           formName={APPOINTMENT_NAME}
           posterHref={`${APPOINTMENT_ADMIN_PATH}/poster`}
         >
-          <p className={styles.hint}>請在預約前台上線後再對外提供這個 QR code。</p>
+          <p className={styles.hint}>民眾掃描後可查詢既有預約。開放預約後，也可選擇日期與套餐。</p>
         </FillingQrCard>
         <div className={styles.detailStack}>
           <section className={adminStyles.card} aria-labelledby="appointment-settings-title">
             <h2 className={styles.cardTitle} id="appointment-settings-title">開放與收件人設定</h2>
             {isManager ? (
-              <AppointmentSettingsForm isOpen={setting.isOpen} recipients={setting.recipients} />
+              <AppointmentSettingsForm isOpen={setting.isOpen} recipients={setting.recipients}
+                dates={{ bookingMinDays: setting.bookingMinDays, bookingMaxDays: setting.bookingMaxDays, closedDates: setting.closedDates }} />
             ) : (
               <>
                 <dl className={styles.summary}>

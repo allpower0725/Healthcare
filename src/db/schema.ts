@@ -202,10 +202,17 @@ export const appointmentSettings = pgTable(
     id: integer('id').primaryKey().default(1),
     isOpen: boolean('is_open').notNull().default(false),
     recipients: text('recipients').array().notNull().default(sql`'{}'::text[]`),
+    bookingMinDays: integer('booking_min_days').notNull().default(15),
+    bookingMaxDays: integer('booking_max_days').notNull().default(90),
+    closedDates: date('closed_dates').array().notNull().default(sql`'{}'::date[]`),
     updatedBy: uuid('updated_by').references(() => users.id, { onDelete: 'set null' }),
     updatedAt: timestamptz('updated_at').notNull().defaultNow().$onUpdate(() => new Date()),
   },
-  (t) => [check('heal_appointment_settings_singleton_check', sql`${t.id} = 1`)],
+  (t) => [
+    check('heal_appointment_settings_singleton_check', sql`${t.id} = 1`),
+    check('heal_appointment_settings_booking_days_check',
+      sql`${t.bookingMinDays} between 1 and 365 and ${t.bookingMaxDays} between ${t.bookingMinDays} and 365`),
+  ],
 ).enableRLS();
 
 /** 預約可以先成立案件，之後再關聯一份勞工健康檢查表。 */
@@ -220,6 +227,8 @@ export const appointments = pgTable(
     packageCode: text('package_code', { enum: APPOINTMENT_PACKAGE_CODES }).notNull(),
     status: text('status', { enum: APPOINTMENT_STATUSES }).notNull().default('pending'),
     submissionId: uuid('submission_id').references(() => submissions.id, { onDelete: 'restrict' }).unique(),
+    // 沿用原有實體欄位，驗證原瀏覽器的裝置憑證。
+    deviceAccessHash: text('management_code_hash'),
     confirmedBy: uuid('confirmed_by').references(() => users.id, { onDelete: 'set null' }),
     confirmedAt: timestamptz('confirmed_at'),
     cancelledAt: timestamptz('cancelled_at'),
@@ -258,3 +267,13 @@ export const appointmentNotices = pgTable(
 
 export type AppointmentSetting = typeof appointmentSettings.$inferSelect;
 export type Appointment = typeof appointments.$inferSelect;
+
+export const appointmentAttemptLimits = pgTable(
+  'heal_appointment_attempt_limits',
+  {
+    keyHash: text('key_hash').primaryKey(),
+    attempts: integer('attempts').notNull(),
+    expiresAt: timestamptz('expires_at').notNull(),
+  },
+  (t) => [index('heal_appointment_attempt_limits_expiry_idx').on(t.expiresAt)],
+).enableRLS();

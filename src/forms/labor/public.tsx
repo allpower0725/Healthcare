@@ -6,9 +6,11 @@ import { LABOR_DISEASES, LABOR_HAS, LABOR_HABITS, LABOR_REASON, LABOR_SHIFT, LAB
 import { SEX } from '@/lib/forms/profile';
 import { LaborUploadConsent } from './upload-consent';
 
-function TextField({ name, label, optional, placeholder, maxLength = 40 }: { name: string; label: string; optional?: boolean; placeholder?: string; maxLength?: number }) {
+function TextField({ name, label, optional, placeholder, maxLength = 40, readOnly }: {
+  name: string; label: string; optional?: boolean; placeholder?: string; maxLength?: number; readOnly?: boolean;
+}) {
   return <Field rule={name} label={<>{label}{optional && <span className="opt"> 選填</span>}</>} htmlFor={name}>
-    <TextInput name={name} id={name} maxLength={maxLength} placeholder={placeholder} />
+    <TextInput name={name} id={name} maxLength={maxLength} placeholder={placeholder} readOnly={readOnly} />
   </Field>;
 }
 function NumberField({ name, label, optional = false }: { name: string; label: string; optional?: boolean }) {
@@ -42,13 +44,15 @@ function Job({ previous = false }: { previous?: boolean }) {
   </>;
 }
 
-export function LaborPublic({ prefilled }: { prefilled: boolean }) {
+export function LaborPublic({ prefilled, identityLocked = false }: { prefilled: boolean; identityLocked?: boolean }) {
   return <>
-    <StepCard no={1} title="基本資料" desc="相同基本資料可由本裝置先前填寫的表單帶入。" tag={<span className="tag tag--shared">共用</span>}>
+    <StepCard no={1} title="基本資料" desc={identityLocked ? '姓名、證件號與出生日期已由預約帶入。' : '相同基本資料可由本裝置先前填寫的表單帶入。'}
+      tag={identityLocked ? undefined : <span className="tag tag--shared">共用</span>}>
       {prefilled && <p className="notice">已帶入先前填寫的基本資料，請確認內容是否正確。</p>}
-      <TextField name="profile.name" label="姓名" />
+      <TextField name="profile.name" label="姓名" readOnly={identityLocked} />
+      {identityLocked && <TextField name="profile.idNo" label="證件號" readOnly />}
       <Field rule="profile.sex" label="性別" role="radiogroup" validateOnBlur={false}><Choices name="profile.sex" options={SEX} /></Field>
-      <Field rule="profile.birth" label="出生日期" role="group"><RocDateInputs prefix="profile.birth" label="出生日期" /></Field>
+      <Field rule="profile.birth" label="出生日期" role="group"><RocDateInputs prefix="profile.birth" label="出生日期" identityLocked={identityLocked} /></Field>
       <Field rule="profile.email" label={<>電子郵件 <span className="opt">選填</span></>} htmlFor="labor-email" hint="沒有可留空，例：name@example.com">
         <TextInput name="profile.email" id="labor-email" type="email" inputMode="email" autoComplete="email" maxLength={100} />
       </Field>

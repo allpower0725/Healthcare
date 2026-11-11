@@ -64,7 +64,7 @@ docker exec healthcare-db psql -U healthcare -d postgres -X -v ON_ERROR_STOP=1 -
 - 院內平板可把後台「加入主畫面」（iPad 用 Safari、Android 用 Chrome，按分享→加入主畫面），之後從圖示開啟就沒有網址列。設定在 `public/admin.webmanifest` 與 `src/lib/admin-app.ts`，圖示原檔為 `public/brand/app-icon.svg`；民眾表單頁不提供安裝。
 - 7 張表單（人類乳突病毒、子宮頸抹片、口腔黏膜檢查、胃幽門螺旋桿菌、糞便潛血、成人預防保健、勞工健康檢查）皆已電子化。表單欄位定義在 `src/lib/forms/defs/`，畫面在 `src/forms/`，各表單的設計見 `docs/specs/`。
 - 勞工健康檢查網址為 `/f/labor`，新設定預設關閉，可至「表單管理」設定開放。手機填寫分六步，email 選填並共用；受僱日期、檢查日期及事業單位名稱放在作業經歷，目前工作先填、曾經工作只填最近一項。第六步為自費資料上傳同意書，同意與否必答，選同意才填期間、提供系統與獨立簽名；姓名、生日及證件號直接帶入，兩處機構名稱固定烏日澄清醫院。不同意仍可完成健檢。後台核對問卷後確認完成，不另加院所欄位或簽名；列印保留原 PDF 欄位位置與順序，同意者另附原樣同意書為第二頁，email 不新增到紙本。詳見 `docs/specs/2026-11-05-labor-upload-consent.md`。
-- 「預約健檢」在表單管理中提供獨立開關及多位通知收件人。院所在「協同完成」開啟案件核對日期和套餐後確認預約，已附勞工健康檢查表可在同一視窗查看及列印。選在職套餐須先提交健檢表。後台部署前先套用 `drizzle/0007_health_check_appointments.sql`。正式排程、Gmail 授權及寄信紀錄的設定見 [預約健檢通知設定](docs/setup/appointment-notifications.md)。預約網址 `/f/labor-appointment` 將在前台階段接通。
+- 「預約健檢」在表單管理中提供獨立 QR code、開關、預約日期範圍、休診日與通知收件人。民眾由 `/f/labor-appointment` 查詢與預約。院所在「協同完成」核對日期和套餐後確認預約。選在職套餐須先提交健檢表。部署及 Gmail 設定見 [預約健檢通知設定](docs/setup/appointment-notifications.md)。
 - 日期、年月、單獨年份及年資採共用的緊湊欄位，輸入框與單位成組換行。日曆月為 1–12，年資剩餘月為 0–11，年份最多三位；前後台共用格式檢查，詳見 `docs/specs/2026-11-04-date-input-consistency.md`。
 - 成人預防保健的同意簽名在院所區由服務對象本人簽；年齡、BMI、LDL、eGFR 自動計算（只顯示與列印，不存入資料庫）。本院檢驗參考值目前留空，之後可在 `src/lib/forms/defs/adult.ts` 的 `staffDefaults` 加入。
 

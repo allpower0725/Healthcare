@@ -94,9 +94,9 @@ export async function AppointmentDetail({ id }: { id: string }) {
           </section>
         )}
 
-        {(submission || status === 'pending') && (
+        {status !== 'cancelled' && (submission || status === 'pending') && (
           <div className={styles.appointmentActions}>
-            {submission && (
+            {submission && submission.status !== 'voided' && (
               <PrintDocumentButton className="btn btn--ghost" href={`/admin/submissions/${submission.id}/print`}>
                 列印 / 另存原樣 PDF
               </PrintDocumentButton>

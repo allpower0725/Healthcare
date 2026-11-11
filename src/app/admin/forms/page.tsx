@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { AdminLink as Link } from '@/app/admin/pending-ui';
 import { Suspense } from 'react';
 import { APPOINTMENT_ADMIN_PATH, APPOINTMENT_ICON_PATH, APPOINTMENT_NAME } from '@/lib/appointments/catalog';
-import { getAppointmentSetting } from '@/lib/appointments/settings';
+import { isAppointmentOpen } from '@/lib/appointments/settings';
 import { requireUser } from '@/lib/auth/dal';
 import { artSvg } from '@/lib/forms/art';
 import { FORMS } from '@/lib/forms/catalog';
@@ -67,7 +67,7 @@ async function Reminders() {
 
 async function FormCards() {
   await requireUser();
-  const [settings, appointmentSetting] = await Promise.all([listFormSettings(), getAppointmentSetting()]);
+  const [settings, appointmentOpen] = await Promise.all([listFormSettings(), isAppointmentOpen()]);
   const now = new Date();
 
   return (
@@ -103,7 +103,7 @@ async function FormCards() {
         <div className={styles.cardBody}>
           <h2>{APPOINTMENT_NAME}</h2>
           <div className={styles.cardMeta}>
-            <FormStatusBadge status={appointmentSetting.isOpen ? 'open' : 'closed'} />
+            <FormStatusBadge status={appointmentOpen ? 'open' : 'closed'} />
             <span>預約開放與通知設定</span>
           </div>
         </div>

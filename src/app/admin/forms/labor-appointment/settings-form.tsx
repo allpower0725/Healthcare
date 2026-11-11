@@ -4,8 +4,9 @@ import { startTransition, useActionState, useState } from 'react';
 import { LoadingOverlay } from '../../loading-overlay';
 import styles from '../forms.module.css';
 import { saveAppointmentSetting } from './actions';
+import type { BookingDateSettings } from '@/lib/appointments/dates';
 
-export function AppointmentSettingsForm({ isOpen, recipients }: { isOpen: boolean; recipients: string[] }) {
+export function AppointmentSettingsForm({ isOpen, recipients, dates }: { isOpen: boolean; recipients: string[]; dates: BookingDateSettings }) {
   const [state, action, pending] = useActionState(saveAppointmentSetting, {});
   const [open, setOpen] = useState(isOpen);
   const [addresses, setAddresses] = useState(recipients.join('\n'));
@@ -26,6 +27,22 @@ export function AppointmentSettingsForm({ isOpen, recipients }: { isOpen: boolea
         開放預約
       </label>
       <p className={styles.fieldHint}>開關控制是否受理新預約。已送出的案件仍可在協同完成處理。</p>
+
+      <fieldset className={styles.fields} style={{ border: 0, margin: 0, padding: 0 }}>
+        <legend>可預約日期（週一至週六）</legend>
+        <label>最早可預約（今天起第幾天）
+          <input className="input" name="minDays" type="number" min={1} max={365} required defaultValue={dates.bookingMinDays} />
+        </label>
+        <label>最晚可預約（今天起第幾天）
+          <input className="input" name="maxDays" type="number" min={1} max={365} required defaultValue={dates.bookingMaxDays} />
+        </label>
+      </fieldset>
+      <div>
+        <label className="label" htmlFor="appointment-closed-dates">停診日期</label>
+        <textarea className="input" id="appointment-closed-dates" name="closedDates"
+          rows={3} maxLength={5000} defaultValue={dates.closedDates.join('\n')} />
+        <p className={styles.fieldHint}>每行一個西元日期（YYYY-MM-DD）。調整後影響新預約，已送出的案件仍可管理。</p>
+      </div>
 
       <div>
         <label className="label" htmlFor="appointment-recipients">通知收件人</label>

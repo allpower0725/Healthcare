@@ -33,7 +33,7 @@ export async function SubmissionDetail({ params }: { params: Params }) {
   await requireUser();
 
   const submission = await getSubmission(id);
-  if (!submission) notFound();
+  if (!submission || submission.appointmentId) notFound();
   const def = getFormDef(submission.formId);
   const form = FORMS[submission.formId];
   if (!def) notFound();

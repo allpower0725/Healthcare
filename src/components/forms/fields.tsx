@@ -149,11 +149,12 @@ function DatePart({ unit, year = false, children }: { unit: string; year?: boole
 }
 
 /** 民國日期、年月或原表僅有的月日；共用位數、月份及當月天數檢查。 */
-export function RocDateInputs({ prefix, label, precision = 'day', leadingLabel }: {
+export function RocDateInputs({ prefix, label, precision = 'day', leadingLabel, identityLocked }: {
   prefix: string;
   label: string;
   precision?: 'day' | 'month' | 'monthday';
   leadingLabel?: string;
+  identityLocked?: boolean;
 }) {
   const month = useRef<HTMLInputElement>(null);
   const day = useRef<HTMLInputElement>(null);
@@ -177,6 +178,7 @@ export function RocDateInputs({ prefix, label, precision = 'day', leadingLabel }
       enterKeyHint="next"
       aria-label={aria}
       disabled={readOnly}
+      readOnly={identityLocked}
       onChange={(e) => {
         let v = normalizeIntegerInput(e.target.value, max);
         // 輸入當下就把月、日固定在最大值（月 12、日依該月天數）

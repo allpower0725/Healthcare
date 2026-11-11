@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { type AnyColumn, and, eq, exists, gte, inArray, ne, or, sql } from 'drizzle-orm';
+import { type AnyColumn, and, eq, exists, getTableColumns, gte, inArray, ne, or, sql } from 'drizzle-orm';
 import { db } from '@/db';
 import { appointments, submissions, type SubmissionStatus, users } from '@/db/schema';
 import { toTaipeiInput } from '@/lib/time';
@@ -22,6 +22,7 @@ end`;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const VALID_INTAKE_STATUSES = ['submitted', 'completed'] as const satisfies readonly SubmissionStatus[];
 const taipeiDate = (now: Date) => toTaipeiInput(now).slice(0, 10);
+const { deviceAccessHash: _deviceAccessHash, ...appointmentDetails } = getTableColumns(appointments);
 
 export type SubmissionIdentityColumns = Record<'id' | 'formId' | 'idNo' | 'birthDate', AnyColumn>;
 
@@ -53,7 +54,7 @@ type ConfirmationBlock = 'date_passed' | 'form_required';
 export async function getAppointment(id: string, now = new Date()) {
   if (!UUID.test(id)) return null;
   const [row] = await db.select({
-    appointment: appointments,
+    appointment: appointmentDetails,
     confirmedByName: users.name,
     submission: {
       id: submissions.id,
@@ -94,7 +95,9 @@ export async function confirmAppointment(id: string, actorId: string, now = new 
       .where(and(eq(users.id, actorId), eq(users.status, 'active'))).for('share');
     if (!actor) return { ok: false, reason: 'forbidden' };
 
-    const [appointment] = await tx.select().from(appointments).where(eq(appointments.id, id)).for('update');
+    const [appointment] = await tx.select({
+      status: appointments.status, appointmentDate: appointments.appointmentDate, packageCode: appointments.packageCode,
+    }).from(appointments).where(eq(appointments.id, id)).for('update');
     if (!appointment) return { ok: false, reason: 'not_found' };
     if (appointment.status !== 'pending') return { ok: false, reason: 'not_pending' };
     if (appointment.appointmentDate < taipeiDate(now)) return { ok: false, reason: 'date_passed' };

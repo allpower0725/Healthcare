@@ -1,5 +1,7 @@
 # 預約健檢通知 Google OAuth 公開頁面草稿
 
+此文件保留原 Gmail API 方案的審閱稿。現行寄件方式請見 [Gmail SMTP 設定指南](appointment-notifications.md)。
+
 供院方審閱。建議將下列三段分別發布在同一個由院方管理、可驗證所有權的 HTTPS 網域。首頁應連到同一份隱私權政策和服務條款，三頁都可在未登入時閱讀。
 
 | Google Auth Platform 欄位 | 建議路徑 |

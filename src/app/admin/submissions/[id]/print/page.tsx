@@ -28,13 +28,13 @@ async function PrintView({ params }: { params: PageProps<'/admin/submissions/[id
   await requireUser();
 
   const submission = await getSubmission(id);
-  if (!submission) notFound();
+  if (!submission || (submission.appointmentId && (submission.appointmentStatus === 'cancelled' || submission.status === 'voided'))) notFound();
   const Print = getFormPrint(submission.formId);
   if (!Print) notFound();
 
   const back = (
-    <Link className="btn btn--ghost btn--sm" href={`/admin/submissions/${id}`}>
-      ← 回這份表單
+    <Link className="btn btn--ghost btn--sm" href={submission.appointmentId ? '/admin/submissions' : `/admin/submissions/${id}`}>
+      {submission.appointmentId ? '← 回協同完成' : '← 回這份表單'}
     </Link>
   );
 

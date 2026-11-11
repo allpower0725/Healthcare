@@ -57,6 +57,13 @@
       "when": 1794272879809,
       "tag": "0007_health_check_appointments",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1794280635434,
+      "tag": "0008_appointment_public",
+      "breakpoints": true
     }
   ]
 }

@@ -29,3 +29,9 @@
 - `heal_appointments.submission_id` 可關聯一筆已送出的 `heal_submissions`，原表單代號為 `labor`。關聯表單與預約的證件號和生日須相符。預約確認只更新預約狀態，問卷本身仍依原狀態解讀。
 - `appointment` 是後台列表的篩選值。預約狀態只在列表對應到 `submitted`、`completed`、`voided`，相依程式仍可按原字典讀取七種問卷。需要辨識預約案件時，透過 `heal_appointments.submission_id` 關聯。外鍵會保護已關聯的勞工表免於被直接刪除。
 - Migration `0007_health_check_appointments.sql` 預設關閉新預約，無須回填或轉換歷史問卷。兩份 `heal_submissions` 字典的欄位、代號與答案 key 保持原定義。
+
+## 2026-11-10 預約健檢前台
+
+- Migration `0008_appointment_public.sql` 增加預約日期設定、憑證雜湊及雜湊鍵的限流表。既有設定套用預設提前 15 至 90 天，休診日清單為空。`management_code_hash` 沿用原有實體欄位及雜湊格式，供伺服器驗證原瀏覽器。證件號與生日查詢摘要時無須此憑證。
+- 預約填寫沿用 `form_id=labor`、既有欄位及狀態，透過 `heal_appointments.submission_id` 與一般勞工表區分。預約表的讀寫權限由預約憑證管理，`device_token_hash` 及 `device_expires_at` 留空。
+- 民眾取消時，預約改為 `cancelled`，已關聯的未完成勞工表改為 `voided` 並增加同名操作紀錄。既有答案保留供院所查核。共用讀取端沿用既有字典解讀狀態，若需區分預約來源則使用前述關聯。無須轉換歷史問卷。

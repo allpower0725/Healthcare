@@ -47,7 +47,7 @@ function indexFields(values: FormValues) {
   };
 }
 
-async function logEvent(tx: Tx, submissionId: string, action: SubmissionAction, actorId: string | null = null) {
+export async function logEvent(tx: Tx, submissionId: string, action: SubmissionAction, actorId: string | null = null) {
   await tx.insert(submissionEvents).values({ submissionId, action, actorId });
 }
 
@@ -65,12 +65,12 @@ function ownsSubmission(row: Submission, deviceToken: string, now: Date) {
     && row.deviceExpiresAt != null && row.deviceExpiresAt > now && row.status !== 'voided';
 }
 
-function samePublicData(row: Submission, values: FormValues) {
+export function samePublicData(row: Submission, values: FormValues) {
   return isDeepStrictEqual(sanitize(getFormDef(row.formId)!, 'public', row.publicData), values);
 }
 
 /** 更新同一案件；只清除不再適用的院所欄位，其餘內容及填寫人資訊保留。呼叫前須鎖住原列。 */
-async function updateReturned(tx: Tx, row: Submission, values: FormValues, now: Date) {
+export async function updateReturned(tx: Tx, row: Submission, values: FormValues, now: Date) {
   // 即使兩次送出落在同一毫秒，仍讓修改批次的識別時間前進。
   const submittedAt = new Date(Math.max(now.getTime(), row.publicSubmittedAt.getTime() + 1));
   await tx.update(submissions).set({
@@ -79,7 +79,7 @@ async function updateReturned(tx: Tx, row: Submission, values: FormValues, now: 
     publicData: values,
     staffData: Object.keys(row.staffData).length ? sanitize(getFormDef(row.formId)!, 'staff', row.staffData, values) : row.staffData,
     publicSubmittedAt: submittedAt,
-    deviceExpiresAt: new Date(now.getTime() + DEVICE_TTL_MS),
+    deviceExpiresAt: row.deviceTokenHash ? new Date(now.getTime() + DEVICE_TTL_MS) : null,
     version: row.version + 1,
   }).where(eq(submissions.id, row.id));
   await logEvent(tx, row.id, 'resubmitted');
@@ -111,7 +111,8 @@ export async function createPublicSubmission(
     if (requestId) {
       const known = await lockRow(tx, requestId);
       if (known) {
-        if (!ownsSubmission(known, deviceToken, now) || known.formId !== formId || known.idNo !== indexFields(values).idNo) {
+        if (!ownsSubmission(known, deviceToken, now) || known.formId !== formId || known.idNo !== indexFields(values).idNo
+          || await linkedAppointment(tx, known.id)) {
           return { ok: false, reason: 'not_found' } as const;
         }
         if (known.status !== 'returned' && samePublicData(known, values)) return { ok: true, id: known.id } as const;
@@ -123,6 +124,7 @@ export async function createPublicSubmission(
       eq(submissions.formId, formId), eq(submissions.idNo, indexFields(values).idNo),
       eq(submissions.deviceTokenHash, hashDeviceToken(deviceToken)), gt(submissions.deviceExpiresAt, now),
       inArray(submissions.status, ['submitted', 'returned']),
+      standaloneSubmission(),
     )).limit(2).for('update');
     // 歷史重複案件需由人員比對，不任選一筆覆蓋或自動合併。
     if (existing.length > 1) return { ok: false, reason: 'ambiguous' } as const;
@@ -165,6 +167,7 @@ export async function findRecoverableSubmission(formId: FormId, idNo: string, de
     eq(submissions.formId, formId), eq(submissions.idNo, idNo.toUpperCase().replace(/\s+/g, '')),
     eq(submissions.deviceTokenHash, hashDeviceToken(deviceToken)), gt(submissions.deviceExpiresAt, now),
     inArray(submissions.status, ['submitted', 'returned']),
+    standaloneSubmission(),
   )).limit(2);
   return rows.length === 1 ? rows[0] : null;
 }
@@ -181,7 +184,7 @@ export async function getDeviceSubmission(id: string, deviceToken: string, now =
       deviceExpiresAt: submissions.deviceExpiresAt,
     })
     .from(submissions)
-    .where(and(eq(submissions.id, id), eq(submissions.deviceTokenHash, hashDeviceToken(deviceToken))));
+    .where(and(eq(submissions.id, id), eq(submissions.deviceTokenHash, hashDeviceToken(deviceToken)), standaloneSubmission()));
   if (!row || row.status === 'voided' || !row.deviceExpiresAt || row.deviceExpiresAt <= now) return null;
   return row;
 }
@@ -196,6 +199,7 @@ export async function findDeviceSubmissions(formId: FormId, deviceToken: string,
         eq(submissions.formId, formId),
         eq(submissions.deviceTokenHash, hashDeviceToken(deviceToken)),
         ne(submissions.status, 'voided'),
+        standaloneSubmission(),
       ),
     );
   return rows.filter((row) => row.deviceExpiresAt && row.deviceExpiresAt > now);
@@ -214,7 +218,7 @@ export async function returnToPublic(id: string, deviceToken: string, now = new 
     const updated = await tx
       .update(submissions)
       .set({ status: 'returned', version: sql`${submissions.version} + 1` })
-      .where(and(eq(submissions.id, id), eq(submissions.status, 'submitted')))
+      .where(and(eq(submissions.id, id), eq(submissions.status, 'submitted'), standaloneSubmission()))
       .returning({ id: submissions.id });
     if (updated.length === 0) return { ok: false, reason: 'locked' } as const;
     await logEvent(tx, id, 'returned');
@@ -232,7 +236,9 @@ export async function resubmitPublic(
 ): Promise<DeviceActionResult | (PublicSubmitResult & { ok: false })> {
   return db.transaction(async (tx) => {
     const current = await lockRow(tx, id);
-    if (!current || !ownsSubmission(current, deviceToken, now)) return { ok: false, reason: 'not_found' } as const;
+    if (!current || !ownsSubmission(current, deviceToken, now) || await linkedAppointment(tx, id)) {
+      return { ok: false, reason: 'not_found' } as const;
+    }
     const def = getFormDef(current.formId);
     if (!def) return { ok: false, reason: 'not_supported' } as const;
     const values = { ...sanitize(def, 'public', raw), 'profile.idNo': current.idNo };
@@ -265,8 +271,13 @@ async function isActiveUser(tx: Tx, actorId: string) {
   return actor?.status === 'active';
 }
 
-async function lockRow(tx: Tx, id: string) {
+export async function lockRow(tx: Tx, id: string) {
   const [row] = await tx.select().from(submissions).where(eq(submissions.id, id)).for('update');
+  return row;
+}
+
+async function linkedAppointment(tx: Tx, id: string) {
+  const [row] = await tx.select({ id: appointments.id }).from(appointments).where(eq(appointments.submissionId, id));
   return row;
 }
 
@@ -276,6 +287,7 @@ export async function saveStaffData(actorId: string, id: string, version: number
     if (!(await isActiveUser(tx, actorId))) return { ok: false, reason: 'forbidden' } as const;
     const row = await lockRow(tx, id);
     if (!row) return { ok: false, reason: 'not_found' } as const;
+    if (await linkedAppointment(tx, id)) return { ok: false, reason: 'invalid_status' } as const;
     if (row.status !== 'submitted' && row.status !== 'returned') return { ok: false, reason: 'locked' } as const;
     if (row.version !== version) return { ok: false, reason: 'conflict' } as const;
     const def = getFormDef(row.formId);
@@ -306,6 +318,7 @@ export async function completeSubmission(
     if (!(await isActiveUser(tx, actorId))) return { ok: false, reason: 'forbidden' } as const;
     const row = await lockRow(tx, id);
     if (!row) return { ok: false, reason: 'not_found' } as const;
+    if (await linkedAppointment(tx, id)) return { ok: false, reason: 'invalid_status' } as const;
     if (row.status === 'returned') return { ok: false, reason: 'not_ready' } as const;
     if (row.status !== 'submitted') return { ok: false, reason: 'invalid_status' } as const;
     if (row.version !== version) return { ok: false, reason: 'conflict' } as const;
@@ -343,6 +356,7 @@ async function transition(actorId: string, id: string, kind: keyof typeof TRANSI
     if (!(await isActiveUser(tx, actorId))) return { ok: false, reason: 'forbidden' } as const;
     const row = await lockRow(tx, id);
     if (!row) return { ok: false, reason: 'not_found' } as const;
+    if (await linkedAppointment(tx, id)) return { ok: false, reason: 'invalid_status' } as const;
     if (!(from as readonly SubmissionStatus[]).includes(row.status)) return { ok: false, reason: 'invalid_status' } as const;
 
     const [updated] = await tx
@@ -377,13 +391,19 @@ export async function getSubmission(id: string) {
       submission: submissions,
       staffUpdatedByName: updater.name,
       completedByName: completer.name,
+      appointmentId: appointments.id,
+      appointmentStatus: appointments.status,
     })
     .from(submissions)
     .leftJoin(updater, eq(submissions.staffUpdatedBy, updater.id))
     .leftJoin(completer, eq(submissions.completedBy, completer.id))
+    .leftJoin(appointments, eq(appointments.submissionId, submissions.id))
     .where(eq(submissions.id, id));
   if (!row) return null;
-  return { ...row.submission, staffUpdatedByName: row.staffUpdatedByName, completedByName: row.completedByName };
+  return {
+    ...row.submission, staffUpdatedByName: row.staffUpdatedByName, completedByName: row.completedByName,
+    appointmentId: row.appointmentId, appointmentStatus: row.appointmentStatus,
+  };
 }
 
 function standaloneSubmission(form: SubmissionIdentityColumns = submissions) {
@@ -482,7 +502,8 @@ export async function searchSubmissions(q: SubmissionQuery) {
     publicSubmittedAt: appointments.createdAt,
     completedAt: appointments.confirmedAt,
     createdAt: appointments.createdAt,
-    printSubmissionId: submissions.id,
+    printSubmissionId: sql<string | null>`case when ${appointments.status} <> 'cancelled' and ${submissions.status} <> 'voided'
+      then ${submissions.id} end`.as('print_submission_id'),
     duplicates: sql<number>`0`.as('duplicates'),
   }).from(appointments).leftJoin(submissions, matchesAppointmentSubmission());
 

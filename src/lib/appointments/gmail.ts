@@ -1,4 +1,5 @@
 import 'server-only';
+import { createTransport } from 'nodemailer';
 import { appUrl } from '@/lib/env';
 import { APPOINTMENT_CATEGORY } from './catalog';
 
@@ -9,9 +10,7 @@ type MailResult =
 export type AppointmentNoticeSender = (recipient: string, count: number, batchId: string) => Promise<MailResult>;
 
 type GmailConfig = {
-  clientId: string;
-  clientSecret: string;
-  refreshToken: string;
+  appPassword: string;
   sender: string;
   listUrl: string;
 };
@@ -35,11 +34,9 @@ export function appointmentCronSecret() {
 function gmailConfig(): GmailConfig | null {
   // 正式排程只能在 Vercel Production 寄送。本機仍可使用模擬服務驗證。
   if (process.env.VERCEL_ENV !== 'production') return null;
-  const clientId = process.env.APPOINTMENT_GMAIL_CLIENT_ID?.trim();
-  const clientSecret = process.env.APPOINTMENT_GMAIL_CLIENT_SECRET?.trim();
-  const refreshToken = process.env.APPOINTMENT_GMAIL_REFRESH_TOKEN?.trim();
+  const appPassword = process.env.APPOINTMENT_GMAIL_APP_PASSWORD?.replace(/\s/g, '');
   const sender = process.env.APPOINTMENT_GMAIL_SENDER?.trim();
-  if (!clientId || !clientSecret || !refreshToken || !sender || !isNotificationAddress(sender)) return null;
+  if (!appPassword || !/^[A-Za-z0-9]{16}$/.test(appPassword) || !sender || !isNotificationAddress(sender)) return null;
 
   try {
     const base = new URL(appUrl());
@@ -47,7 +44,7 @@ function gmailConfig(): GmailConfig | null {
     const listUrl = new URL('/admin/submissions', base);
     listUrl.searchParams.set('form', APPOINTMENT_CATEGORY);
     listUrl.searchParams.set('status', 'submitted');
-    return { clientId, clientSecret, refreshToken, sender, listUrl: listUrl.href };
+    return { appPassword, sender, listUrl: listUrl.href };
   } catch {
     return null;
   }
@@ -57,81 +54,43 @@ export function appointmentMailConfigured() {
   return Boolean(appointmentCronSecret() && gmailConfig());
 }
 
-async function accessToken(config: GmailConfig): Promise<string | null> {
-  try {
-    const response = await fetch('https://oauth2.googleapis.com/token', {
-      method: 'POST',
-      body: new URLSearchParams({
-        client_id: config.clientId,
-        client_secret: config.clientSecret,
-        refresh_token: config.refreshToken,
-        grant_type: 'refresh_token',
-      }),
-      cache: 'no-store',
-      redirect: 'error',
-      signal: AbortSignal.timeout(TIMEOUT_MS),
-    });
-    if (!response.ok) return null;
-    const result = await response.json();
-    return typeof result.access_token === 'string' && result.access_token ? result.access_token : null;
-  } catch {
-    return null;
-  }
-}
-
-function encodeDigest(config: GmailConfig, recipient: string, count: number, batchId: string) {
-  const subject = Buffer.from('預約健檢待辦通知').toString('base64');
-  const content = `目前有 ${count} 筆新待確認的預約健檢案件。\r\n\r\n請登入「協同完成」查看。\r\n${config.listUrl}\r\n`;
-  const body = Buffer.from(content).toString('base64').match(/.{1,76}/g)!.join('\r\n');
-  const senderDomain = config.sender.split('@')[1];
-  const message = [
-    `From: ${config.sender}`,
-    `To: ${recipient}`,
-    `Subject: =?UTF-8?B?${subject}?=`,
-    `Date: ${new Date().toUTCString()}`,
-    `Message-ID: <appointment-digest.${batchId}@${senderDomain}>`,
-    'MIME-Version: 1.0',
-    'Content-Type: text/plain; charset=UTF-8',
-    'Content-Transfer-Encoding: base64',
-    '',
-    body,
-    '',
-  ].join('\r\n');
-  return Buffer.from(message).toString('base64url');
-}
-
-/** 同一輪排程共用 access token；有待辦時才向 Google 取得。 */
 export function createAppointmentGmailSender(): AppointmentNoticeSender | null {
   const config = gmailConfig();
   if (!config) return null;
-  let tokenRequest: Promise<string | null> | undefined;
+  const transport = createTransport({
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
+    auth: { user: config.sender, pass: config.appPassword },
+    connectionTimeout: TIMEOUT_MS,
+    greetingTimeout: TIMEOUT_MS,
+    socketTimeout: TIMEOUT_MS,
+  });
+  const senderDomain = config.sender.split('@')[1];
 
   return async (recipient, count, batchId) => {
     if (!isNotificationAddress(recipient)) return { status: 'failed', errorCode: 'invalid_recipient' };
-    const token = await (tokenRequest ??= accessToken(config));
-    if (!token) return { status: 'failed', errorCode: 'oauth_unavailable' };
+    const messageId = `<appointment-digest.${batchId}@${senderDomain}>`;
 
     try {
-      const response = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ raw: encodeDigest(config, recipient, count, batchId) }),
-        cache: 'no-store',
-        redirect: 'error',
-        signal: AbortSignal.timeout(TIMEOUT_MS),
+      const result = await transport.sendMail({
+        from: config.sender,
+        to: recipient,
+        subject: '預約健檢待辦通知',
+        text: `目前有 ${count} 筆新待確認的預約健檢案件。\n\n請登入「協同完成」查看。\n${config.listUrl}\n`,
+        messageId,
       });
-      if (!response.ok) {
-        const status = response.status >= 400 && response.status < 500 && response.status !== 408 ? 'failed' : 'uncertain';
-        return { status, errorCode: `gmail_${response.status}` };
+      if (result.accepted.length !== 1) return { status: 'uncertain', errorCode: 'gmail_smtp_response' };
+      return { status: 'sent', messageId };
+    } catch (error) {
+      if (typeof error === 'object' && error !== null && 'responseCode' in error) {
+        const code = error.responseCode;
+        if (typeof code === 'number' && Number.isInteger(code) && code >= 400 && code < 600) {
+          return { status: 'failed', errorCode: `gmail_smtp_${code}` };
+        }
       }
-      const result = await response.json();
-      if (typeof result.id !== 'string' || !/^[\w-]{1,128}$/.test(result.id)) {
-        return { status: 'uncertain', errorCode: 'gmail_response' };
-      }
-      return { status: 'sent', messageId: result.id };
-    } catch {
-      // Gmail 可能已經收下請求，交由人工查核，以免寄出兩封摘要。
-      return { status: 'uncertain', errorCode: 'gmail_unknown' };
+      // 連線中斷時可能已交付 Gmail，保留待核對以免重寄。
+      return { status: 'uncertain', errorCode: 'gmail_smtp_unknown' };
     }
   };
 }

@@ -1,5 +1,9 @@
 /** 固定動作名稱，不含表單種類、證件號或其他個人資料。 */
-export const PUBLIC_CAPTCHA_ACTIONS = { submit: 'public_submit', resubmit: 'public_resubmit', return: 'public_return' } as const;
+export const PUBLIC_CAPTCHA_ACTIONS = {
+  submit: 'public_submit', resubmit: 'public_resubmit', return: 'public_return',
+  appointmentLookup: 'appointment_lookup',
+  appointmentCreate: 'appointment_create', appointmentCancel: 'appointment_cancel',
+} as const;
 export type PublicCaptchaAction = (typeof PUBLIC_CAPTCHA_ACTIONS)[keyof typeof PUBLIC_CAPTCHA_ACTIONS];
 export type PublicCaptchaConfig = { mode: 'required' | 'development-bypass' | 'unavailable'; siteKey: string };
 export type CaptchaFailure = 'verification_failed' | 'verification_unavailable';

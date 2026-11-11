@@ -17,6 +17,7 @@ type Rec = {
   createdAt?: number;
   tokens?: string[];
   data?: FormValues | FormRecord;
+  appointment?: { id: string; version: number | null; values: FormValues };
 };
 export type Loaded = { profile: FormValues | null; form: FormRecord | null };
 
@@ -140,4 +141,26 @@ export const localStore = {
     }, undefined),
 
   clearAll: () => run(async (store) => store.clear(), undefined),
+};
+
+const APPOINTMENT_DRAFT = 'appointment-draft';
+export const appointmentDraft = {
+  load: (id: string, version: number | null) => run(async (store) => {
+    const row = await get(store, APPOINTMENT_DRAFT);
+    if (row && Date.now() - (row.createdAt ?? 0) >= TTL_MS) {
+      store.delete(APPOINTMENT_DRAFT);
+      return null;
+    }
+    return row?.appointment?.id === id && row.appointment.version === version ? row.appointment.values : null;
+  }, null),
+  save: (id: string, version: number | null, values: FormValues) => run(async (store) => {
+    const row = await get(store, APPOINTMENT_DRAFT);
+    const createdAt = row?.appointment?.id === id && row.appointment.version === version ? row.createdAt : Date.now();
+    if (!createdAt || Date.now() - createdAt >= TTL_MS) return;
+    store.put({ key: APPOINTMENT_DRAFT, createdAt, appointment: { id, version, values } } satisfies Rec);
+  }, undefined),
+  clear: (id: string) => run(async (store) => {
+    const row = await get(store, APPOINTMENT_DRAFT);
+    if (row?.appointment?.id === id) store.delete(APPOINTMENT_DRAFT);
+  }, undefined),
 };

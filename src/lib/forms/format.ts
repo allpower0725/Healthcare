@@ -7,17 +7,20 @@ const ID_LETTER: Record<string, number> = {
 
 /**
  * 身分證統一編號與新式統一證號：1 碼字母＋9 碼數字（第 2 碼 1、2 為國民，8、9 為外籍），含檢查碼。
- * 舊式統一證號：2 碼字母＋8 碼數字，只檢查格式。
+ * 舊式統一證號：2 碼字母＋8 碼數字，第二個字母取對應數值的個位數，含檢查碼。
  */
 export function checkTwId(raw: string): { ok: boolean; foreign?: boolean } {
   const id = String(raw || '').toUpperCase();
-  if (/^[A-Z][A-D]\d{8}$/.test(id)) return { ok: true, foreign: true };
-  if (!/^[A-Z][1289]\d{8}$/.test(id)) return { ok: false };
+  const oldResident = /^[A-Z][A-D]\d{8}$/.test(id);
+  if (!oldResident && !/^[A-Z][1289]\d{8}$/.test(id)) return { ok: false };
   const n = ID_LETTER[id[0]];
   let sum = Math.floor(n / 10) + (n % 10) * 9 + Number(id[9]);
-  for (let i = 1; i <= 8; i++) sum += Number(id[i]) * (9 - i);
+  for (let i = 1; i <= 8; i++) {
+    const digit = oldResident && i === 1 ? ID_LETTER[id[i]] % 10 : Number(id[i]);
+    sum += digit * (9 - i);
+  }
   if (sum % 10 !== 0) return { ok: false };
-  return { ok: true, foreign: id[1] === '8' || id[1] === '9' };
+  return { ok: true, foreign: oldResident || id[1] === '8' || id[1] === '9' };
 }
 
 /** 本國身分證格式（1 碼字母＋1 或 2＋8 碼數字），用來預選國籍、提醒核對檢查碼 */

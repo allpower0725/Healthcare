@@ -58,7 +58,7 @@ export function LaborPublic({ prefilled, identityLocked = false }: { prefilled: 
       </Field>
     </StepCard>
     <StepCard no={2} title="作業經歷與檢查時期" desc="請依實際工作情形填寫，日期及時數不清楚時可先留空。">
-      <TextField name="labor.company" label="事業單位名稱" maxLength={60} placeholder="例如：烏日澄清醫院、○○股份有限公司" />
+      <TextField name="labor.company" label="事業單位名稱" optional maxLength={60} placeholder="例如：烏日澄清醫院、○○股份有限公司" />
       <DateField prefix="labor.hired" label="受僱日期（選填）" />
       <DateField prefix="labor.exam" label="檢查日期（選填）" />
       <Job />

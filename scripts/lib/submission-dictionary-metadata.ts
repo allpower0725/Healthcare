@@ -9,6 +9,7 @@ import { ORAL_OPTIONS } from '../../src/lib/forms/defs/oral';
 import { PAP_DX, PAP_QUESTIONS, PAP_STAFF_OPTIONS } from '../../src/lib/forms/defs/pap';
 import { ABORIGINAL, EDUCATION, SEX, type Option } from '../../src/lib/forms/profile';
 import { TW_COUNTIES } from '../../src/lib/forms/tw-districts';
+import { IDENTITY_TYPES } from '../../src/lib/forms/identity';
 
 export const fieldLabels: Record<string, string> = {};
 export const fieldOptions: Record<string, readonly Option[]> = {};
@@ -26,6 +27,7 @@ function date(prefix: string, label: string, parts = ['Y', 'M', 'D']) {
 }
 
 labels('profile.', {
+  idType: '證件種類',
   idNo: '身分證號／統一證號／護照號碼', name: '姓名', phone: '聯絡電話', email: '電子郵件',
   edu: '教育程度', sex: '性別', aboriginal: '是否為原住民', tribe: '原住民族別', mobile: '手機號碼',
   addrCounty: '現住址－縣市', addrTown: '現住址－鄉鎮市區', addrVillage: '現住址－村里', addrLin: '現住址－鄰',
@@ -35,6 +37,7 @@ labels('profile.', {
 });
 date('profile.birth', '出生日期');
 options('profile.', {
+  idType: IDENTITY_TYPES,
   edu: EDUCATION, sex: SEX, aboriginal: ABORIGINAL,
   addrCounty: TW_COUNTIES.map((v) => [v, v]), regCounty: TW_COUNTIES.map((v) => [v, v]),
 });

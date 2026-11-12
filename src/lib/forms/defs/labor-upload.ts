@@ -56,7 +56,7 @@ export function laborUploadOnSet(key: string, value: string | string[], set: (ke
     if (key === 'labor.uploadHasRepresentative' && value !== 'Y') {
       for (const suffix of ['Name', 'IdNo', 'Signature']) set('labor.uploadRepresentative' + suffix, '');
     }
-    if ((key.startsWith('labor.upload') && !key.endsWith('Signature')) || ['profile.name', 'profile.idNo', 'profile.sex', 'profile.birthY', 'profile.birthM', 'profile.birthD'].includes(key)) {
+    if ((key.startsWith('labor.upload') && !key.endsWith('Signature')) || ['profile.name', 'profile.idType', 'profile.idNo', 'profile.sex', 'profile.birthY', 'profile.birthM', 'profile.birthD'].includes(key)) {
       set('labor.uploadSignature', '');
       set('labor.uploadRepresentativeSignature', '');
     }

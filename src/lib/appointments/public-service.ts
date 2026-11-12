@@ -6,6 +6,7 @@ import { type Appointment, appointmentSettings, appointments, type FormValues, s
 import { getFormDef } from '@/lib/forms/defs';
 import { sanitize, validateRules } from '@/lib/forms/engine';
 import { rocToIso, todayIsoTaipei } from '@/lib/forms/format';
+import { identityError, isIdentityType, type IdentityType, normalizeIdentityNumber } from '@/lib/forms/identity';
 import { lockRow, logEvent, samePublicData, updateReturned } from '@/lib/submissions/service';
 import { type AppointmentGate, type AppointmentIdentity, appointmentDeviceHash, matchesAppointmentDevice } from './access';
 import type { AppointmentPackage } from './catalog';
@@ -23,14 +24,14 @@ export function parseAppointmentIdentity(raw: unknown, now = new Date()): Appoin
   const input = raw as Record<string, unknown>;
   if (typeof input.idNo !== 'string' || input.idNo.length > 32
     || typeof input.y !== 'string' || typeof input.m !== 'string' || typeof input.d !== 'string') return null;
-  const idNo = input.idNo.toUpperCase().replace(/\s+/g, '');
-  if (!/^[A-Z0-9]{1,12}$/.test(idNo)) return null;
+  const idNo = normalizeIdentityNumber(input.idNo);
+  if (!isIdentityType(input.idType) || identityError(input.idType, idNo)) return null;
   const birthDate = rocToIso(input.y, input.m, input.d);
   const rules = labor.publicRules.filter(({ id }) => id === 'profile.idNo' || id === 'profile.birth');
   const errors = validateRules(rules, {
-    'profile.idNo': idNo, 'profile.birthY': input.y, 'profile.birthM': input.m, 'profile.birthD': input.d,
+    'profile.idType': input.idType, 'profile.idNo': idNo, 'profile.birthY': input.y, 'profile.birthM': input.m, 'profile.birthD': input.d,
   }, now);
-  return birthDate && !Object.keys(errors).length ? { idNo, birthDate } : null;
+  return birthDate && !Object.keys(errors).length ? { idType: input.idType, idNo, birthDate } : null;
 }
 
 function identityWhere(identity: AppointmentIdentity) {
@@ -70,7 +71,7 @@ export async function publicBookingCount(date: unknown, now = new Date()) {
 
 export async function createAppointment(gate: AppointmentGate, device: string, input: BookingInput, now = new Date()) {
   const hash = appointmentDeviceHash(device, gate.requestId);
-  if (!hash || gate.appointmentId) return { ok: false, reason: 'conflict' } as const;
+  if (!hash || gate.appointmentId || identityError(gate.idType, gate.idNo)) return { ok: false, reason: 'conflict' } as const;
   const today = todayIsoTaipei(now);
   return db.transaction(async (tx) => {
     // 同一證件的新預約需序列化，包含不同裝置同時送出。
@@ -137,10 +138,10 @@ export async function cancelAppointment(gate: AppointmentGate, device: string | 
   });
 }
 
-export function intakeIdentity(booking: Appointment): FormValues {
+export function intakeIdentity(booking: Appointment, idType: IdentityType): FormValues {
   const [y, m, d] = booking.birthDate.split('-').map(Number);
   return {
-    'profile.idNo': booking.idNo, 'profile.name': booking.name,
+    'profile.idType': idType, 'profile.idNo': booking.idNo, 'profile.name': booking.name,
     'profile.birthY': String(y - 1911), 'profile.birthM': String(m), 'profile.birthD': String(d),
   };
 }
@@ -184,12 +185,16 @@ export async function saveAppointmentIntake(
   return db.transaction(async (tx) => {
     const booking = await lockAppointment(tx, gate, device, id);
     if (!booking || booking.status === 'cancelled') return { ok: false, reason: 'not_found' } as const;
-    const values = { ...sanitize(labor, 'public', raw), ...intakeIdentity(booking) };
+    const current = booking.submissionId ? await lockRow(tx, booking.submissionId) : null;
+    if (booking.submissionId && (!current || !matchesIntake(booking, current) || current.status === 'voided')) {
+      return { ok: false, reason: 'locked' } as const;
+    }
+    const values = { ...sanitize(labor, 'public', raw), ...intakeIdentity(booking, gate.idType),
+      'profile.idType': current ? current.publicData['profile.idType'] ?? '' : gate.idType };
     const errors = validateRules(labor.publicRules, values, now);
     if (Object.keys(errors).length) return { ok: false, reason: 'invalid', errors } as const;
-    if (booking.submissionId) {
-      const row = await lockRow(tx, booking.submissionId);
-      if (!row || !matchesIntake(booking, row) || row.status === 'voided') return { ok: false, reason: 'locked' } as const;
+    if (current) {
+      const row = current;
       const writtenVersion = expectedVersion === null ? 1 : expectedVersion + 1;
       if ((row.status === 'submitted' || row.status === 'completed')
         && row.version === writtenVersion && samePublicData(row, values)) return { ok: true } as const;

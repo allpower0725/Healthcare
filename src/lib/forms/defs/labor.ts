@@ -33,7 +33,7 @@ export function habitOptions(habit: (typeof LABOR_HABITS)[number]): readonly Opt
 const text = (maxLength: number, showIf?: FieldSpec['showIf']): FieldSpec => ({ part: 'public', kind: 'text', maxLength, showIf });
 const choice = (options: readonly Option[], showIf?: FieldSpec['showIf']): FieldSpec => ({ part: 'public', kind: 'choice', options: optionValues(options), showIf });
 const fields: Record<string, FieldSpec> = Object.fromEntries(
-  ['profile.idNo', 'profile.name', 'profile.birthY', 'profile.birthM', 'profile.birthD', 'profile.email'].map((key) => [key, PROFILE_FIELDS[key]]),
+  ['profile.idType', 'profile.idNo', 'profile.name', 'profile.birthY', 'profile.birthM', 'profile.birthD', 'profile.email'].map((key) => [key, PROFILE_FIELDS[key]]),
 );
 fields['profile.sex'] = choice(SEX);
 fields['labor.company'] = text(60);
@@ -41,7 +41,7 @@ fields['labor.reason'] = choice(LABOR_REASON);
 const rules: Rule[] = [
   ...PROFILE_RULES.filter((rule) => ['profile.idNo', 'profile.name', 'profile.birth', 'profile.email'].includes(rule.id)),
   { id: 'profile.sex', type: 'choice', keys: ['profile.sex'], required: true },
-  { id: 'labor.company', type: 'text', keys: ['labor.company'], required: true },
+  { id: 'labor.company', type: 'text', keys: ['labor.company'] },
   { id: 'labor.reason', type: 'choice', keys: ['labor.reason'], required: true },
 ];
 for (const prefix of ['labor.hired', 'labor.exam']) {

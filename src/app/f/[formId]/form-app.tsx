@@ -2,6 +2,7 @@
 
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FormContext } from '@/components/forms/context';
+import { IdentityFields } from '@/components/forms/identity-fields';
 import { PrintDocumentButton } from '@/components/forms/print-document-button';
 import { useFormState } from '@/components/forms/use-form-state';
 import { LoadingOverlay } from '@/components/loading/loading-overlay';
@@ -13,7 +14,8 @@ import type { FormValues, SubmissionStatus } from '@/db/schema';
 import type { FormId } from '@/lib/forms/catalog';
 import { getFormDef } from '@/lib/forms/defs';
 import { validateRules } from '@/lib/forms/engine';
-import { checkTwId, isTaiwanCitizenId, maskIdNo } from '@/lib/forms/format';
+import { maskIdNo } from '@/lib/forms/format';
+import { identityError, isIdentityType, type IdentityType, normalizeIdentityNumber } from '@/lib/forms/identity';
 import { toTaipeiInput } from '@/lib/time';
 import { newSubmissionRequestId } from '@/lib/submissions/request-id';
 import { getFormUi } from '@/forms/registry';
@@ -83,6 +85,7 @@ export function FormApp({
   const [phase, setPhase] = useState<Phase>('loading');
   const [owner, setOwner] = useState<string | null>(null);
   const [idInput, setIdInput] = useState('');
+  const [idType, setIdType] = useState<IdentityType>('national_id');
   const [idError, setIdError] = useState('');
   const [sent, setSent] = useState<Sent | null>(null);
   const [prefilled, setPrefilled] = useState(false);
@@ -169,7 +172,15 @@ export function FormApp({
   /* ---------- 身分證關卡 ---------- */
 
   const enter = useCallback(
-    async (who: string, saved: Loaded) => {
+    async (who: string, saved: Loaded, selectedType?: IdentityType) => {
+      const type = selectedType ?? saved.profile?.['profile.idType'];
+      if (!isIdentityType(type) || identityError(type, who)) {
+        setIdInput(who);
+        if (isIdentityType(type)) setIdType(type);
+        setPhase('gate');
+        return;
+      }
+      setIdType(type);
       ownerRef.current = who;
       setOwner(who);
       const own = saved.form;
@@ -180,19 +191,22 @@ export function FormApp({
         return known ?? await recoverDeviceSubmission(formId, who);
       });
       if (remote) {
+        const remoteType = remote.publicData['profile.idType'];
+        const confirmedType = isIdentityType(remoteType) ? remoteType : type;
+        setIdType(confirmedType);
         setSentState({ id: remote.id, status: remote.status, submittedAt: remote.submittedAt });
         if (remote.status === 'returned') {
           // 退回修改中：以裝置上正在修改的內容為主
           const editing = Object.keys(own?.values ?? {}).length > 0;
-          replace({ ...withoutImages(remote.publicData), ...(editing ? own?.values : {}), 'profile.idNo': who });
+          replace({ ...withoutImages(remote.publicData), ...(editing ? own?.values : {}), 'profile.idNo': who, 'profile.idType': confirmedType });
           setPhase('filling');
         } else {
-          replace(remote.publicData);
+          replace({ ...remote.publicData, 'profile.idType': confirmedType });
           setPhase('done');
         }
         await localStore.save(who, formId, {
           values: remote.status === 'returned' ? latest.current : {}, submissionId: remote.id,
-        }, null);
+        }, { 'profile.idType': confirmedType, 'profile.idNo': who });
         requestIdRef.current = null;
         return;
       }
@@ -203,14 +217,15 @@ export function FormApp({
         return;
       }
       const profile = saved.profile ?? {};
-      const hasProfile = Object.entries(profile).some(([k, v]) => k !== 'profile.idNo' && v && v.length > 0);
+      const hasProfile = Object.entries(profile).some(([k, v]) => !['profile.idNo', 'profile.idType'].includes(k) && v && v.length > 0);
       // 先前送出的表單已失效（逾時或作廢）時，只帶入基本資料
       const draft = own?.submissionId ? {} : (own?.values ?? {});
       setPrefilled(hasProfile && Object.keys(draft).length === 0);
-      replace({ ...profile, ...draft, 'profile.idNo': who });
+      replace({ ...profile, ...draft, 'profile.idNo': who, 'profile.idType': type });
+      persist(latest.current);
       setPhase('filling');
     },
-    [acceptingNew, formId, latest, replace, withoutImages, runRequest],
+    [acceptingNew, formId, latest, replace, withoutImages, runRequest, persist],
   );
 
   // 同一分頁重新整理：憑證有效就直接續填
@@ -245,11 +260,12 @@ export function FormApp({
 
   async function start() {
     if (starting.current) return;
-    const id = idInput.toUpperCase().replace(/\s+/g, '');
+    const id = normalizeIdentityNumber(idInput);
     setIdInput(id);
-    if (!id) {
-      setIdError('請填寫身分證統一編號、統一證號或護照號碼');
-      showFeedback('請填寫身分證統一編號、統一證號或護照號碼。', 'warning', () => document.getElementById('pf-id')?.focus());
+    const error = identityError(idType, id);
+    if (error) {
+      setIdError(error);
+      showFeedback(error, 'warning', () => document.getElementById('pf-id')?.focus());
       return;
     }
     setIdError('');
@@ -263,7 +279,7 @@ export function FormApp({
       }
       token.current = saved.token;
       if (saved.token) session.set(RESUME_KEY, saved.token);
-      await enter(id, saved);
+      await enter(id, saved, idType);
       scrollToId('gate', 'start');
     } catch (error) {
       showFeedback(error instanceof PublicRequestError ? error.message : '無法讀取表單，請稍後重試。');
@@ -444,7 +460,6 @@ export function FormApp({
 
   const passed = phase === 'filling' || phase === 'closed';
   const shownId = passed ? (owner ?? '') : idInput;
-  const idWarn = isTaiwanCitizenId(shownId) && !checkTwId(shownId).ok;
   const locked = sent?.status === 'completed';
   const v = form.values;
   const text = (k: string) => (typeof v[k] === 'string' ? (v[k] as string) : '');
@@ -491,54 +506,21 @@ export function FormApp({
               </span>
               <div className="step__titles">
                 <h2 className="step__title" id="gate-title">
-                  {passed ? '已確認身分' : '請先輸入身分證統一編號'}
+                  {passed ? '已確認證件資料' : '請先選擇證件種類並輸入號碼'}
                 </h2>
                 {!passed && (
-                  <p className="step__desc">為保護個人資料，輸入相同的身分證號，才會帶出您先前在此裝置填寫的內容。</p>
+                  <p className="step__desc">輸入相同的證件號碼，才會帶出您先前在此裝置填寫的內容。</p>
                 )}
               </div>
             </header>
-            <div className={`field${idError ? ' is-invalid' : ''}`}>
-              <div className="field__row">
-                <label className="field__label" htmlFor="pf-id">
-                  身分證統一編號 <span className="field__label-sub">（外籍人士請填統一證號）</span>
-                </label>
-                {passed && (
+            <IdentityFields inputId="pf-id" type={idType} value={shownId} readOnly={passed} disabled={busy} error={idError}
+              onTypeChange={(type) => { setIdType(type); setIdError(''); }}
+              onNumberChange={(value) => { setIdInput(value); setIdError(''); }} onEnter={() => void start()}
+              action={passed ? (
                   <button type="button" className="btn btn--soft btn--mini gate__change" disabled={busy} onClick={toGate}>
                     更換
                   </button>
-                )}
-              </div>
-              <input
-                className="input input--code"
-                id="pf-id"
-                value={shownId}
-                readOnly={passed}
-                maxLength={12}
-                autoComplete="off"
-                autoCapitalize="characters"
-                autoCorrect="off"
-                spellCheck={false}
-                enterKeyHint="go"
-                aria-invalid={idError ? true : undefined}
-                onChange={(e) => {
-                  setIdInput(e.target.value.toUpperCase().replace(/\s+/g, ''));
-                  if (idError) setIdError('');
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.nativeEvent.isComposing && !passed) void start();
-                }}
-              />
-              <p className="field__hint">共 10 碼，例：A123456789。無居留證的外籍人士請填護照號碼。</p>
-              {idWarn && (
-                <p className="field__warn">這個號碼的檢查碼與本國身分證規則不符，請再核對一次；確認無誤仍可繼續填寫。</p>
-              )}
-              {idError && (
-                <p className="field__error" role="alert">
-                  {idError}
-                </p>
-              )}
-            </div>
+              ) : undefined} />
             {!passed && (
               <button
                 type="button"

@@ -7,8 +7,9 @@ import { db } from '@/db';
 import { appointmentAttemptLimits } from '@/db/schema';
 import { secureCookies } from '@/lib/auth/cookies';
 import { APPOINTMENT_PUBLIC_PATH } from './catalog';
+import { identityError, type IdentityType } from '@/lib/forms/identity';
 
-export type AppointmentIdentity = { idNo: string; birthDate: string };
+export type AppointmentIdentity = { idType: IdentityType; idNo: string; birthDate: string };
 export type AppointmentGate = AppointmentIdentity & { requestId: string; appointmentId?: string; expiresAt: number };
 const GATE = 'hc_appointment';
 const DEVICE = 'hc_appointment_device';
@@ -37,7 +38,7 @@ export async function readAppointmentAccess() {
     decipher.setAAD(Buffer.from(device));
     decipher.setAuthTag(bytes.subarray(12, 28));
     const gate = JSON.parse(Buffer.concat([decipher.update(bytes.subarray(28)), decipher.final()]).toString()) as AppointmentGate;
-    return { device, gate: gate.expiresAt > Date.now() ? gate : null };
+    return { device, gate: gate.expiresAt > Date.now() && !identityError(gate.idType, gate.idNo) ? gate : null };
   } catch {
     return { device, gate: null };
   }

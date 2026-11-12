@@ -6,9 +6,11 @@ import { LoadingOverlay } from '@/components/loading/loading-overlay';
 import { useNativeValidationModal, useResultModal } from '@/components/feedback/result-modal';
 import { APPOINTMENT_PACKAGES, APPOINTMENT_PUBLIC_PATH, type AppointmentPackage } from '@/lib/appointments/catalog';
 import { FormIllustration } from '@/components/brand/form-illustration';
+import { IdentityFields } from '@/components/forms/identity-fields';
 import { type BookingCalendar, calendarLink } from '@/lib/appointments/dates';
 import type { publicAppointmentView } from '@/lib/appointments/public-service';
 import { clampDay, clampMonth, normalizeIntegerInput } from '@/lib/forms/format';
+import { identityError, type IdentityType } from '@/lib/forms/identity';
 import { PUBLIC_CAPTCHA_ACTIONS as ACTION, type PublicCaptchaConfig } from '@/lib/security/public-protection';
 import { PublicChrome } from '../[formId]/chrome';
 import { appointmentDraft } from '../[formId]/local-store';
@@ -20,7 +22,7 @@ import { useAppointmentRequest } from './use-appointment-request';
 
 type Booking = Awaited<ReturnType<typeof publicAppointmentView>>;
 const STATUS = { pending: '待院所確認', confirmed: '預約已成立', cancelled: '預約已取消' };
-const IDENTITY = { idNo: '', y: '', m: '', d: '' };
+const IDENTITY = { idType: 'national_id' as IdentityType, idNo: '', y: '', m: '', d: '' };
 const BIRTH_FIELDS = [['y', '年', 3], ['m', '月', 2], ['d', '日', 2]] as const;
 const COUNT_PENDING = '查詢人數中…';
 
@@ -28,6 +30,7 @@ export function AppointmentApp({ open, calendar, requestId: initialRequestId, bo
   open: boolean; calendar: BookingCalendar; requestId: string | null; booking: Booking | null; captcha: PublicCaptchaConfig; configured: boolean;
 }) {
   const [identity, setIdentity] = useState(IDENTITY);
+  const [identityIssue, setIdentityIssue] = useState('');
   const [requestId, setRequestId] = useState(initialRequestId);
   const [booking, setBooking] = useState(initialBooking);
   const [availability, setAvailability] = useState({ open, calendar });
@@ -44,6 +47,14 @@ export function AppointmentApp({ open, calendar, requestId: initialRequestId, bo
 
   async function lookup(event: FormEvent) {
     event.preventDefault();
+    const issue = identityError(identity.idType, identity.idNo);
+    if (issue) {
+      setIdentityIssue(issue);
+      showResult({ title: '請確認證件資料', tone: 'warning', message: issue,
+        confirmLabel: '前往修正', onClose: () => document.getElementById('appointment-idNo')?.focus() });
+      return;
+    }
+    setIdentityIssue('');
     const result = await request('正在查詢預約…', (token) => lookupAppointment(identity, token), ACTION.appointmentLookup);
     if (!result?.ok) {
       if (result) showResult({ title: '查詢未完成', tone: 'error', message: result.message });
@@ -122,10 +133,9 @@ export function AppointmentApp({ open, calendar, requestId: initialRequestId, bo
     {!requestId ? <form className="card" onSubmit={lookup} onInvalidCapture={onInvalid}>
       <h2>輸入證件號與出生日期</h2>
       {!open && <p className="notice notice--warn">目前暫停受理新預約，既有預約仍可查詢。</p>}
-      <label className={styles.field}>身分證統一編號、統一證號或護照號碼
-        <input className="input" autoCapitalize="characters" autoComplete="off" maxLength={12} required
-          value={identity.idNo} onChange={(e) => setIdentity({ ...identity, idNo: e.target.value.toUpperCase().replace(/\s/g, '') })} />
-      </label>
+      <IdentityFields inputId="appointment-idNo" type={identity.idType} value={identity.idNo} disabled={!!message}
+        error={identityIssue} onTypeChange={(idType) => { setIdentity({ ...identity, idType }); setIdentityIssue(''); }}
+        onNumberChange={(idNo) => { setIdentity({ ...identity, idNo }); setIdentityIssue(''); }} />
       <fieldset className={styles.birth}><legend>出生日期（民國）</legend>
         <div className="rocdate">{BIRTH_FIELDS.map(([key, unit, max]) => <label key={key}
           className={`date-part${key === 'y' ? ' date-part--year' : ''}`}>

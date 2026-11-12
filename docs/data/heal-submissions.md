@@ -54,6 +54,7 @@
 
 | key | 中文名稱 | 選項代碼 → 名稱 |
 |---|---|---|
+| `profile.idType` | 證件種類 | `national_id` → 身分證；`resident_id` → 統一證號；`passport` → 護照 |
 | `profile.idNo` | 身分證號／統一證號／護照號碼 |  |
 | `profile.name` | 姓名 |  |
 | `profile.birthY` | 出生日期（民國年） |  |
@@ -133,6 +134,7 @@
 
 | key | 中文名稱 | 選項代碼 → 名稱 |
 |---|---|---|
+| `profile.idType` | 證件種類 | `national_id` → 身分證；`resident_id` → 統一證號；`passport` → 護照 |
 | `profile.idNo` | 身分證號／統一證號／護照號碼 |  |
 | `profile.name` | 姓名 |  |
 | `profile.birthY` | 出生日期（民國年） |  |
@@ -218,6 +220,7 @@
 
 | key | 中文名稱 | 選項代碼 → 名稱 |
 |---|---|---|
+| `profile.idType` | 證件種類 | `national_id` → 身分證；`resident_id` → 統一證號；`passport` → 護照 |
 | `profile.idNo` | 身分證號／統一證號／護照號碼 |  |
 | `profile.name` | 姓名 |  |
 | `profile.birthY` | 出生日期（民國年） |  |
@@ -287,6 +290,7 @@
 
 | key | 中文名稱 | 選項代碼 → 名稱 |
 |---|---|---|
+| `profile.idType` | 證件種類 | `national_id` → 身分證；`resident_id` → 統一證號；`passport` → 護照 |
 | `profile.idNo` | 身分證號／統一證號／護照號碼 |  |
 | `profile.name` | 姓名 |  |
 | `profile.birthY` | 出生日期（民國年） |  |
@@ -384,6 +388,7 @@
 
 | key | 中文名稱 | 選項代碼 → 名稱 |
 |---|---|---|
+| `profile.idType` | 證件種類 | `national_id` → 身分證；`resident_id` → 統一證號；`passport` → 護照 |
 | `profile.idNo` | 身分證號／統一證號／護照號碼 |  |
 | `profile.name` | 姓名 |  |
 | `profile.birthY` | 出生日期（民國年） |  |
@@ -522,6 +527,7 @@
 
 | key | 中文名稱 | 選項代碼 → 名稱 |
 |---|---|---|
+| `profile.idType` | 證件種類 | `national_id` → 身分證；`resident_id` → 統一證號；`passport` → 護照 |
 | `profile.idNo` | 身分證號／統一證號／護照號碼 |  |
 | `profile.name` | 姓名 |  |
 | `profile.birthY` | 出生日期（民國年） |  |
@@ -660,6 +666,7 @@
 
 | key | 中文名稱 | 選項代碼 → 名稱 |
 |---|---|---|
+| `profile.idType` | 證件種類 | `national_id` → 身分證；`resident_id` → 統一證號；`passport` → 護照 |
 | `profile.idNo` | 身分證號／統一證號／護照號碼 |  |
 | `profile.name` | 姓名 |  |
 | `profile.birthY` | 出生日期（民國年） |  |

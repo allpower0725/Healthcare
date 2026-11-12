@@ -21,7 +21,8 @@ describe('身分證號', () => {
 
   it('新式與舊式統一證號', () => {
     expect(checkTwId('A800000014')).toEqual({ ok: true, foreign: true });
-    expect(checkTwId('AB12345678')).toEqual({ ok: true, foreign: true });
+    expect(checkTwId('AB12345677')).toEqual({ ok: true, foreign: true });
+    expect(checkTwId('AB12345678').ok).toBe(false);
   });
 
   it('格式不符', () => {

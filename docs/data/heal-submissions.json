@@ -37,6 +37,14 @@
   "forms": {
     "hpv": {
       "public_data": {
+        "profile.idType": {
+          "label": "證件種類",
+          "options": {
+            "national_id": "身分證",
+            "resident_id": "統一證號",
+            "passport": "護照"
+          }
+        },
         "profile.idNo": {
           "label": "身分證號／統一證號／護照號碼"
         },
@@ -383,6 +391,14 @@
     },
     "pap": {
       "public_data": {
+        "profile.idType": {
+          "label": "證件種類",
+          "options": {
+            "national_id": "身分證",
+            "resident_id": "統一證號",
+            "passport": "護照"
+          }
+        },
         "profile.idNo": {
           "label": "身分證號／統一證號／護照號碼"
         },
@@ -756,6 +772,14 @@
     },
     "oral": {
       "public_data": {
+        "profile.idType": {
+          "label": "證件種類",
+          "options": {
+            "national_id": "身分證",
+            "resident_id": "統一證號",
+            "passport": "護照"
+          }
+        },
         "profile.idNo": {
           "label": "身分證號／統一證號／護照號碼"
         },
@@ -1047,6 +1071,14 @@
     },
     "hp": {
       "public_data": {
+        "profile.idType": {
+          "label": "證件種類",
+          "options": {
+            "national_id": "身分證",
+            "resident_id": "統一證號",
+            "passport": "護照"
+          }
+        },
         "profile.idNo": {
           "label": "身分證號／統一證號／護照號碼"
         },
@@ -1487,6 +1519,14 @@
     },
     "fit": {
       "public_data": {
+        "profile.idType": {
+          "label": "證件種類",
+          "options": {
+            "national_id": "身分證",
+            "resident_id": "統一證號",
+            "passport": "護照"
+          }
+        },
         "profile.idNo": {
           "label": "身分證號／統一證號／護照號碼"
         },
@@ -2029,6 +2069,14 @@
     },
     "adult": {
       "public_data": {
+        "profile.idType": {
+          "label": "證件種類",
+          "options": {
+            "national_id": "身分證",
+            "resident_id": "統一證號",
+            "passport": "護照"
+          }
+        },
         "profile.idNo": {
           "label": "身分證號／統一證號／護照號碼"
         },
@@ -2640,6 +2688,14 @@
     },
     "labor": {
       "public_data": {
+        "profile.idType": {
+          "label": "證件種類",
+          "options": {
+            "national_id": "身分證",
+            "resident_id": "統一證號",
+            "passport": "護照"
+          }
+        },
         "profile.idNo": {
           "label": "身分證號／統一證號／護照號碼"
         },

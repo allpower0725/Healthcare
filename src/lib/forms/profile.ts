@@ -3,6 +3,7 @@ import type { FormValues } from '@/db/schema';
 import type { FieldSpec, Rule } from './engine';
 import { splitPhone, splitSuffix } from './format';
 import { TW_COUNTIES } from './tw-districts';
+import { IDENTITY_MAX_LENGTH, IDENTITY_TYPES } from './identity';
 
 export type Option = readonly [value: string, label: string];
 export const optionValues = (options: readonly Option[]) => options.map(([value]) => value);
@@ -35,7 +36,8 @@ const text = (maxLength: number, extra: Partial<FieldSpec> = {}): FieldSpec => (
 });
 
 export const PROFILE_FIELDS: Record<string, FieldSpec> = {
-  'profile.idNo': text(12, { uppercase: true }),
+  'profile.idType': { part: 'public', kind: 'choice', options: optionValues(IDENTITY_TYPES) },
+  'profile.idNo': { part: 'public', kind: 'identity', maxLength: IDENTITY_MAX_LENGTH },
   'profile.name': text(40),
   'profile.birthY': text(3, { digits: true }),
   'profile.birthM': text(2, { digits: true }),
@@ -57,7 +59,7 @@ export const PROFILE_FIELDS: Record<string, FieldSpec> = {
 };
 
 export const PROFILE_RULES: readonly Rule[] = [
-  { id: 'profile.idNo', type: 'twid', keys: ['profile.idNo'], required: true },
+  { id: 'profile.idNo', type: 'identity', keys: ['profile.idNo', 'profile.idType'], required: true },
   { id: 'profile.name', type: 'text', keys: ['profile.name'], required: true, msg: '請填寫姓名' },
   {
     id: 'profile.birth',

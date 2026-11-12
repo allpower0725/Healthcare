@@ -110,10 +110,10 @@ describe('HPV 民眾區驗證', () => {
     expect(check({ 'profile.addrNo': '' })).toBe('請填寫門牌號碼');
   });
 
-  it('電話位數；身分證號只要有填（外籍可填護照號碼）', () => {
+  it('電話位數；明確選擇護照時使用護照格式檢查', () => {
     const errors = validateRules(
       hpvDef.publicRules,
-      sanitize(hpvDef, 'public', { ...hpvPublicSample(), 'profile.phone': '12345', 'profile.idNo': 'P12345' }),
+      sanitize(hpvDef, 'public', { ...hpvPublicSample(), 'profile.phone': '12345', 'profile.idType': 'passport', 'profile.idNo': 'P12345' }),
       NOW,
     );
     expect(errors['profile.phone']).toBeDefined();

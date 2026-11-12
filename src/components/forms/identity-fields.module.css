@@ -1,0 +1,17 @@
+.fields { margin: 1rem 0; }
+.types { margin: 0 0 1rem; padding: 0; border: 0; min-width: 0; }
+.types legend { margin-bottom: .5rem; }
+.options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; }
+.option {
+  display: flex; align-items: center; justify-content: center; gap: .3rem;
+  min-height: 44px; padding: .5rem .2rem; border: 1px solid var(--line-strong);
+  border-radius: 10px; cursor: pointer; font-size: .875rem;
+}
+.option span { white-space: nowrap; }
+.option:has(input:checked) { border-color: var(--primary); background: var(--primary-soft); color: var(--primary-strong); font-weight: 600; }
+.option input { flex: none; margin: 0; width: 1.1rem; height: 1.1rem; accent-color: var(--primary); }
+.option:has(input:focus-visible) { outline: 3px solid var(--primary-ring); outline-offset: 2px; }
+.types:disabled .option { cursor: default; }
+@media (max-width: 360px) {
+  .option { flex-direction: column; gap: .25rem; }
+}

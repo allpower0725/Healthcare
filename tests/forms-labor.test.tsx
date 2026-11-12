@@ -22,6 +22,7 @@ const errors = (extra: Record<string, string | string[]> = {}) => validateRules(
 describe('勞工健康檢查欄位', () => {
   it('不同意資料上傳的最小完整問卷不要求地址、電話、教育及簽名', () => {
     expect(errors()).toEqual({});
+    expect(errors({ 'labor.company': '' })).toEqual({});
     expect(errors({ 'labor.uploadConsent': 'Y' })).toHaveProperty('labor.uploadSignature');
     expect(Object.keys(sanitize(laborDef, 'staff', {}))).toEqual([]);
   });
@@ -30,7 +31,7 @@ describe('勞工健康檢查欄位', () => {
     expect(errors({ 'profile.email': 'invalid' })).toHaveProperty('profile.email');
     expect(sanitize(laborDef, 'public', laborPublicSample())['profile.email']).toBe('labor@example.com');
   });
-  it.each(['profile.name', 'profile.sex', 'profile.idNo', 'labor.company', 'labor.reason', 'labor.currentHas', 'labor.previousHas', 'labor.smoke', 'labor.betel', 'labor.drink'])('%s 不可空白', (key) => {
+  it.each(['profile.name', 'profile.sex', 'profile.idNo', 'labor.reason', 'labor.currentHas', 'labor.previousHas', 'labor.smoke', 'labor.betel', 'labor.drink'])('%s 不可空白', (key) => {
     expect(errors({ [key]: '' })).toHaveProperty(key);
   });
   it.each(['labor.diseases', 'labor.symptoms'])('%s 需明確選擇；以上皆無與其他答案互斥', (key) => {
@@ -115,7 +116,7 @@ describe('勞工健檢送出與協同', () => {
   });
   it('送出可查詢 email，退回與重送沿用編號，院所可直接確認並保留完成者', async () => {
     await db.update(formSettings).set({ isOpen: true }).where(eq(formSettings.formId, 'labor'));
-    const raw = laborPublicSample();
+    const raw = { ...laborPublicSample(), 'labor.company': '' };
     const first = await createPublicSubmission('labor', raw, 'labor-device');
     expect(first.ok).toBe(true);
     if (!first.ok) throw new Error('submit failed');

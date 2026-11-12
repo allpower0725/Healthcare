@@ -2,6 +2,7 @@
 import type { FormValues } from '@/db/schema';
 import type { FormId } from './catalog';
 import { ageOn, rocToIso, todayIsoTaipei } from './format';
+import { identityError, normalizeIdentityNumber } from './identity';
 import { TW_DISTRICTS } from './tw-districts';
 
 export type Part = 'public' | 'staff';
@@ -10,8 +11,8 @@ export type Condition = string | readonly string[];
 
 export type FieldSpec = {
   part: Part;
-  /** text 文字、choice 單選、multi 複選、flag 單一勾選、town 鄉鎮市區（依所選縣市）、image 簽名或標示圖 */
-  kind: 'text' | 'choice' | 'multi' | 'flag' | 'town' | 'image';
+  /** text 文字、identity 證件號（不截斷）、choice 單選、multi 複選、flag 單一勾選、town 鄉鎮市區、image 簽名或標示圖 */
+  kind: 'text' | 'identity' | 'choice' | 'multi' | 'flag' | 'town' | 'image';
   options?: readonly string[];
   /** multi 的互斥選項（例：「以上均無」）：不能與其他選項同時勾選 */
   exclusive?: readonly string[];
@@ -39,6 +40,7 @@ export type RuleType =
   | 'duration'
   | 'number'
   | 'twid'
+  | 'identity'
   | 'phone'
   | 'email'
   | 'address'
@@ -106,6 +108,8 @@ export function conditionsHold(condition: Condition | undefined, values: FormVal
 
 function cleanField(spec: FieldSpec, raw: unknown, values: FormValues): string | string[] {
   switch (spec.kind) {
+    // 證件號不可截斷後變成另一個合法號碼；過長內容交由共用規則拒絕。
+    case 'identity': return normalizeIdentityNumber(raw);
     case 'multi': {
       const list = Array.isArray(raw) ? raw.map(asText) : [];
       const picked = [...new Set(list)].filter((v) => spec.options?.includes(v));
@@ -179,6 +183,7 @@ function ruleError(rule: Rule, values: FormValues, today: string): string | null
   const [k0, k1, k2, k3, k4] = rule.keys;
 
   switch (rule.type) {
+    case 'identity': return identityError(text(k1), text(k0));
     case 'monthday': {
       const [m, d] = [text(k0), text(k1)];
       if (!m && !d) return rule.required ? '請填寫月、日' : null;

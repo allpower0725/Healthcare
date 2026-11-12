@@ -130,6 +130,9 @@ export async function createPublicSubmission(
     if (existing.length > 1) return { ok: false, reason: 'ambiguous' } as const;
     const current = existing[0];
     if (current) {
+      if (current.publicData['profile.idType'] !== values['profile.idType']) {
+        return { ok: false, reason: 'invalid', errors: { 'profile.idNo': '證件種類與原表單不一致，請使用原本的證件種類。' } } as const;
+      }
       if (current.status === 'returned') {
         await updateReturned(tx, current, values, now);
         return { ok: true, id: current.id } as const;
@@ -241,7 +244,7 @@ export async function resubmitPublic(
     }
     const def = getFormDef(current.formId);
     if (!def) return { ok: false, reason: 'not_supported' } as const;
-    const values = { ...sanitize(def, 'public', raw), 'profile.idNo': current.idNo };
+    const values = { ...sanitize(def, 'public', raw), 'profile.idNo': current.idNo, 'profile.idType': current.publicData['profile.idType'] ?? '' };
     const errors = validateRules(def.publicRules, values, now);
     if (Object.keys(errors).length > 0) return { ok: false, reason: 'invalid', errors } as const;
 

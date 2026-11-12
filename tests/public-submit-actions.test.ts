@@ -24,6 +24,36 @@ beforeEach(async () => {
 });
 
 describe('前台送出動作', () => {
+  it.each([
+    ['national_id', 'A123456788'], ['national_id', 'P12345'],
+    ['resident_id', 'AB12345678'], ['resident_id', 'A123456789'],
+    ['passport', 'P12-345'], ['passport', 'A123456789012345678901'], ['', 'A123456789'],
+  ])('直接呼叫伺服器也拒絕錯誤證件 %s，不寫入資料', async (type, number) => {
+    const result = await submitForm('hpv', { ...hpvPublicSample(), 'profile.idType': type, 'profile.idNo': number }, randomUUID());
+    expect(result).toMatchObject({ ok: false, reason: 'invalid', errors: { 'profile.idNo': expect.any(String) } });
+    expect(await db.select().from(submissions)).toHaveLength(0);
+  });
+
+  it('護照前導零與明確種類會一併儲存，修改重送不能改為其他種類', async () => {
+    const sample = { ...hpvPublicSample(), 'profile.idType': 'passport', 'profile.idNo': '001234567' };
+    const first = await submitForm('hpv', sample, randomUUID());
+    if (!first.ok) throw new Error(first.reason);
+    expect((await getSubmission(first.id))?.publicData).toMatchObject({ 'profile.idType': 'passport', 'profile.idNo': '001234567' });
+    await returnForm(first.id);
+    expect(await resubmitForm(first.id, { ...sample, 'profile.idType': 'national_id' }, first.submittedAt)).toMatchObject({ ok: true });
+    expect((await getSubmission(first.id))?.publicData['profile.idType']).toBe('passport');
+  });
+
+  it('遺失請求編號而改用首次送出入口，也不能改掉既有問卷的證件種類', async () => {
+    const first = await submitForm('hpv', hpvPublicSample(), randomUUID());
+    if (!first.ok) throw new Error(first.reason);
+    await returnForm(first.id);
+    expect(await submitForm('hpv', { ...hpvPublicSample(), 'profile.idType': 'passport' }, randomUUID()))
+      .toMatchObject({ ok: false, reason: 'invalid' });
+    expect((await getSubmission(first.id))?.publicData['profile.idType']).toBe('national_id');
+    expect(await db.select().from(submissions)).toHaveLength(1);
+  });
+
   it('回應遺失重試仍回傳同一編號與原送出時間，包含院所最新鎖定狀態', async () => {
     const requestId = randomUUID();
     const first = await submitForm('hpv', hpvPublicSample(), requestId);

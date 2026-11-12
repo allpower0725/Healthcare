@@ -1,6 +1,7 @@
 /** 最小完整的勞工健檢問卷，日期與工時明細可留空。 */
 export function laborPublicSample(): Record<string, string | string[]> {
   return {
+    'profile.idType': 'national_id',
     'profile.idNo': 'A234567893', 'profile.name': '測試勞工',
     'profile.birthY': '72', 'profile.birthM': '5', 'profile.birthD': '18', 'profile.sex': 'F',
     'profile.email': 'labor@example.com', 'labor.company': '測試事業單位',
@@ -14,6 +15,7 @@ export function laborPublicSample(): Record<string, string | string[]> {
 /** 一份填寫完整、通過驗證的 HPV 民眾區 */
 export function hpvPublicSample(): Record<string, string> {
   return {
+    'profile.idType': 'national_id',
     'profile.idNo': 'A234567893',
     'profile.name': '王小美',
     'profile.birthY': '72',
@@ -42,6 +44,7 @@ export function hpvPublicSample(): Record<string, string> {
 /** 一份填寫完整、通過驗證的成人預防保健民眾區 */
 export function adultPublicSample(): Record<string, string | string[]> {
   return {
+    'profile.idType': 'national_id',
     'profile.idNo': 'A123456789',
     'profile.name': '王大明',
     'profile.birthY': '54',
@@ -74,6 +77,7 @@ const SIGNATURE = 'data:image/png;base64,iVBORw0KGgo=';
 /** 共用基本資料（通過驗證） */
 function profileSample(): Record<string, string> {
   return {
+    'profile.idType': 'national_id',
     'profile.idNo': 'A234567893',
     'profile.name': '王小美',
     'profile.birthY': '60',

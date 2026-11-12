@@ -33,8 +33,8 @@ vi.mock('@/lib/security/recaptcha', () => ({
 }));
 
 const now = new Date('2026-11-09T16:00:00Z');
-const identity = { idNo: 'A234567893', birthDate: '1983-05-18' };
-const input = { idNo: 'a234567893', y: '72', m: '5', d: '18' };
+const identity = { idType: 'national_id' as const, idNo: 'A234567893', birthDate: '1983-05-18' };
+const input = { idType: 'national_id', idNo: 'a234567893', y: '72', m: '5', d: '18' };
 const device = 'a'.repeat(43);
 const date = '2026-11-25';
 const data = { date, name: '預約測試', packageCode: 'in_service' } as const;
@@ -51,6 +51,23 @@ beforeEach(async () => {
 afterEach(() => vi.unstubAllEnvs());
 
 describe('預約前台', () => {
+  it('查詢前依證件種類檢查，錯誤證件不建立查詢憑證或異動資料', async () => {
+    for (const invalid of [
+      { ...input, idNo: 'A123456788' }, { ...input, idType: 'resident_id' },
+      { ...input, idType: '' }, { ...input, idType: 'passport', idNo: 'P12-345' },
+    ]) {
+      expect(parseAppointmentIdentity(invalid, now)).toBeNull();
+      expect(await lookupAppointment(invalid, 'valid')).toMatchObject({ ok: false });
+      expect((await readAppointmentAccess()).gate).toBeNull();
+    }
+    expect(verifyRecaptcha).not.toHaveBeenCalled();
+    expect(await db.select().from(appointments)).toHaveLength(0);
+    expect(parseAppointmentIdentity({ ...input, idType: 'resident_id', idNo: 'AB12345677' }, now))
+      .toMatchObject({ idType: 'resident_id', idNo: 'AB12345677' });
+    expect(parseAppointmentIdentity({ ...input, idType: 'passport', idNo: '001234567' }, now))
+      .toMatchObject({ idType: 'passport', idNo: '001234567' });
+  });
+
   it('以台灣日期計算範圍、星期與休診日，行事曆連結只包含日期及院所', async () => {
     expect(parseAppointmentIdentity(input, now)).toEqual(identity);
     expect(parseAppointmentIdentity({ ...input, m: '2', d: '31' }, now)).toBeNull();
@@ -106,7 +123,7 @@ describe('預約前台', () => {
     const scoped = { ...session, appointmentId: session.requestId };
     const actor = await createUser();
     expect(await confirmAppointment(session.requestId, actor.id, now)).toEqual({ ok: false, reason: 'form_required' });
-    const values = { ...laborPublicSample(), 'profile.idNo': 'OTHER', 'profile.name': '錯誤姓名', 'profile.birthY': '99' };
+    const values = { ...laborPublicSample(), 'labor.company': '', 'profile.idNo': 'OTHER', 'profile.name': '錯誤姓名', 'profile.birthY': '99' };
     expect(await saveAppointmentIntake(scoped, device, session.requestId, null, values, now)).toEqual({ ok: true });
     expect(await saveAppointmentIntake(scoped, device, session.requestId, null, values, now)).toEqual({ ok: true });
     const record = await readAppointmentIntake(scoped, device, now);

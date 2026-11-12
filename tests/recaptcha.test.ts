@@ -6,13 +6,14 @@ const NOW = new Date('2026-11-06T04:00:00Z');
 const good = () => ({ tokenProperties: { valid: true, hostname: 'wjcch-healthcare.vercel.app', action: PUBLIC_CAPTCHA_ACTIONS.submit, createTime: NOW.toISOString() }, riskAnalysis: { score: .9 } });
 const respond = (body: unknown, status = 200) => vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify(body), { status })));
 beforeEach(() => {
+  vi.spyOn(console, 'warn').mockImplementation(() => {});
   vi.stubEnv('NODE_ENV', 'production'); vi.stubEnv('VERCEL', ''); vi.stubEnv('VERCEL_ENV', '');
   vi.stubEnv('RECAPTCHA_DEV_BYPASS', 'false');
   vi.stubEnv('RECAPTCHA_SITE_KEY', 'public-site-key'); vi.stubEnv('RECAPTCHA_PROJECT_ID', 'test-project');
   vi.stubEnv('RECAPTCHA_API_KEY', 'test-server-key'); vi.stubEnv('RECAPTCHA_ALLOWED_HOSTNAMES', 'wjcch-healthcare.vercel.app');
   vi.stubEnv('RECAPTCHA_MIN_SCORE', '0.5'); respond(good());
 });
-afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
+afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
 
 describe('reCAPTCHA 伺服器防護', () => {
   it('以 v1 assessment 驗證；只傳必要欄位，密鑰不放 URL 或前台設定', async () => {
@@ -22,6 +23,7 @@ describe('reCAPTCHA 伺服器防護', () => {
     expect(request).toMatchObject({ method: 'POST', cache: 'no-store', headers: { 'X-Goog-Api-Key': 'test-server-key' } });
     expect(JSON.parse(request!.body as string)).toEqual({ event: { token: 'fresh-token', siteKey: 'public-site-key', expectedAction: 'public_submit' } });
     expect(getPublicCaptchaConfig()).toEqual({ mode: 'required', siteKey: 'public-site-key' });
+    expect(console.warn).not.toHaveBeenCalled();
   });
   it.each([undefined, null, '', ' ', 12, {}, 'a'.repeat(16385)])('空白或不合法 token 不發出 assessment（%s）', async token => {
     expect(await verifyRecaptcha(PUBLIC_CAPTCHA_ACTIONS.submit, token, NOW)).toEqual({ ok: false, reason: 'verification_failed' });
@@ -78,5 +80,43 @@ describe('reCAPTCHA 伺服器防護', () => {
     vi.stubEnv('VERCEL_ENV', 'preview');
     expect(getPublicCaptchaConfig().mode).toBe('unavailable');
     expect(await verifyRecaptcha(PUBLIC_CAPTCHA_ACTIONS.submit, '', NOW)).toMatchObject({ ok: false });
+  });
+
+  it('低分記錄動作、分數、門檻及白名單原因，不放寬原有拒絕結果', async () => {
+    const body = good();
+    respond({ ...body, tokenProperties: { ...body.tokenProperties, action: PUBLIC_CAPTCHA_ACTIONS.appointmentLookup },
+      riskAnalysis: { score: .3, reasons: ['LOW_CONFIDENCE_SCORE', 'not-a-safe-code'] } });
+    expect(await verifyRecaptcha(PUBLIC_CAPTCHA_ACTIONS.appointmentLookup, 'private-token-value', NOW))
+      .toEqual({ ok: false, reason: 'verification_failed' });
+    expect(console.warn).toHaveBeenCalledExactlyOnceWith('[reCAPTCHA]', {
+      event: 'verification_rejected', action: 'appointment_lookup', code: 'score_below_threshold',
+      tokenValid: true, actionMatches: true, hostnameAllowed: true,
+      minScore: .5, score: .3, tokenAgeMs: 0, riskReasons: ['LOW_CONFIDENCE_SCORE'],
+    });
+    expect(JSON.stringify(vi.mocked(console.warn).mock.calls)).not.toContain('private-token-value');
+  });
+
+  it.each([
+    [{ valid: false, invalidReason: 'DUPE' }, 'token_invalid'],
+    [{ action: 'public_return' }, 'action_mismatch'],
+    [{ hostname: 'unknown.example' }, 'hostname_mismatch'],
+    [{ createTime: 'invalid' }, 'token_time_invalid'],
+    [{ createTime: '2026-11-06T03:57:59Z' }, 'token_expired'],
+  ])('診斷可區分拒絕條件：%j', async (properties, code) => {
+    const body = good(); respond({ ...body, tokenProperties: { ...body.tokenProperties, ...properties } });
+    expect(await verifyRecaptcha(PUBLIC_CAPTCHA_ACTIONS.submit, 'token', NOW)).toEqual({ ok: false, reason: 'verification_failed' });
+    expect(console.warn).toHaveBeenCalledExactlyOnceWith('[reCAPTCHA]', expect.objectContaining({ code }));
+  });
+
+  it('非預期外部欄位與錯誤全文不進日誌，避免憑證或個資外洩', async () => {
+    const privateValue = 'private-input-or-credential';
+    respond({ tokenProperties: { valid: false, invalidReason: privateValue, hostname: privateValue, action: privateValue },
+      riskAnalysis: { score: .1, reasons: [privateValue] }, event: { token: privateValue }, extra: privateValue });
+    await verifyRecaptcha(PUBLIC_CAPTCHA_ACTIONS.submit, privateValue, NOW);
+    expect(console.warn).toHaveBeenLastCalledWith('[reCAPTCHA]', expect.objectContaining({ invalidReason: 'UNRECOGNIZED', riskReasons: [] }));
+    vi.stubGlobal('fetch', vi.fn(async () => { throw new Error(privateValue); }));
+    expect(await verifyRecaptcha(PUBLIC_CAPTCHA_ACTIONS.submit, privateValue, NOW)).toEqual({ ok: false, reason: 'verification_unavailable' });
+    const logged = JSON.stringify(vi.mocked(console.warn).mock.calls);
+    for (const secret of [privateValue, 'test-server-key', 'public-site-key', 'test-project']) expect(logged).not.toContain(secret);
   });
 });

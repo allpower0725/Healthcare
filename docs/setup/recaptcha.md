@@ -87,6 +87,24 @@ IndexedDB 暫存、草稿恢復、清理與背景狀態更新都不取得 token�
 
 ## 常見問題
 
+### 正常使用者被阻擋時的診斷
+
+伺服器只在拒絕驗證時輸出 `[reCAPTCHA]` 結構化警告。請在 Vercel 的 Runtime Logs 以此字串搜尋，搭配操作時間與 `action`（預約查詢為 `appointment_lookup`）定位。成功驗證不產生這類警告，原有門檻及拒絕規則不因日誌而改變。
+
+- `score_below_threshold`：token、動作、網域及時效通過，但 `score` 低於 `minScore`。可搭配白名單化的 `riskReasons` 判斷 Google 回覆的原因；不能只憑此結果認定使用者是機器人。
+- `token_invalid`：Google 判定 token 無效；`invalidReason` 可識別 `DUPE`、`EXPIRED` 等原因。
+- `action_mismatch`、`hostname_mismatch`：動作或網域未通過，日誌只記錄是否匹配，不輸出外部傳入的原始字串。
+- `token_time_invalid`、`token_expired`：簽發時間格式、時差或有效期間未通過，有限數值的 `tokenAgeMs` 可供核對。
+- `score_invalid`、`configuration_missing`、`token_missing_or_invalid`、`http_error`、`request_timeout`、`response_invalid`、`assessment_error`：分別指出分數格式、環境設定、送入 token、HTTP、逾時、JSON 或其他服務異常。HTTP 異常只保留狀態碼，不輸出回應全文。
+
+日誌不含證件號、生日、姓名、IP、金鑰、完整 token 或 assessment 原始回應；不寫入問卷或資料庫。外部原因代碼只接受固定白名單。診斷版本須部署後才會記錄新操作，不能回溯還原未記錄的評估結果。
+
+若未找到對應日誌，不代表驗證成功；瀏覽器可能在載入腳本或取得 token 時就失敗，尚未呼叫伺服器。需同時核對該次是否發出 Server Action 請求；不要匯出含證件資料或 token 的完整請求內容。
+
+Google Cloud 的 Assessment logs 是另一個獨立設定，只有開啟後才能透過平台日誌查看後續評估；本專案不自動啟用此設定。操作方式與記錄費用見 [Google 平台日誌說明](https://docs.cloud.google.com/recaptcha/docs/platform-logging)。確認拒絕原因與實際正常流量後，再決定是否需要調整門檻或驗證策略。
+
+### 其他常見問題
+
 - **頁面顯示安全驗證暫時無法使用**：確認 Production 的五個必要設定及門檻格式，重新部署後重載。不要以開啟略過來排除正式設定問題。
 - **一直驗證未通過**：檢查 key 類型、Google 網域清單、`RECAPTCHA_ALLOWED_HOSTNAMES`、Console 回傳的 action／分數、伺服器時間及 token 是否已使用或逾時。新站台與測試流量的分數可能與正式流量不同。
 - **Google API 回傳拒絕**：確認正確專案已啟用 Enterprise API、API key 屬於同一專案且 API 限制正確。OAuth Client Secret 不能代替此 key。

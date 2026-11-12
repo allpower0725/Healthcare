@@ -60,8 +60,8 @@ export function Req() {
 }
 
 /** 院所區民國日期欄位（含「今天」按鈕）；req 時標題前加＊ */
-export function DateField(props: { prefix: string; label: string; req?: boolean; hint?: ReactNode }) {
-  const { prefix, label, req } = props;
+export function DateField(props: { prefix: string; label: string; req?: boolean; optional?: boolean; hint?: ReactNode }) {
+  const { prefix, label, req, optional } = props;
   return (
     <Field
       rule={prefix}
@@ -71,11 +71,12 @@ export function DateField(props: { prefix: string; label: string; req?: boolean;
         <>
           {req && <Req />}
           {label}
+          {optional && <span className="opt">選填</span>}
         </>
       }
       aside={<TodayButton prefix={prefix} />}
     >
-      <RocDateInputs prefix={prefix} label={label} />
+      <RocDateInputs prefix={prefix} label={`${label}${optional ? '（選填）' : ''}`} />
     </Field>
   );
 }

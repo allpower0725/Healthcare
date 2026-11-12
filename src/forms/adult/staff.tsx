@@ -373,7 +373,7 @@ export function AdultStaff({ publicData }: { publicData: FormValues }) {
           <SignatureField name="adult.sigDoctor" signer="檢查醫師" />
         </Field>
         <div className="sub">
-          <p className="sub__title">雙軌作業（選填）</p>
+          <p className="sub__title">雙軌作業 <span className="opt">選填</span></p>
           <p className="field__hint">
             服務對象如為特約醫事檢驗機構依雙軌作業方式提供第一階段檢驗檢查服務者，請填其自行選定的第二階段服務機構。
           </p>

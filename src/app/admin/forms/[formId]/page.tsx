@@ -1,6 +1,7 @@
 import { LoadingOverlay } from '@/app/admin/loading-overlay';
 import type { Metadata } from 'next';
-import { AdminLink as Link } from '@/app/admin/pending-ui';
+import { AdminBackLink } from '@/app/admin/pending-ui';
+import { BackBar } from '@/components/navigation/back-control';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { requireUser } from '@/lib/auth/dal';
@@ -21,9 +22,7 @@ export const metadata: Metadata = { title: '表單設定' };
 export default function FormDetailPage({ params }: PageProps<'/admin/forms/[formId]'>) {
   return (
     <>
-      <Link className={`btn btn--ghost btn--sm ${styles.back}`} href="/admin/forms">
-        ← 表單管理
-      </Link>
+      <BackBar><AdminBackLink href="/admin/forms">返回表單管理</AdminBackLink></BackBar>
       <Suspense fallback={<LoadingOverlay message="載入中，請稍候…" />}>
         <FormDetail params={params} />
       </Suspense>

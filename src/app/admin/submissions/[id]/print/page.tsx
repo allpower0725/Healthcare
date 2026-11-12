@@ -1,7 +1,8 @@
 import { LoadingOverlay } from '@/app/admin/loading-overlay';
 import '@/components/forms/print.css';
 import type { Metadata } from 'next';
-import { AdminLink as Link } from '@/app/admin/pending-ui';
+import { AdminBackLink } from '@/app/admin/pending-ui';
+import { BackBar } from '@/components/navigation/back-control';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { requireUser } from '@/lib/auth/dal';
@@ -33,9 +34,9 @@ async function PrintView({ params }: { params: PageProps<'/admin/submissions/[id
   if (!Print) notFound();
 
   const back = (
-    <Link className="btn btn--ghost btn--sm" href={submission.appointmentId ? '/admin/submissions' : `/admin/submissions/${id}`}>
-      {submission.appointmentId ? '← 回協同完成' : '← 回這份表單'}
-    </Link>
+    <AdminBackLink href={submission.appointmentId ? '/admin/submissions' : `/admin/submissions/${id}`}>
+      {submission.appointmentId ? '返回協同完成' : '返回這份表單'}
+    </AdminBackLink>
   );
 
   // 資料在存入時已依條件清理（被隱藏的欄位為空），直接合併並加上紙本格式的衍生值
@@ -44,11 +45,11 @@ async function PrintView({ params }: { params: PageProps<'/admin/submissions/[id
 
   return (
     <>
-      <div className="ps-toolbar">
+      <BackBar className="ps-toolbar">
         {back}
         <PrintButton />
         <p>列印時紙張選 A4、邊界選「無」。</p>
-      </div>
+      </BackBar>
       <div className="ps-frame">
         <Print data={data} />
       </div>

@@ -1,11 +1,11 @@
 'use client';
-import Link from 'next/link';
 import { type FormEvent, useEffect, useRef, useState } from 'react';
 import { FormContext } from '@/components/forms/context';
 import { PrintDocumentButton } from '@/components/forms/print-document-button';
 import { useFormState } from '@/components/forms/use-form-state';
 import { LoadingOverlay } from '@/components/loading/loading-overlay';
 import { useResultModal } from '@/components/feedback/result-modal';
+import { BackLink } from '@/components/navigation/back-control';
 import type { FormValues, SubmissionStatus } from '@/db/schema';
 import { LaborPublic } from '@/forms/labor/public';
 import { APPOINTMENT_PUBLIC_PATH } from '@/lib/appointments/catalog';
@@ -129,22 +129,22 @@ export function AppointmentIntake({ id, identity, intake, editable: initialEdita
     showResult({ title: '已退回修改', tone: 'success', message: '請修改內容，並重新完成適用的同意書簽名後再次送出。' });
   }
 
-  return <PublicChrome progress={canFill ? 50 : 100}>
+  return <PublicChrome progress={canFill ? 50 : 100}
+    navigation={<BackLink prefetch={false} href={APPOINTMENT_PUBLIC_PATH}>返回預約</BackLink>}>
     {message && <LoadingOverlay message={message} />}
     <header className={styles.heading}><div>
       <h1>勞工健康檢查表</h1>
       <p>這份表單會與目前的健檢預約一起送交院所。</p>
     </div></header>
-    <section className="card">
+    {(status === 'submitted' || status === 'completed' || (!canFill && !!error)) && <section className="card">
       <div className={styles.actions}>
-        <Link className="btn btn--ghost" prefetch={false} href={APPOINTMENT_PUBLIC_PATH}>← 返回預約</Link>
         {(status === 'submitted' || status === 'completed') && <PrintDocumentButton
           href={`${APPOINTMENT_PUBLIC_PATH}/form/print?booking=${id}`}>列印 / 另存 PDF</PrintDocumentButton>}
         {status === 'submitted' && editable && <button className="btn btn--ghost" type="button" onClick={() => void edit()}>退回修改</button>}
       </div>
       {status === 'submitted' && <p role="status" className="notice notice--info">勞工健康檢查表已送出。</p>}
       {!canFill && error && <p className="notice notice--error" role="alert">{error}</p>}
-    </section>
+    </section>}
     <form onSubmit={submit} noValidate>
       <fieldset disabled={!!message} className={styles.intake} aria-label="勞工健康檢查表">
         <FormContext.Provider value={form.ctx}><LaborPublic prefilled={false} identityLocked /></FormContext.Provider>

@@ -11,7 +11,7 @@ function Question({ q }: { q: (typeof PAP_QUESTIONS)[number] }) {
       <Choices name={q.key} options={q.options} />
       {q.key === 'pap.q15' && (
         <ShowIf when="pap.q15=1">
-          <Field rule="pap.q15Year" label="接種年份（選填）" role="group">
+          <Field rule="pap.q15Year" label={<>接種年份 <span className="opt">選填</span></>} role="group">
             <RocYearInput name="pap.q15Year" label="HPV 疫苗接種年份（民國年，選填）" />
           </Field>
         </ShowIf>

@@ -1,6 +1,6 @@
 import '@/components/forms/print.css';
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import { BackBar, BackLink } from '@/components/navigation/back-control';
 import { notFound } from 'next/navigation';
 import { connection } from 'next/server';
 import { Suspense } from 'react';
@@ -38,11 +38,11 @@ async function PrintView({ params }: { params: Params }) {
   const data = { ...submission.publicData, ...deriveProfile(submission.publicData) };
   return (
     <main className={styles.page}>
-      <div className="ps-toolbar">
-        <Link className="btn btn--ghost btn--sm" href={`/f/${formId}`}>← 回填寫完成畫面</Link>
+      <BackBar className="ps-toolbar">
+        <BackLink href={`/f/${formId}`}>返回填寫完成畫面</BackLink>
         <PrintButton />
         <p>列印時紙張選 A4、邊界選「無」。手機可在列印選單中另存 PDF。</p>
-      </div>
+      </BackBar>
       <div className="ps-frame"><Print data={data} /></div>
     </main>
   );

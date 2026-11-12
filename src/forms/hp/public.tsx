@@ -27,7 +27,7 @@ function Extra({ when, name, max, placeholder, label }: { when: string; name: st
 function YearOrUnknown({ when, caption, name, aria }: { when: string; caption: string; name: string; aria: string }) {
   return (
     <ShowIf when={when}>
-      <Field rule={name} role="group" label={`${caption}（選填）`}>
+      <Field rule={name} role="group" label={<>{caption} <span className="opt">選填</span></>}>
         <div className="inline-fields">
           <RocYearInput name={name} label={aria} />
           <Flag name={`${name}U`}>不詳</Flag>
@@ -158,19 +158,19 @@ export function HpPublic({ prefilled }: { prefilled: boolean }) {
                 <Checks name="hp.medList" options={O.medList} className="choices choices--list" />
               </Field>
               <ShowIf when="hp.medList=3">
-                <Field role="group" label="抗血小板藥物（可複選，選填）">
+                <Field role="group" label={<>抗血小板藥物（可複選）<span className="opt">選填</span></>}>
                   <Checks name="hp.antiplatelet" options={O.antiplatelet} />
                   <Extra when="hp.antiplatelet=3" name="hp.antiplateletOther" max={20} placeholder="藥名（選填）" label="其他抗血小板藥物" />
                 </Field>
               </ShowIf>
               <ShowIf when="hp.medList=4">
-                <Field role="group" label="抗凝血劑（可複選，選填）">
+                <Field role="group" label={<>抗凝血劑（可複選）<span className="opt">選填</span></>}>
                   <Checks name="hp.anticoag" options={O.anticoag} />
                   <Extra when="hp.anticoag=2" name="hp.anticoagOther" max={20} placeholder="藥名（選填）" label="其他抗凝血劑" />
                 </Field>
               </ShowIf>
               <ShowIf when="hp.medList=5">
-                <Field role="group" label="糖尿病用藥（可複選，選填）">
+                <Field role="group" label={<>糖尿病用藥（可複選）<span className="opt">選填</span></>}>
                   <Checks name="hp.dm" options={O.dm} />
                 </Field>
               </ShowIf>

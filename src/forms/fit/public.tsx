@@ -21,7 +21,8 @@ function AgeInput({ name, caption }: { name: string; caption: string }) {
       <span className="affix">
         <span className="affix__text">{caption}</span>
         <TextInput name={name} maxLength={3} digits ariaLabel={`${caption}（選填）`} />
-        <span className="affix__text">歲（選填）</span>
+        <span className="affix__text">歲</span>
+        <span className="opt">選填</span>
       </span>
     </div>
   );

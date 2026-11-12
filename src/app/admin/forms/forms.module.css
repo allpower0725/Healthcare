@@ -74,11 +74,6 @@
 
 /* ---------- 單一表單 ---------- */
 
-/* 返回按鈕（搭配 btn btn--ghost btn--sm） */
-.back {
-  margin-bottom: 14px;
-}
-
 .head {
   display: flex;
   align-items: center;

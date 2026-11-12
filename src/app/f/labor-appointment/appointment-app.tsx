@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { type FormEvent, useState } from 'react';
 import { LoadingOverlay } from '@/components/loading/loading-overlay';
+import { BackButton } from '@/components/navigation/back-control';
 import { useNativeValidationModal, useResultModal } from '@/components/feedback/result-modal';
 import { APPOINTMENT_PACKAGES, APPOINTMENT_PUBLIC_PATH, type AppointmentPackage } from '@/lib/appointments/catalog';
 import { FormIllustration } from '@/components/brand/form-illustration';
@@ -25,6 +26,29 @@ const STATUS = { pending: '待院所確認', confirmed: '預約已成立', cance
 const IDENTITY = { idType: 'national_id' as IdentityType, idNo: '', y: '', m: '', d: '' };
 const BIRTH_FIELDS = [['y', '年', 3], ['m', '月', 2], ['d', '日', 2]] as const;
 const COUNT_PENDING = '查詢人數中…';
+const HEALTH_RESOURCES = [
+  { label: '健檢當日注意事項', href: 'https://www.wjcch.com.tw/health/health031',
+    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="5" y="4" width="14" height="17" rx="2" /><path d="M9 3h6v4H9zM9 12h6M9 16h4" />
+    </svg> },
+  { label: '健檢流程', href: 'https://www.wjcch.com.tw/health/health021',
+    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="6" cy="5" r="2" /><circle cx="18" cy="19" r="2" /><path d="M8 5h8a3.5 3.5 0 0 1 0 7H8a3.5 3.5 0 0 0 0 7h8" />
+    </svg> },
+];
+
+function HealthResources() {
+  return <ul className={styles.links} aria-label="健檢參考資訊" role="list">
+    {HEALTH_RESOURCES.map(({ label, href, icon }) => <li key={href}>
+      <a href={href} target="_blank" rel="noopener noreferrer">
+        <span className={styles.linkIcon} aria-hidden="true">{icon}</span>
+        <span className={styles.linkLabel}>{label}</span>
+        <span className={styles.linkArrow} aria-hidden="true">↗</span>
+        <span className="sr-only">（另開新分頁）</span>
+      </a>
+    </li>)}
+  </ul>;
+}
 
 export function AppointmentApp({ open, calendar, requestId: initialRequestId, booking: initialBooking, captcha, configured }: {
   open: boolean; calendar: BookingCalendar; requestId: string | null; booking: Booking | null; captcha: PublicCaptchaConfig; configured: boolean;
@@ -120,7 +144,8 @@ export function AppointmentApp({ open, calendar, requestId: initialRequestId, bo
     showResult({ title: '預約已取消', tone: 'success', message: '此預約及已關聯的勞工健康檢查表已失效。' });
   }
 
-  return <PublicChrome progress={booking ? 100 : requestId ? 50 : 0} welcome={!requestId}>
+  return <PublicChrome progress={booking ? 100 : requestId ? 50 : 0} welcome={!requestId}
+    navigation={requestId ? <BackButton disabled={!!message} onClick={() => void restart()}>返回查詢</BackButton> : undefined}>
     {overlayMessage && <LoadingOverlay message={overlayMessage} />}
     <header className="intro">
       <span className="intro__art" aria-hidden="true"><FormIllustration formId="appointment" /></span>
@@ -164,10 +189,7 @@ export function AppointmentApp({ open, calendar, requestId: initialRequestId, bo
           </div>}
         {!booking.canManage &&
           <p className="notice notice--warn">若要開啟健檢表或取消預約，請使用送出預約時的瀏覽器，或洽院所協助。</p>}
-        <ul className={styles.links}>
-          <li><a href="https://www.wjcch.com.tw/health/health031" target="_blank" rel="noreferrer">健檢當日注意事項</a></li>
-          <li><a href="https://www.wjcch.com.tw/health/health021" target="_blank" rel="noreferrer">健檢流程</a></li>
-        </ul>
+        <HealthResources />
         <div className={styles.actions}>
           {booking.canOpenIntake && <Link className="btn btn--primary" prefetch={false}
             href={`${APPOINTMENT_PUBLIC_PATH}/form?booking=${booking.id}`}>
@@ -187,7 +209,6 @@ export function AppointmentApp({ open, calendar, requestId: initialRequestId, bo
           </div>
         </div>}
       </>}
-      <button className={`btn btn--ghost ${styles.back}`} type="button" onClick={() => void restart()}>返回查詢</button>
     </section> : <>
       <p className="notice" role="status">
         {availability.open ? '查無有效預約，可在下方建立新預約。' : '查無有效預約，目前暫停受理新預約。'}
@@ -206,17 +227,21 @@ export function AppointmentApp({ open, calendar, requestId: initialRequestId, bo
         <label className={styles.field}>姓名
           <input className="input" autoComplete="name" maxLength={40} required value={name} onChange={(e) => setName(e.target.value)} />
         </label>
-        <label className={styles.field}>健檢套餐
-          <select className="input" required value={packageCode} onChange={(e) => setPackage(e.target.value as AppointmentPackage | '')}>
+        <div className={styles.field}>
+          <div className={styles.fieldHeading}>
+            <label htmlFor="appointment-package">健檢套餐</label>
+            <a className={`opt ${styles.packageHelp}`} href="https://www.wjcch.com.tw/health/health011" target="_blank" rel="noopener noreferrer">
+              套餐說明<span className="sr-only">（另開新分頁）</span>
+            </a>
+          </div>
+          <select id="appointment-package" className="input" required value={packageCode} onChange={(e) => setPackage(e.target.value as AppointmentPackage | '')}>
             <option value="">請選擇</option>
             {Object.entries(APPOINTMENT_PACKAGES).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </select>
-        </label>
+        </div>
         {packageCode && <p>{packageCode === 'in_service' ? '此套餐須填寫勞工健康檢查表，才能由院所確認。' : '此套餐可依需要填寫勞工健康檢查表。'}</p>}
         <button type="submit" className="btn btn--primary" disabled={!date || !!overlayMessage} aria-disabled={countPending || undefined}>送出預約</button>
       </form>}
-      <button className={`btn btn--ghost ${styles.back}`} type="button"
-        aria-disabled={countPending || undefined} onClick={() => void restart()}>返回查詢</button>
     </>}
   </PublicChrome>;
 }

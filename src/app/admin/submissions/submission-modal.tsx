@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { createContext, type MutableRefObject, type ReactNode, useEffect, useRef, useState, useTransition } from 'react';
 import { LoadingOverlay } from '../loading-overlay';
+import { BackButton } from '@/components/navigation/back-control';
 import styles from './submissions.module.css';
 
 /** 編輯器登記離開前的儲存程序；失敗時保留 modal 和輸入內容。 */
@@ -43,9 +44,7 @@ export function SubmissionModal({ children, returnHref }: { children: ReactNode;
   return (
     <dialog ref={dialog} className={styles.modal} aria-label="協同完成表單" onCancel={(e) => { e.preventDefault(); void close(); }}>
       <div className={styles.modalBar}>
-        <button type="button" className="btn btn--ghost btn--sm" disabled={saving || pending} onClick={() => void close()}>
-          ← 協同完成
-        </button>
+        <BackButton disabled={saving || pending} onClick={() => void close()}>返回協同完成</BackButton>
         <button type="button" className="btn btn--ghost btn--sm" aria-label="關閉表單" disabled={saving || pending} onClick={() => void close()}>
           關閉 ×
         </button>

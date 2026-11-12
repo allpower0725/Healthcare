@@ -2,6 +2,7 @@
   --content-max: 1360px;
   /* 頂部列高度（含底線）；列表的篩選區塊黏在它下方 */
   --topbar-h: 65px;
+  --backbar-top: var(--topbar-h);
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
@@ -185,6 +186,7 @@
 }
 
 @media (max-width: 900px) {
+  .shell { --backbar-top: 0px; }
   .topbar {
     position: static;
   }

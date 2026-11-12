@@ -9,18 +9,18 @@ import { LaborUploadConsent } from './upload-consent';
 function TextField({ name, label, optional, placeholder, maxLength = 40, readOnly }: {
   name: string; label: string; optional?: boolean; placeholder?: string; maxLength?: number; readOnly?: boolean;
 }) {
-  return <Field rule={name} label={<>{label}{optional && <span className="opt"> 選填</span>}</>} htmlFor={name}>
+  return <Field rule={name} label={<>{label}{optional && <span className="opt">選填</span>}</>} htmlFor={name}>
     <TextInput name={name} id={name} maxLength={maxLength} placeholder={placeholder} readOnly={readOnly} />
   </Field>;
 }
 function NumberField({ name, label, optional = false }: { name: string; label: string; optional?: boolean }) {
-  return <Field rule={name} label={<>{label}{optional && <span className="opt"> 選填</span>}</>} htmlFor={name}>
+  return <Field rule={name} label={<>{label}{optional && <span className="opt">選填</span>}</>} htmlFor={name}>
     <TextInput name={name} id={name} maxLength={7} inputMode="decimal" />
   </Field>;
 }
-function Duration({ rule, y, m, label }: { rule: string; y: string; m: string; label: string }) {
-  return <Field rule={rule} label={label} role="group" hint="不足一年或沒有剩餘月數請填 0；月數為 0–11。">
-    <DurationInputs yearsName={y} monthsName={m} label={label} />
+function Duration({ rule, y, m, label, optional = false }: { rule: string; y: string; m: string; label: string; optional?: boolean }) {
+  return <Field rule={rule} label={<>{label}{optional && <span className="opt">選填</span>}</>} role="group" hint="不足一年或沒有剩餘月數請填 0；月數為 0–11。">
+    <DurationInputs yearsName={y} monthsName={m} label={`${label}${optional ? '（選填）' : ''}`} />
   </Field>;
 }
 function Job({ previous = false }: { previous?: boolean }) {
@@ -32,14 +32,14 @@ function Job({ previous = false }: { previous?: boolean }) {
     </Field>
     <ShowIf when={`${prefix}Has=Y`}>
       <TextField name={prefix + 'Title'} label={previous ? '最近一項過去的工作內容' : '目前工作內容'} placeholder="例如：行政人員、護理師、機台操作員" />
-      <Field rule={prefix + 'Dates'} label="作業起訖年月（選填）" role="group" hint="目前仍在職者，截止年月可留空。">
+      <Field rule={prefix + 'Dates'} label={<>作業起訖年月 <span className="opt">選填</span></>} role="group" hint="目前仍在職者，截止年月可留空。">
         <div className="date-rows">
           {(['Start', 'End'] as const).map((part) => <RocDateInputs key={part} precision="month"
             prefix={prefix + part} label={`${label}${part === 'Start' ? '起始' : '截止'}`}
             leadingLabel={part === 'Start' ? '起始：' : '截止：'} />)}
         </div>
       </Field>
-      <Duration rule={prefix + 'Duration'} y={prefix + 'Years'} m={prefix + 'Months'} label="合計年資（選填）" />
+      <Duration rule={prefix + 'Duration'} y={prefix + 'Years'} m={prefix + 'Months'} label="合計年資" optional />
     </ShowIf>
   </>;
 }
@@ -59,8 +59,8 @@ export function LaborPublic({ prefilled, identityLocked = false }: { prefilled: 
     </StepCard>
     <StepCard no={2} title="作業經歷與檢查時期" desc="請依實際工作情形填寫，日期及時數不清楚時可先留空。">
       <TextField name="labor.company" label="事業單位名稱" optional maxLength={60} placeholder="例如：烏日澄清醫院、○○股份有限公司" />
-      <DateField prefix="labor.hired" label="受僱日期（選填）" />
-      <DateField prefix="labor.exam" label="檢查日期（選填）" />
+      <DateField prefix="labor.hired" label="受僱日期" optional />
+      <DateField prefix="labor.exam" label="檢查日期" optional />
       <Job />
       <ShowIf when="labor.currentHas=Y">
         <Field rule="labor.shift" label="是否需輪班？" role="radiogroup" validateOnBlur={false}><Choices name="labor.shift" options={LABOR_HAS.map(([v, label]) => [v, label === '有' ? '是' : '否'] as const)} /></Field>

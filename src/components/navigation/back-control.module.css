@@ -1,0 +1,44 @@
+.back {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: .3rem;
+  min-height: 44px;
+  padding: .35rem .55rem;
+  border: 1.5px solid var(--primary);
+  border-radius: .65rem;
+  background: var(--primary-soft);
+  box-shadow: 0 1px 2px rgb(36 78 126 / 10%);
+  color: var(--primary-strong);
+  font: inherit;
+  font-size: .875rem;
+  font-weight: 700;
+  line-height: 1.4;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.back svg { flex: none; width: 1.1rem; height: 1.1rem; }
+.back:focus-visible { outline: 3px solid var(--primary-ring); outline-offset: 2px; }
+.back:disabled,
+.back[aria-disabled="true"] { opacity: .55; cursor: default; }
+@media (hover: hover) {
+  .back:hover:not(:disabled):not([aria-disabled="true"]) { background: color-mix(in srgb, var(--primary-soft) 88%, var(--primary)); border-color: var(--primary); }
+}
+.back:active:not(:disabled):not([aria-disabled="true"]) { background: var(--primary-line); box-shadow: none; }
+.bar {
+  position: sticky;
+  top: var(--backbar-top, 0px);
+  z-index: 9;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem .75rem;
+  min-height: 52px;
+  margin-bottom: 1rem;
+  padding: .25rem .5rem;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+@media print { .bar { display: none; } }

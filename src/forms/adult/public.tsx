@@ -79,7 +79,7 @@ export function AdultPublic({ prefilled }: { prefilled: boolean }) {
               <span className="affix affix--wide">
                 <span className="affix__text">癌症名稱</span>
                 <TextInput name="adult.famCancer" maxLength={12} ariaLabel="家族史癌症名稱（選填）" />
-                <span className="affix__text">（選填）</span>
+                <span className="opt">選填</span>
               </span>
             </div>
           </ShowIf>

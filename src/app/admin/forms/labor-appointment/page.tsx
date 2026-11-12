@@ -11,7 +11,8 @@ import { formatDateTime } from '@/lib/time';
 import { getUserName } from '@/lib/users/service';
 import adminStyles from '../../admin.module.css';
 import { LoadingOverlay } from '../../loading-overlay';
-import { AdminLink } from '../../pending-ui';
+import { AdminBackLink } from '../../pending-ui';
+import { BackBar } from '@/components/navigation/back-control';
 import { FormStatusBadge } from '../../ui';
 import { FillingQrCard } from '../filling-qr-card';
 import styles from '../forms.module.css';
@@ -22,9 +23,7 @@ export const metadata: Metadata = { title: '預約健檢設定' };
 export default function AppointmentSettingsPage() {
   return (
     <>
-      <AdminLink className={`btn btn--ghost btn--sm ${styles.back}`} href="/admin/forms">
-        ← 表單管理
-      </AdminLink>
+      <BackBar><AdminBackLink href="/admin/forms">返回表單管理</AdminBackLink></BackBar>
       <Suspense fallback={<LoadingOverlay message="載入中，請稍候…" />}>
         <AppointmentSettings />
       </Suspense>

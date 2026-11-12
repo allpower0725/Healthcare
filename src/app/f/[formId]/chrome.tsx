@@ -87,20 +87,24 @@ export function PublicChrome({
   progress,
   foot,
   welcome = false,
+  navigation,
   children,
 }: {
   progress?: number;
   foot?: ReactNode;
   welcome?: boolean;
+  navigation?: ReactNode;
   children: ReactNode;
 }) {
   return (
     <div className="ppf ppf-page">
       <header className="appbar">
-        <div className="appbar__inner">
-          <span className="brand">
+        <div className={`appbar__inner${navigation ? ' appbar__inner--navigation' : ''}`}>
+          {navigation}
+          <picture className="brand">
+            {navigation && <source media="(max-width: 639px)" srcSet="/brand/hospital-mark.svg" />}
             <img src="/brand/logo.svg" alt="烏日澄清醫院" width={160} height={30} />
-          </span>
+          </picture>
           <FontSize />
         </div>
         <div className="progress" aria-hidden="true">

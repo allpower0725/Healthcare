@@ -48,6 +48,17 @@ html:has(.ppf-page)[data-font-size="xl"] { font-size: 137.5%; }
 }
 .ppf .brand { display: block; flex: 0 1 auto; min-width: 0; line-height: 0; }
 .ppf .brand img { height: 30px; width: auto; max-width: 100%; object-fit: contain; }
+.ppf .appbar__inner--navigation { padding-block: 5px; gap: 8px; }
+.ppf .appbar__inner--navigation .brand { margin-right: auto; }
+@media (max-width: 639px) {
+  .ppf .appbar__inner--navigation .brand { flex: none; margin-inline: auto; }
+  .ppf .appbar__inner--navigation .brand img { width: 30px; height: 30px; }
+}
+@media (max-width: 360px) {
+  .ppf .appbar__inner--navigation { padding-inline: max(8px, env(safe-area-inset-left)) max(8px, env(safe-area-inset-right)); gap: 6px; }
+  .ppf .appbar__inner--navigation .fontsize__btns button { width: 36px; }
+  .ppf .appbar__inner--navigation .brand img { width: 26px; height: 26px; }
+}
 
 .ppf .fontsize { display: flex; flex: none; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
 .ppf .fontsize__btns { display: inline-flex; padding: 2px; border: 1px solid var(--line-strong); border-radius: 999px; background: #fff; }

@@ -1,6 +1,7 @@
 import { LoadingOverlay } from '@/app/admin/loading-overlay';
 import type { Metadata } from 'next';
-import { AdminLink as Link } from '@/app/admin/pending-ui';
+import { AdminBackLink } from '@/app/admin/pending-ui';
+import { BackBar } from '@/components/navigation/back-control';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { APPOINTMENT_ADMIN_PATH, APPOINTMENT_COLOR, APPOINTMENT_NAME, APPOINTMENT_SLUG, APPOINTMENT_TINT } from '@/lib/appointments/catalog';
@@ -39,13 +40,11 @@ async function Poster({ params }: { params: Params }) {
 
   return (
     <>
-      <div className={styles.toolbar}>
-        <Link className="btn btn--ghost btn--sm" href={isAppointment ? APPOINTMENT_ADMIN_PATH : `/admin/forms/${formId}`}>
-          ← 回表單設定
-        </Link>
+      <BackBar className={styles.toolbar}>
+        <AdminBackLink href={isAppointment ? APPOINTMENT_ADMIN_PATH : `/admin/forms/${formId}`}>返回表單設定</AdminBackLink>
         <PrintButton />
         <p>列印時紙張選 A4、邊界選「無」，並勾選「背景圖形」。</p>
-      </div>
+      </BackBar>
 
       <div className={styles.frame}>
         <article

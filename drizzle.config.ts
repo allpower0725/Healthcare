@@ -6,9 +6,9 @@ loadEnvConfig(process.cwd());
 export default defineConfig({
   dialect: 'postgresql',
   schema: './src/db/schema.ts',
-  out: './drizzle',
-  dbCredentials: { url: process.env.DATABASE_URL! },
-  // 資料庫可能與其他專案共用，migration 紀錄表也加上 heal_ 前綴
-  migrations: { table: 'heal_drizzle_migrations' },
+  out: './drizzle/heal-care',
+  dbCredentials: { url: process.env.MIGRATION_DATABASE_URL! },
+  // 管理紀錄由管理帳號擁有，與九張應用資料表分開。
+  migrations: { schema: 'db_migrations', table: 'healthcare' },
   strict: true,
 });

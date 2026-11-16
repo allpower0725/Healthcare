@@ -8,7 +8,7 @@ import {
   index,
   integer,
   jsonb,
-  pgTable,
+  pgSchema,
   primaryKey,
   text,
   timestamp,
@@ -29,10 +29,11 @@ export type SessionPurpose = (typeof SESSION_PURPOSES)[number];
 // 所有資料表都開啟 RLS 且不設 policy：Supabase 公開 API（anon／authenticated）讀寫不到；
 // 程式以資料表擁有者連線，不受 RLS 限制
 const timestamptz = (name: string) => timestamp(name, { withTimezone: true });
+export const healCare = pgSchema('heal_care');
 
 /** 後台使用者（院所人員） */
-export const users = pgTable(
-  'heal_users',
+export const users = healCare.table(
+  'users',
   {
     id: uuid('id').primaryKey().defaultRandom(),
     role: text('role', { enum: USER_ROLES }).notNull().default('staff'),
@@ -53,16 +54,16 @@ export const users = pgTable(
       .$onUpdate(() => new Date()),
   },
   (t) => [
-    check('heal_users_role_check', sql`${t.role} in ('superadmin', 'admin', 'staff')`),
-    check('heal_users_status_check', sql`${t.status} in ('pending', 'active', 'rejected', 'disabled')`),
+    check('users_role_check', sql`${t.role} in ('superadmin', 'admin', 'staff')`),
+    check('users_status_check', sql`${t.status} in ('pending', 'active', 'rejected', 'disabled')`),
     // 最高管理者只能有一位
-    uniqueIndex('heal_users_one_superadmin').on(t.role).where(sql`${t.role} = 'superadmin'`),
+    uniqueIndex('users_one_superadmin').on(t.role).where(sql`${t.role} = 'superadmin'`),
   ],
 ).enableRLS();
 
 /** 登入 session；cookie 只放隨機 token，這裡只存 SHA-256 */
-export const sessions = pgTable(
-  'heal_sessions',
+export const sessions = healCare.table(
+  'sessions',
   {
     tokenHash: text('token_hash').primaryKey(),
     userId: uuid('user_id')
@@ -75,14 +76,14 @@ export const sessions = pgTable(
     userAgent: text('user_agent'),
   },
   (t) => [
-    check('heal_sessions_purpose_check', sql`${t.purpose} in ('full', 'bind_google')`),
-    index('heal_sessions_user_idx').on(t.userId),
+    check('sessions_purpose_check', sql`${t.purpose} in ('full', 'bind_google')`),
+    index('sessions_user_idx').on(t.userId),
   ],
 ).enableRLS();
 
 /** 每張表單的開放設定；7 筆由 migration 建立，預設關閉 */
-export const formSettings = pgTable(
-  'heal_form_settings',
+export const formSettings = healCare.table(
+  'form_settings',
   {
     formId: text('form_id', { enum: FORM_IDS }).primaryKey(),
     /** 開放開關 */
@@ -98,9 +99,9 @@ export const formSettings = pgTable(
       .$onUpdate(() => new Date()),
   },
   (t) => [
-    check('heal_form_settings_form_id_check', sql`${t.formId} in ('hpv', 'pap', 'oral', 'hp', 'fit', 'adult', 'labor')`),
+    check('form_settings_form_id_check', sql`${t.formId} in ('hpv', 'pap', 'oral', 'hp', 'fit', 'adult', 'labor')`),
     check(
-      'heal_form_settings_period_check',
+      'form_settings_period_check',
       sql`${t.opensAt} is null or ${t.closesAt} is null or ${t.opensAt} < ${t.closesAt}`,
     ),
   ],
@@ -127,8 +128,8 @@ export type FormValues = Record<string, string | string[]>;
  * 民眾送出的表單；同一案件退回修改後更新原筆，新次服務使用新編號。
  * submitted 民眾已送出／returned 民眾修改中／completed 院所已送出（鎖定）／voided 已作廢
  */
-export const submissions = pgTable(
-  'heal_submissions',
+export const submissions = healCare.table(
+  'submissions',
   {
     id: uuid('id').primaryKey().defaultRandom(),
     formId: text('form_id', { enum: FORM_IDS }).notNull(),
@@ -158,20 +159,20 @@ export const submissions = pgTable(
       .$onUpdate(() => new Date()),
   },
   (t) => [
-    check('heal_submissions_form_id_check', sql`${t.formId} in ('hpv', 'pap', 'oral', 'hp', 'fit', 'adult', 'labor')`),
-    check('heal_submissions_status_check', sql`${t.status} in ('submitted', 'returned', 'completed', 'voided')`),
-    index('heal_submissions_id_no_idx').on(t.idNo),
-    index('heal_submissions_form_status_idx').on(t.formId, t.status),
-    index('heal_submissions_created_idx').on(t.createdAt.desc()),
-    index('heal_submissions_submitted_at_idx').on(t.publicSubmittedAt.desc()),
-    index('heal_submissions_completed_at_idx').on(t.completedAt),
-    index('heal_submissions_device_idx').on(t.deviceTokenHash),
+    check('submissions_form_id_check', sql`${t.formId} in ('hpv', 'pap', 'oral', 'hp', 'fit', 'adult', 'labor')`),
+    check('submissions_status_check', sql`${t.status} in ('submitted', 'returned', 'completed', 'voided')`),
+    index('submissions_id_no_idx').on(t.idNo),
+    index('submissions_form_status_idx').on(t.formId, t.status),
+    index('submissions_created_idx').on(t.createdAt.desc()),
+    index('submissions_submitted_at_idx').on(t.publicSubmittedAt.desc()),
+    index('submissions_completed_at_idx').on(t.completedAt),
+    index('submissions_device_idx').on(t.deviceTokenHash),
   ],
 ).enableRLS();
 
 /** 送出、退回修改、確認送出、取消送出、作廢、復原的紀錄；民眾操作時 actor_id 為 NULL */
-export const submissionEvents = pgTable(
-  'heal_submission_events',
+export const submissionEvents = healCare.table(
+  'submission_events',
   {
     id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
     submissionId: uuid('submission_id')
@@ -183,10 +184,10 @@ export const submissionEvents = pgTable(
   },
   (t) => [
     check(
-      'heal_submission_events_action_check',
+      'submission_events_action_check',
       sql`${t.action} in ('submitted', 'returned', 'resubmitted', 'completed', 'reopened', 'voided', 'restored')`,
     ),
-    index('heal_submission_events_submission_idx').on(t.submissionId),
+    index('submission_events_submission_idx').on(t.submissionId),
   ],
 ).enableRLS();
 
@@ -196,8 +197,8 @@ export type FormSetting = typeof formSettings.$inferSelect;
 export type Submission = typeof submissions.$inferSelect;
 
 /** 預約可獨立開關，收件地址供院所管理與排程寄信使用。 */
-export const appointmentSettings = pgTable(
-  'heal_appointment_settings',
+export const appointmentSettings = healCare.table(
+  'appointment_settings',
   {
     id: integer('id').primaryKey().default(1),
     isOpen: boolean('is_open').notNull().default(false),
@@ -209,15 +210,15 @@ export const appointmentSettings = pgTable(
     updatedAt: timestamptz('updated_at').notNull().defaultNow().$onUpdate(() => new Date()),
   },
   (t) => [
-    check('heal_appointment_settings_singleton_check', sql`${t.id} = 1`),
-    check('heal_appointment_settings_booking_days_check',
+    check('appointment_settings_singleton_check', sql`${t.id} = 1`),
+    check('appointment_settings_booking_days_check',
       sql`${t.bookingMinDays} between 1 and 365 and ${t.bookingMaxDays} between ${t.bookingMinDays} and 365`),
   ],
 ).enableRLS();
 
 /** 預約可以先成立案件，之後再關聯一份勞工健康檢查表。 */
-export const appointments = pgTable(
-  'heal_appointments',
+export const appointments = healCare.table(
+  'appointments',
   {
     id: uuid('id').primaryKey().defaultRandom(),
     idNo: text('id_no').notNull(),
@@ -236,17 +237,17 @@ export const appointments = pgTable(
     updatedAt: timestamptz('updated_at').notNull().defaultNow().$onUpdate(() => new Date()),
   },
   (t) => [
-    check('heal_appointments_package_check', sql`${t.packageCode} in ('new_worker', 'new_worker_hbv', 'food_service', 'in_service')`),
-    check('heal_appointments_status_check', sql`${t.status} in ('pending', 'confirmed', 'cancelled')`),
-    index('heal_appointments_identity_idx').on(t.idNo, t.birthDate, t.createdAt.desc()),
-    index('heal_appointments_date_status_idx').on(t.appointmentDate, t.status),
-    index('heal_appointments_status_created_idx').on(t.status, t.createdAt.desc()),
+    check('appointments_package_check', sql`${t.packageCode} in ('new_worker', 'new_worker_hbv', 'food_service', 'in_service')`),
+    check('appointments_status_check', sql`${t.status} in ('pending', 'confirmed', 'cancelled')`),
+    index('appointments_identity_idx').on(t.idNo, t.birthDate, t.createdAt.desc()),
+    index('appointments_date_status_idx').on(t.appointmentDate, t.status),
+    index('appointments_status_created_idx').on(t.status, t.createdAt.desc()),
   ],
 ).enableRLS();
 
 /** 每筆預約對每位收件人一筆投遞紀錄，摘要批次共用 batchId。 */
-export const appointmentNotices = pgTable(
-  'heal_appointment_notices',
+export const appointmentNotices = healCare.table(
+  'appointment_notices',
   {
     appointmentId: uuid('appointment_id').notNull().references(() => appointments.id, { onDelete: 'restrict' }),
     recipient: text('recipient').notNull(),
@@ -259,21 +260,21 @@ export const appointmentNotices = pgTable(
   },
   (t) => [
     primaryKey({ columns: [t.appointmentId, t.recipient] }),
-    check('heal_appointment_notices_status_check', sql`${t.status} in ('sending', 'sent', 'failed', 'uncertain')`),
-    index('heal_appointment_notices_batch_idx').on(t.batchId),
-    index('heal_appointment_notices_recipient_idx').on(t.recipient, t.attemptedAt.desc()),
+    check('appointment_notices_status_check', sql`${t.status} in ('sending', 'sent', 'failed', 'uncertain')`),
+    index('appointment_notices_batch_idx').on(t.batchId),
+    index('appointment_notices_recipient_idx').on(t.recipient, t.attemptedAt.desc()),
   ],
 ).enableRLS();
 
 export type AppointmentSetting = typeof appointmentSettings.$inferSelect;
 export type Appointment = typeof appointments.$inferSelect;
 
-export const appointmentAttemptLimits = pgTable(
-  'heal_appointment_attempt_limits',
+export const appointmentAttemptLimits = healCare.table(
+  'appointment_attempt_limits',
   {
     keyHash: text('key_hash').primaryKey(),
     attempts: integer('attempts').notNull(),
     expiresAt: timestamptz('expires_at').notNull(),
   },
-  (t) => [index('heal_appointment_attempt_limits_expiry_idx').on(t.expiresAt)],
+  (t) => [index('appointment_attempt_limits_expiry_idx').on(t.expiresAt)],
 ).enableRLS();

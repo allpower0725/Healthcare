@@ -258,7 +258,7 @@ for (const habit of LABOR_HABITS) {
   fieldOptions[k] = habitOptions(habit);
 }
 
-/** heal_submissions 的實體欄位名稱。 */
+/** heal_care.submissions 的實體欄位名稱；字典檔名保留以維持既有連結。 */
 export const columnLabels: Record<string, string> = {
   id: '案件編號',
   form_id: '表單種類',

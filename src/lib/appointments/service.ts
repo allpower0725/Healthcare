@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { type AnyColumn, and, eq, exists, getTableColumns, gte, inArray, ne, or, sql } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
 import { db } from '@/db';
 import { appointments, submissions, type SubmissionStatus, users } from '@/db/schema';
 import { toTaipeiInput } from '@/lib/time';
@@ -103,11 +104,13 @@ export async function confirmAppointment(id: string, actorId: string, now = new 
     if (appointment.appointmentDate < taipeiDate(now)) return { ok: false, reason: 'date_passed' };
 
     if (appointment.packageCode === 'in_service') {
-      const [intake] = await tx.select({ id: submissions.id })
+      // FOR SHARE OF 只接受未限定的名稱；使用別名避免 ORM 帶入 schema。
+      const intakeTable = alias(submissions, 'confirmation_intake');
+      const [intake] = await tx.select({ id: intakeTable.id })
         .from(appointments)
-        .innerJoin(submissions, matchesAppointmentSubmission())
-        .where(and(eq(appointments.id, id), inArray(submissions.status, VALID_INTAKE_STATUSES)))
-        .for('share', { of: submissions });
+        .innerJoin(intakeTable, matchesAppointmentSubmission(intakeTable))
+        .where(and(eq(appointments.id, id), inArray(intakeTable.status, VALID_INTAKE_STATUSES)))
+        .for('share', { of: intakeTable });
       if (!intake) return { ok: false, reason: 'form_required' };
     }
 

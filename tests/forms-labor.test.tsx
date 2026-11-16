@@ -112,7 +112,7 @@ describe('勞工健檢送出與協同', () => {
     expect(parseQuery({}).forms).toContain('labor');
   });
   it('未知代號仍受資料庫約束保護', async () => {
-    await expect(db.execute(sql`insert into heal_form_settings (form_id) values ('unknown-form')`)).rejects.toThrow();
+    await expect(db.execute(sql`insert into heal_care.form_settings (form_id) values ('unknown-form')`)).rejects.toThrow();
   });
   it('送出可查詢 email，退回與重送沿用編號，院所可直接確認並保留完成者', async () => {
     await db.update(formSettings).set({ isOpen: true }).where(eq(formSettings.formId, 'labor'));

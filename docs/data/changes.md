@@ -1,6 +1,24 @@
 # 共用資料契約異動紀錄
 
-此檔記錄 `heal_submissions` 共用資料契約的異動。欄位與代碼完整對照見 [資料字典](heal-submissions.md)，供其他應用程式使用的版本見 [JSON 字典](heal-submissions.json)。
+此檔記錄 `heal_care.submissions`（歷史名稱 `public.heal_submissions`）共用資料契約的異動。欄位與代碼完整對照見 [資料字典](heal-submissions.md)，供其他應用程式使用的版本見 [JSON 字典](heal-submissions.json)。
+
+## 2026-11-16：Supabase 切換新 schema 與獨立帳號
+
+- 雲端實體資料庫維持託管的 `postgres`；原 `public.heal_*` 九表完整複製至與本機相同的 `heal_care.<去除 heal_ 的名稱>`，使用相同新 baseline，不修改舊 migration。管理紀錄在 `db_migrations.healthcare`。實體欄位、JSONB key、名稱、選項、表單代號、狀態、外鍵與所有資料值不變。
+- 以雲端資料為準保留 123 份問卷、275 筆事件、7 筆預約，以及其他六表的全部資料；整體筆數與 SHA-256 一致，流水號狀態也保留。先建立應用九表與 journal 的 custom-format 備份，並在隔離本機驗證庫實際還原核對成功；雲端新舊結構完全一致。雜湊核對統一固定 C 排序，避免環境排序規則影響。
+- 正式站改用 `healthcare` schema owner 與獨立雲端密碼；管理角色 `db_owner` 維護 journal 及封存資料，不具真正平台 superuser 權限。Supabase 原 `postgres` 平台管理角色保留；不將維護密碼部署到應用 runtime。TLS 透過官方 CA 驗證，不略過憑證檢查。
+- 依使用者明確決定停用 `his_user` 舊整合：NOLOGIN、撤銷舊存取授權及相關問卷 RLS policy，不給新 schema 權限，也不提供舊名相容 view。日後整合必須明確更新連線、SQL／ORM 表名與授權，不能依賴舊 `public.heal_submissions` 入口。
+- 舊九表封存在私有 `heal_care_legacy_20261116`，加上防寫入 trigger，作為搬移時快照，不同步新表、不供應用帳號讀寫。不能以快照取代上線後的新資料；回復須先備份並處理後續寫入。完整部署、驗證、帳號與備份步驟見 [Supabase 設定](../setup/supabase-database.md)。
+- 字典欄位、代碼與 JSON 結構不變，沿用 `heal-submissions.md`／`.json` 原檔名以保留連結；不新增 SQL 型別或驗證條件到精簡字典。
+
+## 2026-11-16：本機資料庫、schema、表名與帳號重整
+
+- 舊本機 `localhost:5433/wjcch`、`wjcch_test` 複製至新 instance `wjcch` 的 `localhost:5432/wjcch_db`、`wjcch_db_test`。`public.heal_submissions` → `heal_care.submissions`，其他八張表及相關索引／限制／sequence 同步移除 `heal_`；完整對照與步驟見 [本機資料庫設定](../setup/local-database.md)。欄位、JSONB key、中文名稱、選項代碼、表單代號、狀態、外鍵語意與所有既有資料值保持不變。
+- 使用全新 `drizzle/heal-care/0000_heal_care_baseline.sql`，不修改或重放舊 migration。先做兩庫一致性整庫備份，再逐表核對欄位定義、限制、索引、資料筆數及 SHA-256；保留原 identity sequence 狀態。舊兩庫與資料卷完整保留；新測試庫隨後可由測試重設，舊測試庫不變。
+- 管理帳號改為獨立 `db_owner`；應用帳號仍叫 `healthcare`，但改用獨立新密碼，只擁有 `heal_care` 的物件。舊 `healthcare` 的 cluster superuser 權限不帶入。Migration 記錄在獨立的 `db_migrations.healthcare`，不對應用帳號開放。
+- 相依應用須同步更新連線及 SQL／ORM 表名至 `heal_care.<不帶 heal_ 的名稱>`，不能只改 search_path。不建立舊名相容 view；尚未更新的工具可只讀舊庫快照，切換後不可再寫舊庫，新舊庫不會自動同步。新程式無法直接連回舊結構，回復時須連同舊版程式及舊連線一起切回，已有新寫入時需另作資料回搬。
+- 歷史資料在新庫以相同值直接讀取，不轉換答案。兩份精簡字典保留既有檔名與 JSON 結構，Markdown 標題由 ORM 實際 schema／表名產生；JSON 因欄位與代碼未改，重新產生後內容相同。
+- 本機階段當時尚未變更 Supabase 與正式站；同日後續已完成雲端切換並依使用者決定停用舊整合，見上方 Supabase 切換紀錄。此段保留本機階段的歷史處理方式。
 
 ## 2026-11-12：勞工健檢事業單位名稱改為選填
 

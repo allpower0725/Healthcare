@@ -40,11 +40,13 @@ const exactKeys = (actual: readonly string[], expected: readonly string[], name:
 exactKeys(Object.keys(FORMS), FORM_IDS, 'form_id');
 exactKeys(Object.keys(statusLabels), SUBMISSION_STATUSES, 'status');
 
-const columns = getTableConfig(submissions).columns.map((column) => {
+const submissionTable = getTableConfig(submissions);
+const tableName = `${submissionTable.schema}.${submissionTable.name}`;
+const columns = submissionTable.columns.map((column) => {
   assert(columnLabels[column.name]?.trim(), `缺少實體欄位 ${column.name} 的中文名稱。`);
   return { key: column.name, label: columnLabels[column.name] };
 });
-exactKeys(Object.keys(columnLabels), columns.map((c) => c.key), 'heal_submissions 實體欄位');
+exactKeys(Object.keys(columnLabels), columns.map((c) => c.key), `${tableName} 實體欄位`);
 
 const usedLabels = new Set<string>();
 const usedOptions = new Set<string>();
@@ -96,7 +98,7 @@ const code = (value: unknown) => '`' + cell(value) + '`';
 const mappingRows = (mapping: Record<string, string>) => Object.entries(mapping)
   .map(([key, label]) => `| ${code(key)} | ${cell(label)} |`);
 const lines = [
-  '# heal_submissions 共用資料對照表', '',
+  `# ${tableName} 共用資料對照表`, '',
   '依表單種類查閱 `public_data`、`staff_data`。選項用「代碼 → 名稱」表示，多個選項以「；」分隔；值本身就是名稱的選項省略對照。', '',
   '## 實體欄位', '', '| 欄位 | 中文名稱 |', '|---|---|',
   ...mappingRows(dictionary.columns), '',
@@ -134,4 +136,4 @@ for (const [path, content] of [
     assert.equal(actual === content, true, `${path} 未同步；請執行 npm run dictionary:generate 並提交產生的差異。`);
   } else writeFileSync(file(path), content, 'utf8');
 }
-console.log(`${check ? '已核對' : '已產生'} heal_submissions 字典：${columns.length} 個實體欄位、${FORM_IDS.length} 種表單、${fieldCount} 個 JSONB 欄位（依表單分列）。`);
+console.log(`${check ? '已核對' : '已產生'} ${tableName} 字典：${columns.length} 個實體欄位、${FORM_IDS.length} 種表單、${fieldCount} 個 JSONB 欄位（依表單分列）。`);

@@ -10,7 +10,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## 共用資料契約與欄位對照
 
-`heal_submissions` 與其他應用程式共用，任何開發都必須維護完整資料字典：
+`heal_care.submissions`（歷史名稱 `public.heal_submissions`）與其他應用程式共用，任何開發都必須維護完整資料字典：
 
 - `docs/data/heal-submissions.md` 與 `docs/data/heal-submissions.json` 均以人員查閱為主，保持精簡。實體欄位只列「欄位、中文名稱」；`public_data`／`staff_data` 只列「key、中文名稱、選項代碼 → 名稱」；`form_id`、`status` 只列代碼與中文名稱。
 - 不使用 `<br>`，多個選項以「；」分隔；值與名稱相同的選項（如縣市）省略對照。不加入 SQL 型別、NULL、格式限制、顯示條件、驗證規則或完整行政區清單。

@@ -6,42 +6,29 @@
 
 ## 本機開發
 
-需要 Node.js 24、Docker。
+需要 Node.js 24、Docker。既有本機資料庫的搬移、全新安裝、權限與回復步驟見 [本機資料庫設定](docs/setup/local-database.md)。
 
-```bash
-npm install
-docker compose up -d db        # PostgreSQL 17，對外 port 5433（主庫 wjcch、測試庫 wjcch_test）
-cp .env.example .env           # 填入各項設定，見下方
-npm run db:migrate             # 建立資料表
-npm run dev                    # http://localhost:3000
-```
+本機已改用 PostgreSQL instance（Docker 容器）`wjcch`，連線 `localhost:5432`，主庫 `wjcch_db`、測試庫 `wjcch_db_test`。`heal_care` 包含原有九張應用資料表，表名移除 `heal_`；欄位與資料保持不變。Migration 紀錄獨立放在 `db_migrations.healthcare`。
 
-前台防護設定請先依 [reCAPTCHA 設定步驟](docs/setup/recaptcha.md) 建立 Google Cloud Web／Score-based site key 與伺服器 API key，並填入 `.env.local`／Vercel 環境變數。尚未有金鑰時，僅本機 `npm run dev` 可明確設定 `RECAPTCHA_DEV_BYPASS=true` 測試畫面；正式版與 Vercel 不允許略過，未設定完成會拒絕送出。此變更無須資料庫 migration，問卷資料字典不變。
+- `db_owner`：本機 instance 超級使用者及兩庫擁有者，僅供維護。
+- `healthcare`：`heal_care` schema、九張表及 sequence 的擁有者；沒有超級使用者、建立資料庫／角色、跨 schema 建表或全域略過 RLS 的權限。應用程式只使用此帳號。
+- 兩組獨立隨機密碼位於 Git 忽略的 `.local/database/secrets/`；連線設定在 `.local/database/connections.env`。密碼由本機檔案管理，不寫入 Git 或文件。
+- 舊 `healthcare-db` 仍在 `5433`，舊 `wjcch`／`wjcch_test` 與資料卷保留作為搬移時快照。新舊庫不會自動同步；切換後不要再往舊庫寫入。
+- Supabase 已於 2026-11-16 切換相同的 `heal_care` 九表與 `healthcare` 應用帳號，實體資料庫保留託管的 `postgres`；正式站已上線。雲端專用密碼、平台管理限制、備份與回復見 [Supabase 設定](docs/setup/supabase-database.md)。`his_user` 舊整合已停用，舊表保留於私有封存 schema。
 
-### 本機資料庫命名
+`5432` 已確認沒有其他監聽服務後使用。DBeaver 請另建連線：Host `localhost`、Port `5432`、Database `wjcch_db`、User `healthcare`，展開 `heal_care`；管理工作另建 `db_owner` 連線。
 
-- 主資料庫：`wjcch`；自動測試資料庫：`wjcch_test`。
-- Schema 維持 `public`，五張應用資料表維持 `heal_` 前綴，與 Supabase 相同。
-- Supabase 專案名稱是 `wjcch`，雲端實際資料庫名稱仍為 `postgres`；部署時使用雲端提供的連線字串。
-- 本機連線為 `localhost:5433`，帳號與密碼沿用 `healthcare`。Docker 容器 `healthcare-db` 及既有資料卷沿用原設定。
-- DBeaver 的資料庫欄位填 `wjcch`，展開 `public` 即可查看資料表。
+前台防護設定請依 [reCAPTCHA 設定步驟](docs/setup/recaptcha.md) 填入金鑰；本機開發略過方式與正式環境限制仍依該文件。
 
-本機已於 2026-11-04 將 `healthcare`、`healthcare_test` 原地更名，保留資料與 migration 紀錄。更名前的完整備份與資料核對清單在 `.local/db-backups/2026-11-04-database-rename/`，不納入 Git。
-
-其他電腦若沿用舊資料卷，需先備份兩個資料庫、關閉應用程式與資料庫管理工具的連線，再執行一次：
-
-```bash
-docker exec healthcare-db psql -U healthcare -d postgres -X -v ON_ERROR_STOP=1 --single-transaction -c "ALTER DATABASE healthcare RENAME TO wjcch; ALTER DATABASE healthcare_test RENAME TO wjcch_test;"
-```
-
-接著將該電腦 `.env` 的 `DATABASE_URL` 資料庫路徑改為 `/wjcch`，若另設 `TEST_DATABASE_URL` 則改為 `/wjcch_test`，執行 `docker compose up -d db` 並重新啟動應用程式。`POSTGRES_DB` 與初始化 SQL 只在空資料卷首次建立時生效，單改設定不會替既有資料庫更名；保留原資料卷即可沿用資料。
-
-### .env
+### 環境與維護設定
 
 | 變數 | 說明 |
 |---|---|
-| `DATABASE_URL` | 本機連到 `wjcch`（見 `.env.example`）；上線改填 Supabase 連線字串 |
-| `TEST_DATABASE_URL` | 測試指令的選用環境變數，預設連到本機 `wjcch_test`；覆寫時須指向專用測試庫 |
+| `DATABASE_URL` | 應用程式連線：`healthcare` → 本機 `wjcch_db` |
+| `MIGRATION_DATABASE_URL` | 維護用連線：`db_owner` → `wjcch_db`；只存 `.local/database/connections.env`，不放 Next `.env*` |
+| `TEST_DATABASE_URL` | 測試應用連線：`healthcare` → `wjcch_db_test`；測試會清除此專用庫的資料 |
+| `TEST_MIGRATION_DATABASE_URL` | 測試維護連線：`db_owner` → `wjcch_db_test`；由測試指令讀取本機維護檔 |
+| `DATABASE_SSL_CA` | Supabase 官方 CA 憑證，完整驗證 TLS／hostname；本機 PostgreSQL 留空 |
 | `APP_URL` | 後台網址，本機為 `http://localhost:3000` |
 | `ADMIN_USERNAME`、`ADMIN_PASSWORD_HASH` | 最高管理者首次登入用；雜湊以 `npm run hash-password` 產生 |
 | `GOOGLE_CLIENT_ID`、`GOOGLE_CLIENT_SECRET` | Google Cloud Console 的 OAuth 用戶端（網頁應用程式），重新導向 URI 填 `{APP_URL}/api/auth/google/callback` |
@@ -70,7 +57,7 @@ docker exec healthcare-db psql -U healthcare -d postgres -X -v ON_ERROR_STOP=1 -
 
 ## 共用資料開發規範
 
-`heal_submissions` 供其他應用程式共用，欄位與代碼請查閱 [共用資料對照表](docs/data/heal-submissions.md) 或 [JSON 字典](docs/data/heal-submissions.json)。兩份字典均以人工查閱為主：實體欄位只列欄位與中文名稱；七種表單的 `public_data`／`staff_data` 只列 key、中文名稱及有意義的選項對照，另附 `form_id`、`status` 的中文名稱。
+`heal_care.submissions`（歷史名稱 `public.heal_submissions`）供其他應用程式共用，欄位與代碼請查閱 [共用資料對照表](docs/data/heal-submissions.md) 或 [JSON 字典](docs/data/heal-submissions.json)。兩份字典均以人工查閱為主：實體欄位只列欄位與中文名稱；七種表單的 `public_data`／`staff_data` 只列 key、中文名稱及有意義的選項對照，另附 `form_id`、`status` 的中文名稱。
 
 新增、刪除、改名或改變欄位／代碼定義時，必須在同一變更同步更新字典及 [契約異動紀錄](docs/data/changes.md)，並說明歷史資料與相依應用程式的相容處理。人工註解維護於 `scripts/lib/submission-dictionary-metadata.ts`；更新後執行 `npm run dictionary:generate`、審閱兩份產物，再執行 `npm run dictionary:check`。`npm test` 也會先檢查字典同步。完整規定見 `AGENTS.md`。
 
@@ -88,15 +75,6 @@ docker exec healthcare-db psql -U healthcare -d postgres -X -v ON_ERROR_STOP=1 -
 
 資料上傳同意書底稿由 `scripts/generate-labor-upload-template.py` 讀取規格所列的指定 PDF，產生 `public/forms/labor-upload-template.svg` 與 `src/forms/labor/upload-print-layout.ts`；原稿紅色正文完整保留。同意書使用既有 JSONB 的 `labor.upload*` 欄位，無須新增 migration。舊案缺少同意選擇時顯示尚未填寫，不推定為不同意；民眾再次修改送出時須完成新選擇，簽名需重簽。
 
-新增表單的 migration 為 `drizzle/0006_add_labor_form.sql`。本機與 Supabase 專案 `tbulauezaixdjzdcqsem` 均已於 2026-11-04 套用，雲端 Drizzle 紀錄已同步。其他環境部署前，應先以該環境的 `DATABASE_URL` 執行 `npm run db:migrate`，再部署對應程式；`npm run build` 本身不會套用資料庫 migration。本次本機 migration 前的兩庫完整備份在 `.local/db-backups/2026-11-04-add-labor-form/`；雲端套用 SQL、前後資料雜湊與儲存驗證紀錄在 `.local/cloud-migrations/2026-11-04-add-labor-form/`。
+目前本機與 Supabase 使用 `drizzle/heal-care/0000_heal_care_baseline.sql`，一次建立九張表與初始設定。原 `drizzle/0000`–`0008` 及 metadata 保留為舊庫歷史，不再用於新結構；不要混用兩套 journal。維護指令以 `MIGRATION_DATABASE_URL` 連線，DDL 以 `SET LOCAL ROLE healthcare` 執行，確保新增物件歸 `healthcare`；`npm run build` 不會套用 migration。搬移前整庫備份在 `.local/db-backups/2026-11-16-heal-care/`，核對紀錄在 `.local/database/copy-main.json`、`copy-test.json` 與 `verification.json`。
 
-## 指令
-
-| 指令 | 用途 |
-|---|---|
-| `npm test` | 自動測試（預設使用本機的 `wjcch_test` 資料庫） |
-| `npm run typecheck` | TypeScript 型別檢查 |
-| `npm run dictionary:generate` | 依實際定義與中文註解產生 Markdown／JSON 共用資料字典 |
-| `npm run dictionary:check` | 檢查 key、選項與字典產物是否完整同步；不連線資料庫 |
-| `npm run db:generate` | 修改 `src/db/schema.ts` 後產生 migration |
-| `npm run db:migrate` | 套用 migration |
+本次正式站部署來自已驗證的工作區版本，Git 異動尚未提交；後續 Git 部署須包含本次程式及文件，不能重新部署使用舊 `public.heal_*` 的版本。

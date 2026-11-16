@@ -12,9 +12,13 @@
     "dictionary:check": "tsx scripts/generate-submission-dictionary.ts --check",
     "db:up": "docker compose up -d db",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
+    "db:migrate": "tsx scripts/db-migrate.ts",
     "hash-password": "tsx scripts/hash-password.ts",
-    "admin:unbind": "tsx scripts/admin-unbind.ts"
+    "admin:unbind": "tsx scripts/admin-unbind.ts",
+    "db:local:configure": "tsx scripts/db-local-configure.ts",
+    "db:local:copy": "tsx scripts/db-local-copy.ts",
+    "db:local:verify": "tsx scripts/db-local-verify.ts",
+    "db:local:activate": "tsx scripts/db-local-activate.ts"
   },
   "dependencies": {
     "arctic": "^3.7.0",

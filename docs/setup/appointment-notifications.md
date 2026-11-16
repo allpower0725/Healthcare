@@ -6,7 +6,7 @@
 
 ## 啟用預約前台
 
-1. 部署前依序確認 `0007_health_check_appointments.sql` 與 `0008_appointment_public.sql` 已套用至目標資料庫。本機使用 `npm run db:migrate`，執行前確認 `DATABASE_URL` 指向預期的資料庫。
+1. 本機依 [資料庫設定](local-database.md) 使用 `drizzle/heal-care/` 全新 baseline，已包含全部預約欄位。`npm run db:migrate` 使用 `MIGRATION_DATABASE_URL` 管理連線。Supabase 已依 [雲端切換紀錄](supabase-database.md) 使用相同新 schema；原 `0007`／`0008` 只保留歷史。維護時不要重放舊 migration 或改寫已套用 baseline。
 2. 在本機環境或 Vercel 加入 `APPOINTMENT_SESSION_SECRET`。使用獨立的高熵隨機值，例如執行 `node -e "console.log(require('node:crypto').randomBytes(32).toString('base64url'))"` 產生。每個環境使用自己的密鑰。同一環境的部署須共用相同值，變更會使既有查詢工作階段和原瀏覽器的預約操作憑證失效。
 3. 依 [前台 reCAPTCHA 設定](recaptcha.md) 確認正式網域、網站金鑰及評估服務。預約查詢、送出、取消及關聯問卷異動均使用共用防護。
 4. 到「表單管理 → 預約健檢」設定日期範圍及休診日，開啟新預約並掃描既有 QR code 驗證。預設可預約台灣時間起算 15 至 90 天內的週一至週六，已建立的預約仍可於關閉新預約後查詢。
@@ -77,7 +77,7 @@ select cron.schedule(
 
 - 「表單管理 → 預約健檢」顯示目前收件人的最近嘗試、最近寄送及失敗或待核對的件數。最近寄送時間代表 Gmail SMTP 接受郵件的時間。
 - 郵件明確被拒絕時，該預約仍待處理才會在下一小時重試。已寄送的預約對相同收件人只通知一次。
-- Gmail 回應逾時或排程中斷時，送達結果可能不明。系統會保留「待核對」記錄。管理者可在已授權的 Gmail 寄件備份，依 `heal_appointment_notices.batch_id` 對照 `Message-ID` 中的 `appointment-digest.<batch_id>` 及最近嘗試時間查核。
+- Gmail 回應逾時或排程中斷時，送達結果可能不明。系統會保留「待核對」記錄。管理者可在已授權的 Gmail 寄件備份，依 `heal_care.appointment_notices.batch_id`（歷史名稱 `public.heal_appointment_notices.batch_id`）對照 `Message-ID` 中的 `appointment-digest.<batch_id>` 及最近嘗試時間查核。
 - 在 Supabase「Integrations → Cron」查看工作是否啟用及執行歷史，或查詢 `cron.job_run_details`。此排程會在 HTTP 狀態非 `200` 時標為失敗；`401` 表示排程密鑰未通過，`503` 表示正式站缺少可用的 Gmail 寄件設定。`succeeded` 表示端點完成處理，實際寄送、失敗或待核對件數仍以後台通知結果為準。 [Supabase Cron 執行歷史](https://supabase.com/docs/guides/cron/quickstart)
 
 本機自動測試透過模擬 Gmail 回應驗證上述流程。正式授權、排程啟用及測試寄件需由院所另外確認。

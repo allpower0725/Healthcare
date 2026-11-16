@@ -1,4 +1,4 @@
-# heal_submissions 共用資料對照表
+# heal_care.submissions 共用資料對照表
 
 依表單種類查閱 `public_data`、`staff_data`。選項用「代碼 → 名稱」表示，多個選項以「；」分隔；值本身就是名稱的選項省略對照。
 

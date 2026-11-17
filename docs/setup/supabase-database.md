@@ -94,3 +94,16 @@ Vercel **Production** 的 `DATABASE_URL` 已改為 `healthcare` 交易池連線�
 `rollback-before-release.sql` **只供新站尚未接受寫入前**、部署失敗時回復舊表位置及舊 deployment 使用，`his_user` 仍保持停用。現在新站已上線，不可直接執行它，也不能只將 Vercel 指回舊版而忽略 schema 差異。若要回復，先停止新寫入、備份當前新庫，將上線後的新資料與狀態完整回搬或提供經審閱的相容處理，再切回程式；不得用舊快照覆蓋後續資料。
 
 封存資料是搬移時快照，不同步新表；不提供應用帳號存取，也不要讓任何整合繼續寫入。是否移除封存 schema、舊 Drizzle journal 或舊本機資料卷，另依確認的保留期限處理，本次沒有刪除。
+
+### SQL Editor 清理封存 schema 的角色切換
+
+封存 schema 的 owner 是 `db_owner`。SQL Editor 預設的 `postgres` 不自動繼承該角色的 owner 權限，直接 `DROP SCHEMA` 會出現 `must be owner of schema`。先在 SQL Editor 選擇 `postgres` 角色，確認已保留驗證過的備份、核對沒有新增外部相依，再將以下整段一起執行：
+
+```sql
+BEGIN;
+SET LOCAL ROLE db_owner;
+DROP SCHEMA heal_care_legacy_20261116 CASCADE;
+COMMIT;
+```
+
+`SET LOCAL ROLE` 只在此交易內生效，交易結束後自動回到原角色，不須放寬全域角色權限。此操作會永久移除封存九表；上方是清理指引，不代表已執行清理。若交易報錯，先執行 `ROLLBACK;`，不要在失敗的交易內繼續操作。

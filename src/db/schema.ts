@@ -17,6 +17,8 @@ import {
 } from 'drizzle-orm/pg-core';
 import { APPOINTMENT_PACKAGE_CODES, APPOINTMENT_STATUSES } from '../lib/appointments/catalog';
 import { FORM_IDS } from '../lib/forms/catalog';
+import { CAPTCHA_DIAGNOSTIC_CODES, type CaptchaDiagnosticDetails } from '../lib/security/captcha-diagnostics';
+import { PUBLIC_CAPTCHA_ACTIONS } from '../lib/security/public-protection';
 
 export const USER_ROLES = ['superadmin', 'admin', 'staff'] as const;
 export const USER_STATUSES = ['pending', 'active', 'rejected', 'disabled'] as const;
@@ -29,7 +31,28 @@ export type SessionPurpose = (typeof SESSION_PURPOSES)[number];
 // 所有資料表都開啟 RLS 且不設 policy：Supabase 公開 API（anon／authenticated）讀寫不到；
 // 程式以資料表擁有者連線，不受 RLS 限制
 const timestamptz = (name: string) => timestamp(name, { withTimezone: true });
+// 僅接受程式內固定代碼；DDL CHECK 不可使用查詢參數。
+const fixedCodes = (values: readonly string[]) => sql.raw(values.map(value => `'${value.replaceAll("'", "''")}'`).join(', '));
 export const healCare = pgSchema('heal_care');
+
+/** 安全驗證專用紀錄：不與民眾、問卷、裝置或 IP 關聯。 */
+export const securityVerificationEvents = healCare.table('security_verification_events', {
+  id: uuid('id').primaryKey(),
+  occurredAt: timestamptz('occurred_at').notNull().defaultNow(),
+  action: text('action').notNull(),
+  source: text('source', { enum: ['client', 'server'] }).notNull(),
+  outcome: text('outcome', { enum: ['accepted', 'rejected', 'unavailable'] }).notNull(),
+  code: text('code', { enum: CAPTCHA_DIAGNOSTIC_CODES }).notNull(),
+  details: jsonb('details').$type<CaptchaDiagnosticDetails>().notNull().default({}),
+  deploymentId: text('deployment_id'),
+}, t => [
+  index('security_verification_events_time_idx').on(t.occurredAt),
+  check('security_verification_events_action_check', sql`${t.action} in (${fixedCodes([...Object.values(PUBLIC_CAPTCHA_ACTIONS), 'unknown_action'])})`),
+  check('security_verification_events_source_check', sql`${t.source} in ('client', 'server')`),
+  check('security_verification_events_outcome_check', sql`${t.outcome} in ('accepted', 'rejected', 'unavailable')`),
+  check('security_verification_events_code_check', sql`${t.code} in (${fixedCodes(CAPTCHA_DIAGNOSTIC_CODES)})`),
+  check('security_verification_events_details_check', sql`jsonb_typeof(${t.details}) = 'object' and (${t.details} - ARRAY['score','minScore','tokenValid','invalidReason','tokenAgeMs','actionMatches','hostnameAllowed','httpStatus','riskReasons']::text[]) = '{}'::jsonb`),
+]).enableRLS();
 
 /** 後台使用者（院所人員） */
 export const users = healCare.table(

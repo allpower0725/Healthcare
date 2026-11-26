@@ -8,8 +8,8 @@ import { useFormState } from '@/components/forms/use-form-state';
 import { LoadingOverlay } from '@/components/loading/loading-overlay';
 import { usePublicRequest } from '@/components/loading/use-public-request';
 import { type ResultMessage, useResultModal } from '@/components/feedback/result-modal';
-import { preloadCaptchaScript, requestCaptchaToken } from '@/lib/security/recaptcha-client';
-import { PUBLIC_CAPTCHA_ACTIONS, type PublicCaptchaConfig, PublicRequestError, VERIFICATION_MESSAGES } from '@/lib/security/public-protection';
+import { preloadCaptchaScript, withCaptchaRequest } from '@/lib/security/recaptcha-client';
+import { PUBLIC_CAPTCHA_ACTIONS, type PublicCaptchaConfig, PublicRequestError, verificationMessage } from '@/lib/security/public-protection';
 import type { FormValues, SubmissionStatus } from '@/db/schema';
 import type { FormId } from '@/lib/forms/catalog';
 import { getFormDef } from '@/lib/forms/defs';
@@ -348,10 +348,9 @@ export function FormApp({
         values, submissionId: original?.id, requestId: requestIdRef.current ?? undefined,
       }, profile);
       const result = await runRequest('安全驗證與送出中，請稍候…', async () => {
-        const captchaToken = await requestCaptchaToken(captcha, original ? PUBLIC_CAPTCHA_ACTIONS.resubmit : PUBLIC_CAPTCHA_ACTIONS.submit);
-        return original
+        return withCaptchaRequest(captcha, original ? PUBLIC_CAPTCHA_ACTIONS.resubmit : PUBLIC_CAPTCHA_ACTIONS.submit, captchaToken => original
           ? resubmitForm(original.id, values, original.submittedAt, captchaToken)
-          : submitForm(formId, values, requestIdRef.current!, captchaToken);
+          : submitForm(formId, values, requestIdRef.current!, captchaToken));
       });
       if (result.ok) {
         setSentState({ id: result.id, status: result.status, submittedAt: result.submittedAt });
@@ -368,7 +367,7 @@ export function FormApp({
         showFeedback(editingAgain ? `表單已再次退回修改，請確認內容${imageKeys.length > 0 ? '並重新簽名' : ''}後送出。` : '已送出，謝謝您的填寫', editingAgain ? 'warning' : 'success');
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else if (result.reason === 'verification_failed' || result.reason === 'verification_unavailable') {
-        showFeedback(VERIFICATION_MESSAGES[result.reason]);
+        showFeedback(verificationMessage(result.reason, result.reference, result.diagnosticRecorded));
       } else if (result.reason === 'invalid' && result.errors) {
         form.setErrors(result.errors);
         const keys = Object.keys(result.errors);
@@ -401,8 +400,7 @@ export function FormApp({
     setBusy(true);
     try {
       const result = await runRequest('安全驗證與退回修改中，請稍候…', async () => {
-        const captchaToken = await requestCaptchaToken(captcha, PUBLIC_CAPTCHA_ACTIONS.return);
-        return returnForm(sent.id, captchaToken);
+        return withCaptchaRequest(captcha, PUBLIC_CAPTCHA_ACTIONS.return, captchaToken => returnForm(sent.id, captchaToken));
       });
       if (result.ok) {
         const values = withoutImages(latest.current);
@@ -414,7 +412,7 @@ export function FormApp({
         scrollToId('gate', 'start');
         showFeedback('表單已退回修改，請完成內容與適用的簽名後再次送出。', 'success');
       } else if (result.reason === 'verification_failed' || result.reason === 'verification_unavailable') {
-        showFeedback(VERIFICATION_MESSAGES[result.reason]);
+        showFeedback(verificationMessage(result.reason, result.reference, result.diagnosticRecorded));
       } else if (result.reason === 'locked') {
         setSentState({ ...sent, status: 'completed' });
         showFeedback('院所已完成填寫，無法退回修改。');

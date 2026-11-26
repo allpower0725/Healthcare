@@ -1,8 +1,12 @@
 import 'server-only';
+import { randomUUID } from 'node:crypto';
+import { captchaReference, isClientReport, type ClientCaptchaCode } from './captcha-diagnostics';
+import { recordVerificationEvent } from './verification-events';
 import { PUBLIC_CAPTCHA_ACTIONS, type CaptchaFailure, type PublicCaptchaAction, type PublicCaptchaConfig } from './public-protection';
 
 type Settings = { siteKey: string; projectId: string; apiKey: string; hostnames: string[]; minScore: number };
-export type VerificationResult = { ok: true } | { ok: false; reason: CaptchaFailure };
+type VerificationFailure = { ok: false; reason: CaptchaFailure; reference: string; diagnosticRecorded: boolean };
+export type VerificationResult = { ok: true } | VerificationFailure;
 type DiagnosticCode = 'configuration_missing' | 'token_missing_or_invalid' | 'token_invalid' | 'action_mismatch'
   | 'hostname_mismatch' | 'token_time_invalid' | 'token_expired' | 'score_invalid' | 'score_below_threshold'
   | 'http_error' | 'request_timeout' | 'response_invalid' | 'assessment_error';
@@ -15,13 +19,23 @@ const RISK_REASONS = new Set(['CLASSIFICATION_REASON_UNSPECIFIED', 'AUTOMATION',
   'UNEXPECTED_USAGE_PATTERNS', 'LOW_CONFIDENCE_SCORE', 'SUSPECTED_CARDING', 'SUSPECTED_CHARGEBACK']);
 
 /** 只記錄固定代碼、布林值及有限數值；不記錄 token、金鑰、原始回應、網域字串或個資。 */
-function rejected(action: PublicCaptchaAction, reason: CaptchaFailure, code: DiagnosticCode, details: DiagnosticDetails = {}): VerificationResult {
+async function rejected(action: PublicCaptchaAction, reason: CaptchaFailure, code: DiagnosticCode | ClientCaptchaCode,
+  details: DiagnosticDetails = {}, clientId?: string): Promise<VerificationFailure> {
+  const id = clientId ?? randomUUID();
+  const reference = captchaReference(code, id);
+  const safeAction = Object.values(PUBLIC_CAPTCHA_ACTIONS).includes(action) ? action : 'unknown_action';
+  const recorded = await recordVerificationEvent({ id, action: safeAction, source: clientId ? 'client' : 'server',
+    outcome: reason === 'verification_failed' ? 'rejected' : 'unavailable', code, details });
   console.warn('[reCAPTCHA]', {
     event: 'verification_rejected',
-    action: Object.values(PUBLIC_CAPTCHA_ACTIONS).includes(action) ? action : 'unknown_action',
+    action: safeAction, reference, recorded,
     code, ...details,
   });
-  return { ok: false, reason };
+  return { ok: false, reason, reference, diagnosticRecorded: recorded };
+}
+/** 受保護操作的必要伺服器設定缺漏，也須可追查，不能只有通用安全驗證訊息。 */
+export function rejectMissingVerificationConfiguration(action: PublicCaptchaAction) {
+  return rejected(action, 'verification_unavailable', 'configuration_missing');
 }
 function developmentBypass() {
   return process.env.NODE_ENV === 'development' && !process.env.VERCEL && !process.env.VERCEL_ENV
@@ -47,6 +61,8 @@ export function getPublicCaptchaConfig(): PublicCaptchaConfig {
 /** 每次異動皆建立新 assessment；Google 負責單次使用與重複 token 拒絕。 */
 export async function verifyRecaptcha(action: PublicCaptchaAction, token: unknown, now = new Date()): Promise<VerificationResult> {
   if (developmentBypass()) return { ok: true };
+  // 前台診斷回報永遠拒絕，不會送往 Google 或進入表單資料寫入。
+  if (isClientReport(token)) return rejected(action, 'verification_unavailable', token.clientFailure, {}, token.referenceId);
   const config = settings();
   if (!config) return rejected(action, 'verification_unavailable', 'configuration_missing');
   if (typeof token !== 'string' || !token.trim() || token.length > 16384) return rejected(action, 'verification_failed', 'token_missing_or_invalid');
@@ -81,6 +97,10 @@ export async function verifyRecaptcha(action: PublicCaptchaAction, token: unknow
         riskReasons: Array.isArray(rawReasons) ? [...new Set(rawReasons.filter((r): r is string => typeof r === 'string' && RISK_REASONS.has(r)))].slice(0, 8) : [],
       });
     }
+    const details = { score, minScore: config.minScore, tokenValid: true, actionMatches: true, hostnameAllowed: true, tokenAgeMs: Math.round(age) };
+    const id = randomUUID();
+    const recorded = await recordVerificationEvent({ id, action, source: 'server', outcome: 'accepted', code: 'accepted', details });
+    console.info('[reCAPTCHA]', { event: 'verification_accepted', action, reference: captchaReference('accepted', id), recorded, ...details });
     return { ok: true };
   } catch (cause) {
     // 不輸出錯誤全文，避免外部錯誤洩漏 token、API key 或請求資料。

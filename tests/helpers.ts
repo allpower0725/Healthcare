@@ -4,7 +4,7 @@ import { appointmentSettings, formSettings, type UserRole, type UserStatus, user
 import { FORM_IDS } from '@/lib/forms/catalog';
 
 export async function resetDb() {
-  await db.execute(sql`truncate table heal_care.appointment_attempt_limits, heal_care.appointment_notices, heal_care.appointments, heal_care.appointment_settings,
+  await db.execute(sql`truncate table heal_care.security_verification_events, heal_care.appointment_attempt_limits, heal_care.appointment_notices, heal_care.appointments, heal_care.appointment_settings,
     heal_care.submission_events, heal_care.submissions, heal_care.sessions, heal_care.users, heal_care.form_settings cascade`);
   // 與 migration 相同：每張表單各一筆，預設關閉
   await db.insert(formSettings).values(FORM_IDS.map((formId) => ({ formId })));

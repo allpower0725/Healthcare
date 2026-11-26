@@ -1,7 +1,8 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { usePublicRequest } from '@/components/loading/use-public-request';
-import { preloadCaptchaScript, requestCaptchaToken } from '@/lib/security/recaptcha-client';
+import { preloadCaptchaScript, withCaptchaRequest } from '@/lib/security/recaptcha-client';
+import type { CaptchaProof } from '@/lib/security/captcha-diagnostics';
 import { type PublicCaptchaAction, type PublicCaptchaConfig, PublicRequestError } from '@/lib/security/public-protection';
 
 export function useAppointmentRequest(captcha: PublicCaptchaConfig) {
@@ -12,13 +13,13 @@ export function useAppointmentRequest(captcha: PublicCaptchaConfig) {
   useEffect(() => preloadCaptchaScript({ mode, siteKey }), [mode, siteKey]);
 
   async function request<T extends { ok: true } | { ok: false; message: string }>(
-    label: string, work: (token: string) => Promise<T>, action?: PublicCaptchaAction,
+    label: string, work: (token: CaptchaProof) => Promise<T>, action?: PublicCaptchaAction,
   ) {
     if (busy.current) return;
     busy.current = true;
     setError(null);
     try {
-      const result = await run(label, async () => work(action ? await requestCaptchaToken(captcha, action) : ''));
+      const result = await run(label, () => action ? withCaptchaRequest(captcha, action, work) : work(''));
       if (!result.ok) setError(result.message);
       return result;
     } catch (cause) {

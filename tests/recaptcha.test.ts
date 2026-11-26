@@ -1,12 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getPublicCaptchaConfig, verifyRecaptcha } from '@/lib/security/recaptcha';
 import { PUBLIC_CAPTCHA_ACTIONS } from '@/lib/security/public-protection';
+import { recordVerificationEvent } from '@/lib/security/verification-events';
+vi.mock('@/lib/security/verification-events', () => ({ recordVerificationEvent: vi.fn(async () => true) }));
 
 const NOW = new Date('2026-11-06T04:00:00Z');
 const good = () => ({ tokenProperties: { valid: true, hostname: 'wjcch-healthcare.vercel.app', action: PUBLIC_CAPTCHA_ACTIONS.submit, createTime: NOW.toISOString() }, riskAnalysis: { score: .9 } });
 const respond = (body: unknown, status = 200) => vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify(body), { status })));
 beforeEach(() => {
   vi.spyOn(console, 'warn').mockImplementation(() => {});
+  vi.spyOn(console, 'info').mockImplementation(() => {});
+  vi.mocked(recordVerificationEvent).mockClear().mockResolvedValue(true);
   vi.stubEnv('NODE_ENV', 'production'); vi.stubEnv('VERCEL', ''); vi.stubEnv('VERCEL_ENV', '');
   vi.stubEnv('RECAPTCHA_DEV_BYPASS', 'false');
   vi.stubEnv('RECAPTCHA_SITE_KEY', 'public-site-key'); vi.stubEnv('RECAPTCHA_PROJECT_ID', 'test-project');
@@ -26,7 +30,7 @@ describe('reCAPTCHA 伺服器防護', () => {
     expect(console.warn).not.toHaveBeenCalled();
   });
   it.each([undefined, null, '', ' ', 12, {}, 'a'.repeat(16385)])('空白或不合法 token 不發出 assessment（%s）', async token => {
-    expect(await verifyRecaptcha(PUBLIC_CAPTCHA_ACTIONS.submit, token, NOW)).toEqual({ ok: false, reason: 'verification_failed' });
+    expect(await verifyRecaptcha(PUBLIC_CAPTCHA_ACTIONS.submit, token, NOW)).toMatchObject({ ok: false, reason: 'verification_failed' });
     expect(fetch).not.toHaveBeenCalled();
   });
   it.each([
@@ -35,7 +39,7 @@ describe('reCAPTCHA 伺服器防護', () => {
     { createTime: '2026-11-06T03:57:59Z' }, { createTime: '2026-11-06T04:00:31Z' },
   ])('拒絕無效、重複、過期、網域或動作不符：%j', async properties => {
     const body = good(); respond({ ...body, tokenProperties: { ...body.tokenProperties, ...properties } });
-    expect(await verifyRecaptcha(PUBLIC_CAPTCHA_ACTIONS.submit, 'token', NOW)).toEqual({ ok: false, reason: 'verification_failed' });
+    expect(await verifyRecaptcha(PUBLIC_CAPTCHA_ACTIONS.submit, 'token', NOW)).toMatchObject({ ok: false, reason: 'verification_failed' });
   });
   it.each([.1, -1, 1.1, '0.9', null, undefined])('拒絕低分或錯誤分數：%s', async score => {
     respond({ ...good(), riskAnalysis: { score } });
@@ -50,7 +54,7 @@ describe('reCAPTCHA 伺服器防護', () => {
   it.each(['RECAPTCHA_SITE_KEY', 'RECAPTCHA_PROJECT_ID', 'RECAPTCHA_API_KEY', 'RECAPTCHA_ALLOWED_HOSTNAMES'])('缺少 %s 拒絕放行', async key => {
     vi.stubEnv(key, '');
     expect(getPublicCaptchaConfig()).toEqual({ mode: 'unavailable', siteKey: '' });
-    expect(await verifyRecaptcha(PUBLIC_CAPTCHA_ACTIONS.submit, 'token', NOW)).toEqual({ ok: false, reason: 'verification_unavailable' });
+    expect(await verifyRecaptcha(PUBLIC_CAPTCHA_ACTIONS.submit, 'token', NOW)).toMatchObject({ ok: false, reason: 'verification_unavailable' });
     expect(fetch).not.toHaveBeenCalled();
   });
   it.each(['https://example.com', '*.vercel.app', 'localhost:3000', 'example.com,'])('不接受過寬或格式錯誤的 hostname 設定：%s', hostname => {
@@ -69,7 +73,7 @@ describe('reCAPTCHA 伺服器防護', () => {
       expect(request.signal).toBeInstanceOf(AbortSignal);
       throw new DOMException('request timeout', 'TimeoutError');
     }));
-    expect(await verifyRecaptcha(PUBLIC_CAPTCHA_ACTIONS.submit, 'token', NOW)).toEqual({ ok: false, reason: 'verification_unavailable' });
+    expect(await verifyRecaptcha(PUBLIC_CAPTCHA_ACTIONS.submit, 'token', NOW)).toMatchObject({ ok: false, reason: 'verification_unavailable' });
   });
   it('略過模式只允許明確開啟的本機 development，production／Vercel 均不能略過', async () => {
     vi.stubEnv('RECAPTCHA_API_KEY', ''); vi.stubEnv('RECAPTCHA_DEV_BYPASS', 'true');
@@ -87,12 +91,12 @@ describe('reCAPTCHA 伺服器防護', () => {
     respond({ ...body, tokenProperties: { ...body.tokenProperties, action: PUBLIC_CAPTCHA_ACTIONS.appointmentLookup },
       riskAnalysis: { score: .3, reasons: ['LOW_CONFIDENCE_SCORE', 'not-a-safe-code'] } });
     expect(await verifyRecaptcha(PUBLIC_CAPTCHA_ACTIONS.appointmentLookup, 'private-token-value', NOW))
-      .toEqual({ ok: false, reason: 'verification_failed' });
-    expect(console.warn).toHaveBeenCalledExactlyOnceWith('[reCAPTCHA]', {
+      .toMatchObject({ ok: false, reason: 'verification_failed' });
+    expect(console.warn).toHaveBeenCalledExactlyOnceWith('[reCAPTCHA]', expect.objectContaining({
       event: 'verification_rejected', action: 'appointment_lookup', code: 'score_below_threshold',
       tokenValid: true, actionMatches: true, hostnameAllowed: true,
       minScore: .5, score: .3, tokenAgeMs: 0, riskReasons: ['LOW_CONFIDENCE_SCORE'],
-    });
+    }));
     expect(JSON.stringify(vi.mocked(console.warn).mock.calls)).not.toContain('private-token-value');
   });
 
@@ -104,7 +108,7 @@ describe('reCAPTCHA 伺服器防護', () => {
     [{ createTime: '2026-11-06T03:57:59Z' }, 'token_expired'],
   ])('診斷可區分拒絕條件：%j', async (properties, code) => {
     const body = good(); respond({ ...body, tokenProperties: { ...body.tokenProperties, ...properties } });
-    expect(await verifyRecaptcha(PUBLIC_CAPTCHA_ACTIONS.submit, 'token', NOW)).toEqual({ ok: false, reason: 'verification_failed' });
+    expect(await verifyRecaptcha(PUBLIC_CAPTCHA_ACTIONS.submit, 'token', NOW)).toMatchObject({ ok: false, reason: 'verification_failed' });
     expect(console.warn).toHaveBeenCalledExactlyOnceWith('[reCAPTCHA]', expect.objectContaining({ code }));
   });
 
@@ -115,8 +119,26 @@ describe('reCAPTCHA 伺服器防護', () => {
     await verifyRecaptcha(PUBLIC_CAPTCHA_ACTIONS.submit, privateValue, NOW);
     expect(console.warn).toHaveBeenLastCalledWith('[reCAPTCHA]', expect.objectContaining({ invalidReason: 'UNRECOGNIZED', riskReasons: [] }));
     vi.stubGlobal('fetch', vi.fn(async () => { throw new Error(privateValue); }));
-    expect(await verifyRecaptcha(PUBLIC_CAPTCHA_ACTIONS.submit, privateValue, NOW)).toEqual({ ok: false, reason: 'verification_unavailable' });
+    expect(await verifyRecaptcha(PUBLIC_CAPTCHA_ACTIONS.submit, privateValue, NOW)).toMatchObject({ ok: false, reason: 'verification_unavailable' });
     const logged = JSON.stringify(vi.mocked(console.warn).mock.calls);
     for (const secret of [privateValue, 'test-server-key', 'public-site-key', 'test-project']) expect(logged).not.toContain(secret);
+  });
+
+  it('1.0 分仍可明確指出非分數拒絕；0.3 與 0.5 的門檻不改變動作檢查', async () => {
+    for (const threshold of ['0.5', '0.3']) {
+      vi.stubEnv('RECAPTCHA_MIN_SCORE', threshold);
+      respond({ ...good(), tokenProperties: { ...good().tokenProperties, action: 'public_return' }, riskAnalysis: { score: 1 } });
+      const result = await verifyRecaptcha(PUBLIC_CAPTCHA_ACTIONS.submit, 'private-token', NOW);
+      expect(result).toMatchObject({ ok: false, reason: 'verification_failed', diagnosticRecorded: true, reference: expect.stringMatching(/^RC-S04-/) });
+      expect(recordVerificationEvent).toHaveBeenLastCalledWith(expect.objectContaining({ source: 'server', code: 'action_mismatch', details: expect.objectContaining({ score: 1, minScore: Number(threshold) }) }));
+    }
+  });
+
+  it('診斷資料庫故障不改變驗證結果，前台能辨識尚未成功保存', async () => {
+    vi.mocked(recordVerificationEvent).mockResolvedValue(false);
+    respond({ ...good(), riskAnalysis: { score: .3 } });
+    expect(await verifyRecaptcha(PUBLIC_CAPTCHA_ACTIONS.submit, 'token', NOW)).toMatchObject({ ok: false, diagnosticRecorded: false, reference: expect.stringMatching(/^RC-S09-/) });
+    respond({ ...good(), riskAnalysis: { score: 1 } });
+    expect(await verifyRecaptcha(PUBLIC_CAPTCHA_ACTIONS.submit, 'token', NOW)).toEqual({ ok: true });
   });
 });

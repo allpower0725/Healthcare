@@ -1,6 +1,7 @@
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { appointmentCronSecret, createAppointmentGmailSender } from '@/lib/appointments/gmail';
 import { sendDueAppointmentNotices } from '@/lib/appointments/notifications';
+import { purgeVerificationEvents } from '@/lib/security/verification-events';
 
 function authorized(request: Request) {
   const secret = appointmentCronSecret();
@@ -13,6 +14,9 @@ function authorized(request: Request) {
 export async function POST(request: Request) {
   const headers = { 'Cache-Control': 'no-store' };
   if (!authorized(request)) return Response.json({ ok: false }, { status: 401, headers });
+
+  try { await purgeVerificationEvents(); }
+  catch { console.error('[reCAPTCHA] diagnostic_retention_failed'); }
 
   const send = createAppointmentGmailSender();
   if (!send) return Response.json({ ok: false, reason: 'mail_not_configured' }, { status: 503, headers });

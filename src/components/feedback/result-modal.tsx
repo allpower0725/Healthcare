@@ -4,6 +4,7 @@ import { createContext, type FormEvent, type ReactNode, useCallback, useContext,
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import styles from './result-modal.module.css';
+import { captchaReferenceInMessage } from '@/lib/security/public-protection';
 
 export type ResultMessage = {
   title: string;
@@ -40,14 +41,18 @@ export function useResultModal() {
 
 function ResultModal({ result, close }: { result: ResultMessage; close: () => void }) {
   const dialog = useRef<HTMLDialogElement>(null);
+  const confirm = useRef<HTMLButtonElement>(null);
   const [host, setHost] = useState<HTMLElement | null>(null);
   const titleId = useId();
   const messageId = useId();
+  const [copyStatus, setCopyStatus] = useState('');
+  const reference = captchaReferenceInMessage(result.message);
   useEffect(() => setHost(document.body), []);
   useEffect(() => {
     if (!host) return;
     const element = dialog.current!;
     element.showModal();
+    confirm.current?.focus({ preventScroll: true });
     return () => element.close();
   }, [host]);
   function acknowledge() {
@@ -74,7 +79,14 @@ function ResultModal({ result, close }: { result: ResultMessage; close: () => vo
       <div className={styles.icon} aria-hidden="true">{result.tone === 'success' ? '✓' : '!'}</div>
       <h2 id={titleId}>{result.title}</h2>
       <p id={messageId}>{result.message}</p>
-      <button autoFocus type="button" className="btn btn--primary" onClick={acknowledge}>
+      {reference && <div className={styles.reference}>
+        <button type="button" className="btn btn--ghost" onClick={async () => {
+          try { await navigator.clipboard.writeText(reference); setCopyStatus('參考代碼已複製'); }
+          catch { setCopyStatus('請選取上方參考代碼並複製，或截圖保留。'); }
+        }}>複製參考代碼</button>
+        <span role="status">{copyStatus}</span>
+      </div>}
+      <button ref={confirm} autoFocus type="button" className="btn btn--primary" onClick={acknowledge}>
         {result.confirmLabel ?? '確定'}
       </button>
     </dialog>, host,

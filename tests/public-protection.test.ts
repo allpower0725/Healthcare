@@ -25,7 +25,7 @@ afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
 
 describe('所有公開異動入口必須通過真實共用 guard', () => {
   it('七種表單直接呼叫都不能省略 token，且不建立裝置憑證或資料', async () => {
-    for (const formId of FORM_IDS) expect(await submitForm(formId, {}, randomUUID())).toEqual({ ok: false, reason: 'verification_failed' });
+    for (const formId of FORM_IDS) expect(await submitForm(formId, {}, randomUUID())).toMatchObject({ ok: false, reason: 'verification_failed' });
     expect(ensureDeviceToken).not.toHaveBeenCalled();
     expect(await db.select().from(submissions)).toHaveLength(0);
     expect(await db.select().from(submissionEvents)).toHaveLength(0);
@@ -56,7 +56,7 @@ describe('所有公開異動入口必須通過真實共用 guard', () => {
     vi.stubEnv('RECAPTCHA_API_KEY', '');
     expect(await submitForm('hpv', hpvPublicSample(), randomUUID(), 'public_submit:1')).toMatchObject({ ok: false, reason: 'verification_unavailable' });
     vi.stubEnv('RECAPTCHA_API_KEY', 'test-api-key'); vi.mocked(fetch).mockRejectedValueOnce(new Error('remote private details'));
-    expect(await submitForm('hpv', hpvPublicSample(), randomUUID(), 'public_submit:2')).toEqual({ ok: false, reason: 'verification_unavailable' });
+    expect(await submitForm('hpv', hpvPublicSample(), randomUUID(), 'public_submit:2')).toMatchObject({ ok: false, reason: 'verification_unavailable' });
     expect(await db.select().from(submissions)).toHaveLength(0);
   });
 });

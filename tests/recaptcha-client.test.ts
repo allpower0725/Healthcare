@@ -52,4 +52,20 @@ describe('前台 token 僅在操作時取得', () => {
     const request = requestCaptchaToken(config, PUBLIC_CAPTCHA_ACTIONS.submit); const failed = expect(request).rejects.toThrow('安全驗證');
     await vi.advanceTimersByTimeAsync(12000); await failed;
   });
+
+  it('空白權杖回報原伺服器操作，僅傳固定原因與參考碼，保留原輸入', async () => {
+    vi.stubGlobal('window', { setTimeout, grecaptcha: { enterprise: { ready: (fn: () => void) => fn(), execute: async () => '' } } });
+    const { withCaptchaRequest } = await import('@/lib/security/recaptcha-client');
+    const work = vi.fn(async (_proof: import('@/lib/security/captcha-diagnostics').CaptchaProof) => ({ ok: false, message: 'verification unavailable' }));
+    await withCaptchaRequest(config, PUBLIC_CAPTCHA_ACTIONS.appointmentCreate, work);
+    expect(work).toHaveBeenCalledExactlyOnceWith({ clientFailure: 'token_empty', referenceId: expect.any(String) });
+    expect(Object.keys(work.mock.calls[0][0] ?? {})).toEqual(['clientFailure', 'referenceId']);
+  });
+
+  it('完全離線仍顯示前台原因碼，且不聲稱已完成伺服器紀錄', async () => {
+    vi.stubGlobal('window', { setTimeout, grecaptcha: { enterprise: { ready: (fn: () => void) => fn(), execute: async () => '' } } });
+    const { withCaptchaRequest } = await import('@/lib/security/recaptcha-client');
+    await expect(withCaptchaRequest(config, PUBLIC_CAPTCHA_ACTIONS.submit, async () => { throw new Error('private transport data'); }))
+      .rejects.toThrow(/RC-C07-.*診斷回報尚未送達伺服器/);
+  });
 });

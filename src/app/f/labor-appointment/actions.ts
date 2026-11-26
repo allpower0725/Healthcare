@@ -7,8 +7,8 @@ import { APPOINTMENT_PACKAGE_CODES, type AppointmentPackage } from '@/lib/appoin
 import { cancelAppointment, createAppointment, latestAppointment, loadPublicAppointment, parseAppointmentIdentity,
   publicAppointmentView, publicBookingCalendar, publicBookingCount, readAppointmentIntake, returnAppointmentIntake,
   saveAppointmentIntake } from '@/lib/appointments/public-service';
-import { PUBLIC_CAPTCHA_ACTIONS as ACTION, type PublicCaptchaAction, VERIFICATION_MESSAGES } from '@/lib/security/public-protection';
-import { verifyRecaptcha } from '@/lib/security/recaptcha';
+import { PUBLIC_CAPTCHA_ACTIONS as ACTION, type PublicCaptchaAction, verificationMessage } from '@/lib/security/public-protection';
+import { verifyRecaptcha, rejectMissingVerificationConfiguration } from '@/lib/security/recaptcha';
 
 const fail = (message: string) => ({ ok: false, message }) as const;
 const EXPIRED = '查詢已逾時或預約已失效，請返回預約健檢重新查詢。';
@@ -16,10 +16,13 @@ const LIMITED = '操作次數過多，請等候十分鐘再試。';
 const NOT_OPEN = '目前暫停受理新預約。既有預約仍可查詢。';
 
 async function protection(group: 'lookup' | 'write', idNo: string, action: PublicCaptchaAction, token: unknown) {
-  if (!appointmentAccessConfigured()) return fail(VERIFICATION_MESSAGES.verification_unavailable);
+  if (!appointmentAccessConfigured()) {
+    const result = await rejectMissingVerificationConfiguration(action);
+    return fail(verificationMessage(result.reason, result.reference, result.diagnosticRecorded));
+  }
   if (!await allowAppointmentAttempt(group, idNo)) return fail(LIMITED);
   const result = await verifyRecaptcha(action, token);
-  return result.ok ? null : fail(VERIFICATION_MESSAGES[result.reason]);
+  return result.ok ? null : fail(verificationMessage(result.reason, result.reference, result.diagnosticRecorded));
 }
 
 export async function lookupAppointment(raw: unknown, token: unknown) {

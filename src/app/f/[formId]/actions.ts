@@ -4,6 +4,7 @@ import type { FormValues, SubmissionStatus } from '@/db/schema';
 import { isFormId } from '@/lib/forms/catalog';
 import { PUBLIC_CAPTCHA_ACTIONS } from '@/lib/security/public-protection';
 import { verifyRecaptcha } from '@/lib/security/recaptcha';
+import type { CaptchaProof } from '@/lib/security/captcha-diagnostics';
 import { clearDeviceToken, ensureDeviceToken, readDeviceToken } from '@/lib/submissions/device';
 import {
   createPublicSubmission,
@@ -19,7 +20,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export type SubmitFormResult =
   | { ok: true; id: string; status: SubmissionStatus; submittedAt: string }
-  | { ok: false; reason: string; errors?: Record<string, string> };
+  | { ok: false; reason: string; errors?: Record<string, string>; reference?: string; diagnosticRecorded?: boolean };
 
 async function submittedResult(id: string, token: string): Promise<SubmitFormResult> {
   const row = await getDeviceSubmission(id, token);
@@ -27,7 +28,7 @@ async function submittedResult(id: string, token: string): Promise<SubmitFormRes
   return { ok: true, id, status: row.status, submittedAt: row.publicSubmittedAt.toISOString() };
 }
 
-export async function submitForm(formId: string, values: FormValues, requestId?: string, captchaToken?: string): Promise<SubmitFormResult> {
+export async function submitForm(formId: string, values: FormValues, requestId?: string, captchaToken?: CaptchaProof): Promise<SubmitFormResult> {
   if (!isFormId(formId)) return { ok: false, reason: 'not_supported' };
   if (requestId != null && !UUID.test(requestId)) return { ok: false, reason: 'not_found' };
   const verification = await verifyRecaptcha(PUBLIC_CAPTCHA_ACTIONS.submit, captchaToken);
@@ -38,7 +39,7 @@ export async function submitForm(formId: string, values: FormValues, requestId?:
   return submittedResult(result.id, token);
 }
 
-export async function resubmitForm(submissionId: string, values: FormValues, previousSubmittedAt?: string, captchaToken?: string): Promise<SubmitFormResult> {
+export async function resubmitForm(submissionId: string, values: FormValues, previousSubmittedAt?: string, captchaToken?: CaptchaProof): Promise<SubmitFormResult> {
   const token = await readDeviceToken();
   if (!token || !UUID.test(submissionId)) return { ok: false, reason: 'not_found' };
   const verification = await verifyRecaptcha(PUBLIC_CAPTCHA_ACTIONS.resubmit, captchaToken);
@@ -49,7 +50,7 @@ export async function resubmitForm(submissionId: string, values: FormValues, pre
   return submittedResult(submissionId, token);
 }
 
-export async function returnForm(submissionId: string, captchaToken?: string) {
+export async function returnForm(submissionId: string, captchaToken?: CaptchaProof) {
   const token = await readDeviceToken();
   if (!token || !UUID.test(submissionId)) return { ok: false as const, reason: 'not_found' as const };
   const verification = await verifyRecaptcha(PUBLIC_CAPTCHA_ACTIONS.return, captchaToken);

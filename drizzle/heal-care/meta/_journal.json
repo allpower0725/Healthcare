@@ -8,6 +8,13 @@
       "when": 1794809346198,
       "tag": "0000_heal_care_baseline",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1795656700873,
+      "tag": "0001_security_verification_events",
+      "breakpoints": true
     }
   ]
 }

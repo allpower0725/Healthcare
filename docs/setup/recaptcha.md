@@ -89,7 +89,40 @@ IndexedDB 暫存、草稿恢復、清理與背景狀態更新都不取得 token�
 
 ### 正常使用者被阻擋時的診斷
 
-伺服器只在拒絕驗證時輸出 `[reCAPTCHA]` 結構化警告。請在 Vercel 的 Runtime Logs 以此字串搜尋，搭配操作時間與 `action`（預約查詢為 `appointment_lookup`）定位。成功驗證不產生這類警告，原有門檻及拒絕規則不因日誌而改變。
+伺服器輸出 `[reCAPTCHA]` 結構化紀錄，拒絕為 `verification_rejected`，通過為 `verification_accepted`；兩者均保存至 `heal_care.security_verification_events`，保留 30 天。用時間、`action` 與參考碼定位，原有門檻及拒絕規則不因診斷改變。`/f/labor-appointment` 的查詢是 `appointment_lookup`，日期／套餐頁送出是 `appointment_create`，關聯勞工表則是 `public_submit`／`public_resubmit`。
+
+Vercel Hobby 的 Runtime Logs 只保留一小時，不能作為隔日追查的唯一來源。Migration `drizzle/heal-care/0001_security_verification_events.sql` 新增獨立診斷表、時間索引及 RLS，對 PUBLIC 撤銷權限、不設公開政策。僅既有伺服器資料庫帳號可寫入，不與民眾、問卷、裝置或 IP 關聯。
+
+表欄位為 `id`（參考碼 UUID）、`occurred_at`（伺服器時間）、`action`（固定驗證動作）、`source`（client／server）、`outcome`（accepted／rejected／unavailable）、`code`（固定分類）、`details`（白名單數值、布林與原因代碼）、`deployment_id`（可取得時的部署 ID）。`source=client` 是未受信任的前台回報，不代表 Google 評估，`details` 一律為空。
+
+錯誤 Modal 顯示 `RC-分類-UUID` 並提供「複製參考代碼」；不回傳分數、門檻或原始評估。持久紀錄寫入失敗時明確提醒保留代碼；完全離線則顯示「診斷回報尚未送達伺服器」。這些情況仍不允許送出問卷。
+
+| 參考碼分類 | 原因 |
+| --- | --- |
+| C01 | 前台設定不可用 |
+| C02／C03 | Google 腳本載入錯誤／等待逾時 |
+| C04 | 官方 API 未就緒 |
+| C05／C06 | execute 執行錯誤／逾時 |
+| C07 | 前台未取得有效權杖，沒有 Google assessment |
+| S01／S02／S03 | 伺服器必要設定（含預約憑證設定）／輸入權杖／Google 判定權杖無效 |
+| S04／S05 | 動作／網域不符 |
+| S06／S07 | 簽發時間錯誤／過期 |
+| S08／S09 | 分數格式錯誤／分數低於門檻 |
+| S10／S11／S12／S13 | HTTP／評估逾時／JSON／其他評估異常 |
+| OK | 全部驗證通過；不代表後續問卷已成功存檔 |
+
+前台失敗透過原受保護操作回報固定分類，不新增問卷送出入口；伺服器收到回報物件一律拒絕，不送往 Google 或進入業務資料寫入。預載腳本、IndexedDB 與背景同步不送診斷。每分鐘最多保存 1,200 筆，超量／逾時等記錄固定 `diagnostic_storage_failed`，不輸出資料庫錯誤全文。
+
+既有已授權的整點通知排程會清除超過 30 天的診斷，即使郵件未設定也先清理。排程停用會延遲實體清理，須監看 `diagnostic_retention_failed`。管理者依 UUID 查詢，只查診斷表即可，不需民眾資料：
+
+```sql
+SELECT occurred_at, action, source, outcome, code, details, deployment_id
+FROM heal_care.security_verification_events
+WHERE id = '00000000-0000-4000-8000-000000000000'
+  AND occurred_at >= now() - interval '30 days';
+```
+
+分數為 1.0 仍拒絕時，核對同一筆的 `code`、`tokenValid`、`actionMatches`、`hostnameAllowed` 與 `tokenAgeMs`；`source=client` 的失敗不會出現在 Google 統計。調低門檻後成功，也可能同時包含重整、重新部署與新的權杖，不能只用兩次不同評估定因。
 
 - `score_below_threshold`：token、動作、網域及時效通過，但 `score` 低於 `minScore`。可搭配白名單化的 `riskReasons` 判斷 Google 回覆的原因；不能只憑此結果認定使用者是機器人。
 - `token_invalid`：Google 判定 token 無效；`invalidReason` 可識別 `DUPE`、`EXPIRED` 等原因。
@@ -97,7 +130,7 @@ IndexedDB 暫存、草稿恢復、清理與背景狀態更新都不取得 token�
 - `token_time_invalid`、`token_expired`：簽發時間格式、時差或有效期間未通過，有限數值的 `tokenAgeMs` 可供核對。
 - `score_invalid`、`configuration_missing`、`token_missing_or_invalid`、`http_error`、`request_timeout`、`response_invalid`、`assessment_error`：分別指出分數格式、環境設定、送入 token、HTTP、逾時、JSON 或其他服務異常。HTTP 異常只保留狀態碼，不輸出回應全文。
 
-日誌不含證件號、生日、姓名、IP、金鑰、完整 token 或 assessment 原始回應；不寫入問卷或資料庫。外部原因代碼只接受固定白名單。診斷版本須部署後才會記錄新操作，不能回溯還原未記錄的評估結果。
+日誌不含證件號、生日、姓名、IP、金鑰、完整 token 或 assessment 原始回應；持久紀錄只寫入診斷表、不寫入問卷。外部原因代碼只接受固定白名單。診斷版本須部署後才會記錄新操作，不能回溯還原未保存的歷史評估。
 
 若未找到對應日誌，不代表驗證成功；瀏覽器可能在載入腳本或取得 token 時就失敗，尚未呼叫伺服器。需同時核對該次是否發出 Server Action 請求；不要匯出含證件資料或 token 的完整請求內容。
 

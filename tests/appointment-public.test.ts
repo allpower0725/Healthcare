@@ -28,6 +28,7 @@ vi.mock('next/headers', () => ({
   }),
 }));
 vi.mock('@/lib/security/recaptcha', () => ({
+  rejectMissingVerificationConfiguration: vi.fn(async () => ({ ok: false, reason: 'verification_unavailable', reference: 'RC-S01-b06d8f72-66a4-4476-935a-73a78f4ecacf', diagnosticRecorded: true })),
   verifyRecaptcha: vi.fn(async (_action: string, token: unknown) => token === 'valid'
     ? { ok: true } : { ok: false, reason: 'verification_failed' }),
 }));

@@ -1,5 +1,9 @@
 # 共用資料契約異動紀錄
 
+## 2026-11-26 安全驗證診斷
+
+- 新增獨立的 `heal_care.security_verification_events`，保留 30 天的固定安全驗證分類與去識別診斷。無民眾或問卷關聯欄位，不改動 `submissions`、`public_data`、`staff_data`、表單代號或狀態；無歷史資料回填，相依應用程式無須轉換既有問卷。
+
 此檔記錄 `heal_care.submissions`（歷史名稱 `public.heal_submissions`）共用資料契約的異動。欄位與代碼完整對照見 [資料字典](heal-submissions.md)，供其他應用程式使用的版本見 [JSON 字典](heal-submissions.json)。
 
 ## 2026-11-16：Supabase 切換新 schema 與獨立帳號

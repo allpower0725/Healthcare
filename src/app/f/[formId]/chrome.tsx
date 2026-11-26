@@ -1,6 +1,7 @@
 'use client';
 
 import { Fragment, type ReactNode, useEffect, useState } from 'react';
+import { FormDirectory, type PublicFormId } from '@/components/forms/form-directory';
 
 const FONT_KEY = 'pp:font-size';
 const SIZES = [
@@ -84,12 +85,14 @@ export function ClosedCard({ message, period }: { message: string; period: strin
 
 /** 民眾端頁面外框：頂部列（院徽、字級、填寫進度）、內容、頁尾 */
 export function PublicChrome({
+  currentFormId,
   progress,
   foot,
   welcome = false,
   navigation,
   children,
 }: {
+  currentFormId?: PublicFormId;
   progress?: number;
   foot?: ReactNode;
   welcome?: boolean;
@@ -110,8 +113,11 @@ export function PublicChrome({
         <div className="progress" aria-hidden="true">
           <div className="progress__bar" style={{ width: `${progress ?? 0}%` }} />
         </div>
+        {currentFormId && <FormDirectory currentFormId={currentFormId} />}
       </header>
-      <main className={`page${welcome ? ' page--welcome' : ''}`}>{children}</main>
+      <main className={`page${welcome ? ' page--welcome' : ''}${currentFormId ? ' page--directory' : ''}`}>
+        {children}
+      </main>
       <footer className="foot">
         <p>烏日澄清醫院｜預防保健服務</p>
         {foot}

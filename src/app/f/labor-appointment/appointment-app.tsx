@@ -144,7 +144,7 @@ export function AppointmentApp({ open, calendar, requestId: initialRequestId, bo
     showResult({ title: '預約已取消', tone: 'success', message: '此預約及已關聯的勞工健康檢查表已失效。' });
   }
 
-  return <PublicChrome progress={booking ? 100 : requestId ? 50 : 0} welcome={!requestId}
+  return <PublicChrome currentFormId="appointment" progress={booking ? 100 : requestId ? 50 : 0} welcome={!requestId}
     navigation={requestId ? <BackButton disabled={!!message} onClick={() => void restart()}>返回查詢</BackButton> : undefined}>
     {overlayMessage && <LoadingOverlay message={overlayMessage} />}
     <header className="intro">

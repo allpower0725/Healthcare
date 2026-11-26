@@ -112,6 +112,10 @@ html:has(.ppf-page)[data-font-size="xl"] { font-size: 137.5%; }
 }
 .ppf .intro__art :is(svg, img) { display: block; width: 100%; height: auto; }
 html[data-font-size="xl"] .ppf .intro__art { width: clamp(88px, 24vw, 168px); }
+@media (max-width: 899px) {
+  .ppf .page--directory .intro__art { margin-block-start: 1rem; }
+  .ppf .page--directory:not(:has(> .intro)) { padding-block-start: 3rem; }
+}
 .ppf .intro__eyebrow {
   display: inline-flex;
   align-items: center;

@@ -464,6 +464,7 @@ export function FormApp({
 
   return (
     <PublicChrome
+      currentFormId={formId}
       progress={progress.pct}
       welcome={phase === 'gate'}
       foot={

@@ -129,7 +129,7 @@ export function AppointmentIntake({ id, identity, intake, editable: initialEdita
     showResult({ title: '已退回修改', tone: 'success', message: '請修改內容，並重新完成適用的同意書簽名後再次送出。' });
   }
 
-  return <PublicChrome progress={canFill ? 50 : 100}
+  return <PublicChrome currentFormId="labor" progress={canFill ? 50 : 100}
     navigation={<BackLink prefetch={false} href={APPOINTMENT_PUBLIC_PATH}>返回預約</BackLink>}>
     {message && <LoadingOverlay message={message} />}
     <header className={styles.heading}><div>

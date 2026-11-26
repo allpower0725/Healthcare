@@ -103,7 +103,7 @@ async function FormEntry({ params }: { params: Props['params'] }) {
   }
 
   return (
-    <PublicChrome welcome>
+    <PublicChrome currentFormId={formId} welcome>
       <Intro formId={formId} />
       {status === 'open' ? (
         <section className="card closed">

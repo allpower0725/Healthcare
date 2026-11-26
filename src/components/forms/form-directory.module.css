@@ -1,0 +1,124 @@
+.dock {
+  position: absolute;
+  inset-block-start: calc(100% + 4px);
+  inset-inline-end: env(safe-area-inset-right, 0px);
+}
+
+.trigger,
+.close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: 44px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--primary-strong);
+  cursor: pointer;
+}
+
+.trigger {
+  gap: .3rem;
+  padding: .3rem .5rem;
+  border-inline-end: 0;
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+  box-shadow: var(--shadow);
+  opacity: 0.7;
+  font-size: .76rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.trigger svg { flex: none; color: var(--primary); }
+
+.dialog {
+  width: min(30rem, calc(100% - 24px));
+  max-block-size: calc(100dvh - 24px);
+  margin: auto;
+  padding: .85rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: 0 24px 70px rgb(32 57 81 / .25);
+}
+
+.dialog[open] { display: flex; flex-direction: column; }
+.dialog::backdrop { background: rgb(35 59 83 / .4); backdrop-filter: blur(4px); }
+:global(body):has(.dialog[open]) { overflow: hidden; }
+
+.heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: .6rem;
+  padding: 0 3px .55rem;
+}
+
+.heading h2 { margin: 0; font-size: 1.2rem; }
+.heading p { margin: .15rem 0 0; color: var(--muted); font-size: .8rem; }
+
+.close {
+  flex: none;
+  min-inline-size: 44px;
+  padding: .4rem;
+  border-radius: var(--radius-sm);
+}
+
+.list {
+  display: grid;
+  gap: .4rem;
+  min-block-size: 0;
+  margin: 0;
+  padding: 3px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  list-style: none;
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  min-block-size: 60px;
+  padding: .35rem .5rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.art {
+  flex: none;
+  display: grid;
+  place-items: center;
+  inline-size: 42px;
+  block-size: 42px;
+  border-radius: 10px;
+  background: var(--art-bg);
+}
+
+.art :is(svg, img) {
+  display: block;
+  width: 38px;
+  height: auto;
+}
+
+.copy {
+  flex: 1;
+  min-inline-size: 0;
+  display: grid;
+  gap: .1rem;
+  overflow-wrap: anywhere;
+  line-height: 1.4;
+  font-size: .9rem;
+}
+
+.copy > span { font-size: .76rem; color: var(--muted); }
+.arrow { flex: none; color: var(--primary); }
+
+:is(.trigger, .close, .link):hover { background: var(--primary-soft); border-color: var(--primary-line); }
+:is(.trigger, .close, .link):focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+.trigger:focus-visible { outline-offset: -3px; }
+
+@media print { .dock { display: none; } }

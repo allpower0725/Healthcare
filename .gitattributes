@@ -1,2 +1,3 @@
+docker/*.sh text eol=lf
 # Migration SHA-256 must remain identical on Windows, Linux and Vercel.
 drizzle/heal-care/*.sql text eol=lf

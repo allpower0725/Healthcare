@@ -66,6 +66,19 @@ export function NavLinks({ items }: { items: Item[] }) {
           </Link>
         );
       })}
+      <a
+        className={`${styles.navLink} ${styles.manualLink}`}
+        href="https://wjcch-healthcare.vercel.app/manual"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="操作手冊（另開新分頁）"
+        title="操作手冊（另開新分頁）"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M12 5.5C9 3.5 5.5 3.5 2.5 5v14c3-1.5 6.5-1.5 9.5.5 3-2 6.5-2 9.5-.5V5c-3-1.5-6.5-1.5-9.5.5Z" />
+          <path d="M12 5.5v14M6 8h2.5M6 11.5h2.5M15.5 8H18M15.5 11.5H18" />
+        </svg>
+      </a>
     </nav>
   );
 }

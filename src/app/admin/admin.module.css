@@ -85,6 +85,13 @@
   width: 20px;
   height: 20px;
 }
+.navLink.manualLink {
+  flex: none;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 10px;
+}
 
 .navSkeleton span {
   width: 108px;
